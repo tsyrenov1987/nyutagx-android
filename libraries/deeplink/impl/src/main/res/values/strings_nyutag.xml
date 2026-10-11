@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: приглашение по одноразовому коду. -->
+<resources>
+    <string name="nyutag_invite_creating">Creating an invitation…</string>
+    <string name="nyutag_invite_share_text">Join me on %1$s, our messenger. Your invitation code: %2$s. It works once and for 7 days. Install %1$s and tap “I have an invitation”.</string>
+    <string name="nyutag_invite_limit">Invitation limit reached: at most 10 unused codes and 20 a day.</string>
+    <string name="nyutag_invite_network">No connection to the server. Try again.</string>
+    <string name="nyutag_invite_failed">Could not create an invitation. Try again later.</string>
+</resources>

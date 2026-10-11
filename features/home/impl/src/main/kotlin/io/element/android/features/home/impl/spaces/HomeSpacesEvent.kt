@@ -8,4 +8,7 @@
 
 package io.element.android.features.home.impl.spaces
 
-sealed interface HomeSpacesEvent
+sealed interface HomeSpacesEvent {
+    data class UpdateSearchQuery(val query: String) : HomeSpacesEvent
+    data object RefreshCatalog : HomeSpacesEvent
+}

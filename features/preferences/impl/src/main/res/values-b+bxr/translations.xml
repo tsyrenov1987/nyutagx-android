@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_edit_profile_title">Профиль заһаха</string>
+    <string name="screen_notification_settings_title">Мэдүүлгэнүүд</string>
+    <string name="theme_system">Системын</string>
+    <string name="theme_light">Сагаан</string>
+    <string name="theme_dark">Харанхы</string>
+</resources>

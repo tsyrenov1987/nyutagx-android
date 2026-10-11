@@ -64,6 +64,7 @@ dependencies {
     implementation(projects.libraries.testtags)
     implementation(projects.libraries.uiStrings)
     implementation(projects.libraries.matrixui)
+    implementation(projects.libraries.deeplink.api)
     implementation(projects.libraries.mediaviewer.api)
     implementation(projects.libraries.mediapickers.api)
     implementation(projects.libraries.mediaupload.api)

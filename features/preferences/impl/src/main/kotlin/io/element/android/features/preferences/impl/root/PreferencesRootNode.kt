@@ -24,6 +24,7 @@ import io.element.android.features.logout.api.direct.DirectLogoutView
 import io.element.android.features.preferences.impl.account.PreferencesAccountCallback
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.deeplink.api.usecase.InviteFriendsUseCase
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.emoji.api.picker.EmojiPickerRenderer
 
@@ -35,6 +36,7 @@ class PreferencesRootNode(
     private val presenter: PreferencesRootPresenter,
     private val emojiPickerRenderer: EmojiPickerRenderer,
     private val directLogoutView: DirectLogoutView,
+    private val inviteFriendsUseCase: InviteFriendsUseCase,
 ) : Node(buildContext, plugins = plugins) {
     interface Callback : PreferencesAccountCallback, Plugin {
         fun navigateToAddAccount()
@@ -89,6 +91,7 @@ class PreferencesRootNode(
             onManageAccountClick = { onManageAccountClick(activity, it, isDark) },
             onOpenNotificationSettings = callback::navigateToNotificationSettings,
             onEditProfileClick = callback::navigateToUserProfile,
+            onInviteFriendClick = { inviteFriendsUseCase.execute(activity) },
             onSignOutClick = {
                 if (state.preferencesAccountState.directLogoutState.canDoDirectSignOut) {
                     state.preferencesAccountState.directLogoutState.eventSink(DirectLogoutEvent.Logout(ignoreSdkError = false))

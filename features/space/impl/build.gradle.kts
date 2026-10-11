@@ -40,6 +40,7 @@ dependencies {
     implementation(projects.libraries.featureflag.api)
     implementation(projects.features.createroom.api)
     implementation(projects.features.invite.api)
+    implementation(projects.features.knockrequests.api)
     implementation(projects.libraries.previewutils)
     implementation(projects.features.securityandprivacy.api)
     implementation(projects.features.rolesandpermissions.api)

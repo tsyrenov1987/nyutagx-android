@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: русские переопределения строк Element X (см. values/strings_nyutag_overrides.xml). -->
+<resources>
+    <!-- Вход и приветствие -->
+    <string name="screen_login_subtitle">Нютаг — закрытый мессенджер для земляков.</string>
+    <string name="screen_onboarding_welcome_title">Как дома</string>
+    <string name="screen_onboarding_welcome_subtitle">%1$s — свой мессенджер для земляков. Быстрый, простой, защищённый.</string>
+    <string name="screen_onboarding_welcome_message">%1$s — свой мессенджер для земляков. Быстрый, простой, защищённый.</string>
+    <string name="screen_onboarding_sign_up">У меня есть приглашение</string>
+    <string name="screen_login_error_invalid_user_id">Введите имя пользователя, например dorzho.</string>
+    <!-- Термины Matrix / Element -->
+    <string name="common_invite_unknown_profile">Такой пользователь не найден, приглашение может не дойти.</string>
+    <string name="screen_room_timeline_legacy_call">Звонок не поддерживается. Попросите собеседника обновить Нютаг.</string>
+    <string name="screen_notification_settings_sound_element_default">Нютаг по умолчанию</string>
+    <string name="screen_notification_settings_sound_element_fade">Нютаг: затухание</string>
+    <string name="screen_incoming_call_subtitle_android">Входящий звонок в Нютаге</string>
+    <string name="call_invalid_audio_device_bluetooth_devices_disabled">Звонки Нютага не поддерживают Bluetooth-гарнитуры в этой версии Android. Выберите другое устройство.</string>
+    <string name="screen_start_chat_join_room_by_address_supporting_text">например, #room-name:nyutag.chat</string>
+    <!-- Не переведены в Localazy — без этого в русском интерфейсе висит английский -->
+    <string name="common_account_settings">Настройки аккаунта</string>
+    <string name="common_app_settings">Настройки приложения</string>
+    <string name="common_media_upload_quality">Качество отправки медиа</string>
+    <string name="common_moderation_and_safety">Модерация и безопасность</string>
+</resources>

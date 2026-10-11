@@ -143,7 +143,8 @@ enum class FeatureFlags(
         key = "feature.knock",
         title = "Ask to join",
         description = "Allow creating rooms which users can request access to.",
-        defaultValue = { false },
+        // Нютаг: закрытые сообщества — вступление по заявке, админ одобряет.
+        defaultValue = { true },
         isFinished = false,
         isInLabs = true,
     ),

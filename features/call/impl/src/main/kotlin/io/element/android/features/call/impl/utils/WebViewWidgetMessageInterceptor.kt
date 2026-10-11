@@ -10,6 +10,7 @@ package io.element.android.features.call.impl.utils
 
 import android.graphics.Bitmap
 import android.net.http.SslError
+import android.webkit.HttpAuthHandler
 import android.webkit.JavascriptInterface
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceError
@@ -22,6 +23,7 @@ import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import io.element.android.features.call.impl.BuildConfig
+import io.element.android.libraries.matrix.api.nyutag.NyutagWebProxy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import timber.log.Timber
 
@@ -139,6 +141,17 @@ class WebViewWidgetMessageInterceptor(
                 }
 
                 super.onReceivedHttpError(view, request, errorResponse)
+            }
+
+            // Нютаг: 407 от нашего локального прокси (туннель) — отвечаем его одноразовой учёткой, больше никому.
+            override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler, host: String?, realm: String?) {
+                val proxy = NyutagWebProxy.current
+                if (proxy != null && realm == NyutagWebProxy.REALM && (host == "127.0.0.1" || host?.startsWith("127.0.0.1:") == true)) {
+                    handler.proceed(proxy.user, proxy.password)
+                } else {
+                    Timber.w("Nyutag: unexpected HTTP auth request, realm=$realm")
+                    handler.cancel()
+                }
             }
 
             override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {

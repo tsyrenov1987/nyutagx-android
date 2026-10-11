@@ -137,5 +137,6 @@ class DefaultCallWidgetProviderTest {
         appPreferencesStore = appPreferencesStore,
         callWidgetSettingsProvider = callWidgetSettingsProvider,
         activeRoomsHolder = activeRoomsHolder,
+        callWebViewRouter = {},
     )
 }

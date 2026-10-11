@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: регистрация по коду приглашения. -->
+<resources>
+    <string name="nyutag_invite_signup_title">Join by invitation</string>
+    <string name="nyutag_invite_signup_subtitle">Nyutag is invite-only. Ask someone who is already here for a code.</string>
+    <string name="nyutag_invite_code_label">Invitation code</string>
+    <string name="nyutag_invite_username_label">Username</string>
+    <string name="nyutag_invite_username_hint">latin letters, digits, . _ -</string>
+    <string name="nyutag_invite_password_label">Password, at least 8 characters</string>
+    <string name="nyutag_invite_submit">Create account</string>
+    <string name="nyutag_invite_error_unknown_code">This code does not exist. Check it with the person who invited you.</string>
+    <string name="nyutag_invite_error_used">This code has already been used. Ask for a new one.</string>
+    <string name="nyutag_invite_error_expired">This code has expired. Ask for a new one.</string>
+    <string name="nyutag_invite_error_bad_code">The code looks like XXXX-XXXX.</string>
+    <string name="nyutag_invite_error_user_in_use">This username is taken. Choose another one.</string>
+    <string name="nyutag_invite_error_invalid_username">Username: 2 to 32 characters, latin letters, digits and . _ -</string>
+    <string name="nyutag_invite_error_weak_password">The password is too short or too simple.</string>
+    <string name="nyutag_invite_error_limit">Too many attempts. Wait a minute and try again.</string>
+    <string name="nyutag_invite_error_network">No connection to the server. Try again.</string>
+    <string name="nyutag_invite_error_login_after_register">The account was created, but signing in failed. Tap “Sign in” and use the same username and password.</string>
+    <string name="nyutag_invite_error_generic">Could not create the account. Try again later.</string>
+    <string name="nyutag_signup_title">Create an account</string>
+    <string name="nyutag_signup_subtitle">Sign up with your phone number or email.</string>
+    <string name="nyutag_contact_title">Phone or email</string>
+    <string name="nyutag_contact_title_optional">Phone or email (optional)</string>
+    <string name="nyutag_contact_phone">Phone</string>
+    <string name="nyutag_contact_email">Email</string>
+    <string name="nyutag_contact_phone_hint">+7 900 000-00-00</string>
+    <string name="nyutag_contact_email_hint">name@example.com</string>
+    <string name="nyutag_contact_sending">Sending the code…</string>
+    <string name="nyutag_contact_resend_in">Send again in %1$d s</string>
+    <string name="nyutag_contact_resend">Send the code again</string>
+    <string name="nyutag_contact_send_code">Get a code</string>
+    <string name="nyutag_contact_code_sms">Code from the SMS</string>
+    <string name="nyutag_contact_code_email">Code from the email</string>
+    <string name="nyutag_contact_error_bad">Check the phone number or email.</string>
+    <string name="nyutag_contact_error_in_use">This phone or email is already linked to an account. Sign in instead.</string>
+    <string name="nyutag_contact_error_required">Enter a phone number or email and confirm it with a code.</string>
+    <string name="nyutag_contact_error_not_verified">Confirm the phone or email with the code first.</string>
+    <string name="nyutag_contact_error_channel_unavailable">Sending codes this way is not set up yet. Try the other option.</string>
+    <string name="nyutag_contact_error_delivery">Could not send the code. Try again in a minute.</string>
+    <string name="nyutag_contact_error_wrong_code">Wrong code. Check it and try again.</string>
+    <string name="nyutag_contact_error_code_expired">The code has expired. Request a new one.</string>
+    <string name="nyutag_contact_error_attempts">Too many wrong codes. Request a new one.</string>
+    <string name="nyutag_login_identifier_hint">Username, phone or email</string>
+</resources>

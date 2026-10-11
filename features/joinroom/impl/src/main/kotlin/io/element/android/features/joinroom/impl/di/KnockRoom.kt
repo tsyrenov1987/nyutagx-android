@@ -12,6 +12,7 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomIdOrAlias
+import io.element.android.libraries.matrix.api.nyutag.NyutagKnockedRooms
 
 interface KnockRoom {
     suspend operator fun invoke(
@@ -22,7 +23,10 @@ interface KnockRoom {
 }
 
 @ContributesBinding(SessionScope::class)
-class DefaultKnockRoom(private val client: MatrixClient) : KnockRoom {
+class DefaultKnockRoom(
+    private val client: MatrixClient,
+    private val nyutagKnockedRooms: NyutagKnockedRooms,
+) : KnockRoom {
     override suspend fun invoke(
         roomIdOrAlias: RoomIdOrAlias,
         message: String,
@@ -30,6 +34,10 @@ class DefaultKnockRoom(private val client: MatrixClient) : KnockRoom {
     ): Result<Unit> {
         return client
             .knockRoom(roomIdOrAlias, message, serverNames)
-            .map { }
+            .map { roomInfo ->
+                // Нютаг: запоминаем заявку — после одобрения вступим сами (см. NyutagKnockAutoJoin).
+                val roomId = roomInfo?.id ?: (roomIdOrAlias as? RoomIdOrAlias.Id)?.roomId
+                if (roomId != null) nyutagKnockedRooms.add(client.sessionId, roomId)
+            }
     }
 }

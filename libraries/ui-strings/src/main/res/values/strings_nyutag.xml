@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: свои строки (общие с iOS, Tools/Nyutag/strings.tsv). Бурятский — черновик для проверки носителем. -->
+<resources>
+    <string name="nyutag_community_open">Open</string>
+    <string name="nyutag_community_open_description">Anyone can find it in search and join.</string>
+    <string name="nyutag_community_closed">Closed</string>
+    <string name="nyutag_community_closed_description">Anyone can find it in search and send a request. An admin approves new members.</string>
+    <string name="nyutag_community_closed_badge">Closed · by request</string>
+    <string name="nyutag_communities_search">Search communities</string>
+    <string name="nyutag_communities_mine">My communities</string>
+    <string name="nyutag_communities_all">All communities</string>
+    <string name="nyutag_communities_empty">No communities yet. Create the first one!</string>
+    <string name="nyutag_community_requests">Requests to join</string>
+    <string name="nyutag_invite_friend">Invite a friend</string>
+</resources>

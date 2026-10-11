@@ -15,6 +15,7 @@ import io.element.android.features.login.impl.accountprovider.anAccountProviderD
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.accountprovider.matrixOrgAccountProvider
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagInvites
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.A_PASSWORD
 import io.element.android.libraries.matrix.test.A_SESSION_ID
@@ -194,5 +195,6 @@ class LoginPasswordPresenterTest {
         authenticationService = authenticationService,
         accountProviderDataSource = accountProviderDataSource,
         saveAccountProviderToHistory = SaveAccountProviderToHistory(accountProviderDataSource, appPreferencesStore),
+        nyutagInvites = FakeNyutagInvites(),
     )
 }

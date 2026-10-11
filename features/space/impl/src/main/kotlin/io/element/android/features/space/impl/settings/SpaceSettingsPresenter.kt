@@ -12,10 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.api.room.join.JoinRule
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
 
 @Inject
@@ -32,6 +34,11 @@ class SpaceSettingsPresenter(
             derivedStateOf { permissions.securityAndPrivacyPermissions.hasAny(isSpace = false, joinRule = roomInfo.joinRule) }
         }
 
+        val knockRequestsCount by produceState<Int?>(null) {
+            room.knockRequestsFlow.collect { value = it.size }
+        }
+        val showKnockRequests = permissions.knockRequestsPermissions.hasAny && roomInfo.joinRule == JoinRule.Knock
+
         return SpaceSettingsState(
             roomId = room.roomId,
             name = roomInfo.name.orEmpty(),
@@ -41,6 +48,8 @@ class SpaceSettingsPresenter(
             canEditDetails = permissions.editDetailsPermissions.hasAny,
             showRolesAndPermissions = permissions.canEditRolesAndPermissions,
             showSecurityAndPrivacy = showSecurityAndPrivacy,
+            showKnockRequests = showKnockRequests,
+            knockRequestsCount = knockRequestsCount,
             eventSink = {},
         )
     }

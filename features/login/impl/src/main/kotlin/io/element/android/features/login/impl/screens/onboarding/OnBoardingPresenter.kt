@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
-import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.login.impl.accesscontrol.DefaultAccountProviderAccessControl
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
@@ -96,7 +95,8 @@ class OnBoardingPresenter(
             forcedAccountProvider ?: linkAccountProvider
         }
         val canLoginWithQrCode by produceState(initialValue = false, linkAccountProvider) {
-            value = linkAccountProvider == null
+            // Nyutag: QR-code login needs OIDC/MSC4108, which our homeserver does not provide.
+            value = false
         }
         val canReportBug by remember { rageshakeFeatureAvailability.isAvailable() }.collectAsState(false)
         var showReportBug by rememberSaveable { mutableStateOf(false) }
@@ -143,7 +143,8 @@ class OnBoardingPresenter(
             defaultAccountProvider = defaultAccountProvider,
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
-            canCreateAccount = defaultAccountProvider == null && canConnectToAnyAccountProvider && OnBoardingConfig.CAN_CREATE_ACCOUNT,
+            // Нютаг: кнопка «У меня есть приглашение» есть всегда — регистрация по коду через сервис ядра.
+            canCreateAccount = true,
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
             version = buildMeta.versionName,

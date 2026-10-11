@@ -22,6 +22,7 @@ import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.paths.SessionPaths
 import io.element.android.libraries.matrix.impl.analytics.UtdTracker
 import io.element.android.libraries.matrix.impl.paths.getSessionPaths
+import io.element.android.libraries.matrix.impl.nyutag.NyutagTunnel
 import io.element.android.libraries.matrix.impl.proxy.ProxyProvider
 import io.element.android.libraries.matrix.impl.room.TimelineEventFilterFactory
 import io.element.android.libraries.matrix.impl.scanner.RustContentScanner
@@ -223,6 +224,9 @@ class RustMatrixClientFactory(
                 // Workaround for non-nullable proxy parameter in the SDK, since each call to the ClientBuilder returns a new reference we need to keep
                 proxyProvider.provides()?.let { proxy(it) } ?: this
             }
+            // Нютаг: TLS сквозной до ядра — доверяем только нашему CA, системные корни выключены (вход видит лишь шифртекст).
+            .disableBuiltInRootCertificates()
+            .addRootCertificates(listOf(NyutagTunnel.caDer))
             .let {
                 (clientBuilderEnterpriseHook.beforeClientCreation(RustMatrixClientBuilder(it)) as RustMatrixClientBuilder).inner
             }

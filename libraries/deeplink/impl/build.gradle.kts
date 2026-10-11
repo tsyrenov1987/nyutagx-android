@@ -29,6 +29,7 @@ dependencies {
     implementation(projects.libraries.architecture)
     implementation(projects.libraries.uiStrings)
     implementation(projects.services.toolbox.api)
+    implementation(libs.coroutines.core) // Нютаг: выпуск кода приглашения в фоне
 
     testCommonDependencies(libs)
     testImplementation(projects.libraries.matrix.test)

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Сгенерировано NyutagX-iOS/Tools/Nyutag/gen-strings.py — не править руками. -->
+<resources>
+    <string name="action_accept">Зүбшөөхэ</string>
+    <string name="action_invite_friends">Нүхэдөө уриха</string>
+    <string name="action_signout">Гараха</string>
+    <string name="action_signout_anyway">Тиигэбэшье гараха</string>
+    <string name="banner_set_up_recovery_content">Бүхы утаһаа гээбэл, түүнгүйгөөр бэшэлгээ бусаажа шадахагүйт.</string>
+    <string name="banner_set_up_recovery_title">Сэргээхэ түлхюурээ хадагалагты</string>
+    <string name="common_invite_unknown_profile">Иимэ хэрэглэгшэ олдобогүй, урилга хүрэхэгүй байжа магад.</string>
+    <string name="common_people">Гэшүүд</string>
+    <string name="common_private_space">Хаалттай оршон</string>
+    <string name="common_public_space">Нээлттэй оршон</string>
+    <string name="screen_create_room_add_people_title">Хүнүүдые уриха</string>
+    <string name="screen_create_room_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
+    <string name="screen_edit_room_address_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
+    <string name="screen_join_room_cancel_knock_action">Гуйлтаа болюулха</string>
+    <string name="screen_join_room_cancel_knock_alert_title">Гуйлтаа болюулха гү?</string>
+    <string name="screen_join_room_knock_action">Гуйлта эльгээхэ</string>
+    <string name="screen_join_room_knock_sent_description">Админ гуйлтыетнай зүбшөөнгүүт, та өөрөө автоматаар оронот.</string>
+    <string name="screen_join_room_knock_sent_title">Гуйлта эльгээгдэбэ</string>
+    <string name="screen_login_form_header">Таны мэдээн</string>
+    <string name="screen_login_subtitle">Нэрээрээ, утаһаараа али e-mail хаягаараа орогты.</string>
+    <string name="screen_login_title_with_homeserver">Нютаг руу орохо</string>
+    <string name="screen_notification_settings_sound_element_default">Нютаг (үндэһэн)</string>
+    <string name="screen_onboarding_welcome_message">Өөрынхидтэеэ бэшэлгэ, дуудалга. Бүхы юумэн таны утаһан дээрэ шифрлэгдэнэ.</string>
+    <string name="screen_onboarding_welcome_title">Нютаг</string>
+    <string name="screen_room_details_invite_people_title">Хүнүүдые уриха</string>
+    <string name="screen_room_details_requests_to_join_title">Орохо гуйлтанууд</string>
+    <string name="screen_room_timeline_legacy_call">Дуудалга дэмжэгдэхэгүй. Хүндэ Нютагаа шэнэлхэ хэрэгтэй.</string>
+    <string name="screen_roomlist_empty_message">Нютаг руу урилгаар ороно. Нүхэдөө, түрэлөө уригты.</string>
+    <string name="screen_roomlist_empty_title">Эндэ таны чатнууд гараха</string>
+    <string name="screen_roomlist_filter_people">Хубиин</string>
+    <string name="screen_roomlist_knock_event_sent_description">Гуйлта эльгээгдэбэ</string>
+    <string name="screen_security_and_privacy_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
+    <string name="screen_signout_confirmation_dialog_content">Энэ түхеэрэлгэ дээрэ аккаунтһаа гарахадаа итгэлтэй гүт?</string>
+    <string name="screen_signout_confirmation_dialog_submit">Гараха</string>
+    <string name="screen_signout_confirmation_dialog_title">Аккаунтһаа гараха гүт?</string>
+    <string name="screen_signout_preference_item">Гараха</string>
+</resources>

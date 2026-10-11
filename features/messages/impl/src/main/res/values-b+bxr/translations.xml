@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_room_timeline_beginning_of_room">Энэ — %1$s хөөрэлдөөнэй эхин.</string>
+    <string name="screen_room_timeline_beginning_of_room_no_name">Энэ — хөөрэлдөөнэй эхин.</string>
+</resources>

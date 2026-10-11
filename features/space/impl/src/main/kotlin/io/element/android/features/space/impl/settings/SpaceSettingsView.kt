@@ -54,6 +54,7 @@ fun SpaceSettingsView(
     onBackClick: () -> Unit,
     onSpaceInfoClick: () -> Unit,
     onMembersClick: () -> Unit,
+    onKnockRequestsClick: () -> Unit,
     onRolesAndPermissionsClick: () -> Unit,
     onSecurityAndPrivacyClick: () -> Unit,
     onLeaveSpaceClick: () -> Unit,
@@ -87,6 +88,9 @@ fun SpaceSettingsView(
             })
             Section(content = {
                 MembersItem(state.memberCount, onClick = onMembersClick)
+                if (state.showKnockRequests) {
+                    KnockRequestsItem(state.knockRequestsCount, onClick = onKnockRequestsClick)
+                }
                 if (state.showRolesAndPermissions) {
                     RolesAndPermissionsItem(onClick = onRolesAndPermissionsClick)
                 }
@@ -177,6 +181,21 @@ private fun SecurityAndPrivacyItem(
 }
 
 @Composable
+private fun KnockRequestsItem(
+    knockRequestsCount: Int?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ListItem(
+        content = { Text(stringResource(CommonStrings.nyutag_community_requests)) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.AskToJoin())),
+        trailingContent = knockRequestsCount?.takeIf { it > 0 }?.let { ListItemContent.Counter(it) },
+        onClick = onClick,
+        modifier = modifier,
+    )
+}
+
+@Composable
 private fun MembersItem(
     memberCount: Long,
     onClick: () -> Unit,
@@ -230,6 +249,7 @@ internal fun SpaceSettingsViewPreview(
         onBackClick = {},
         onSpaceInfoClick = {},
         onMembersClick = {},
+        onKnockRequestsClick = {},
         onRolesAndPermissionsClick = {},
         onSecurityAndPrivacyClick = {},
         onLeaveSpaceClick = {},

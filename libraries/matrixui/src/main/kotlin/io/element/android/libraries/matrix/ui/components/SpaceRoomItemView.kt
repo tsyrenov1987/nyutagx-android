@@ -98,7 +98,7 @@ fun SpaceRoomItemView(
                 showIndicator = showUnreadIndicator
             )
             Spacer(modifier = Modifier.height(1.dp))
-            VisibilityRow(visibility = spaceRoom.visibility)
+            VisibilityRow(visibility = spaceRoom.visibility, isSpace = spaceRoom.isSpace)
             Spacer(modifier = Modifier.height(1.dp))
             Text(
                 modifier = Modifier.weight(1f),
@@ -123,6 +123,7 @@ fun SpaceRoomItemView(
 @Composable
 private fun VisibilityRow(
     visibility: SpaceRoomVisibility,
+    isSpace: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -140,7 +141,12 @@ private fun VisibilityRow(
         Text(
             modifier = Modifier.weight(1f),
             style = ElementTheme.typography.fontBodyMdRegular,
-            text = visibility.label,
+            // Нютаг: сообщества бывают только открытые и закрытые (по заявке), как в каталоге.
+            text = when {
+                !isSpace -> visibility.label
+                visibility == SpaceRoomVisibility.Public -> stringResource(CommonStrings.nyutag_community_open)
+                else -> stringResource(CommonStrings.nyutag_community_closed_badge)
+            },
             color = ElementTheme.colors.textSecondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

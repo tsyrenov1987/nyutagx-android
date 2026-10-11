@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Нютаг: переопределения строк Element X. Модуль app перекрывает одноимённые строки библиотек,
+  поэтому сгенерированные localazy.xml / translations.xml не трогаем (AGENTS.md).
+  Бурятские строки лежат в values-b+bxr модулей; чего там нет — берётся русский (язык «bxr,ru»).
+-->
+<resources>
+    <!-- Вход и приветствие -->
+    <string name="screen_login_subtitle">Nyutag is a private messenger for the Buryat community.</string>
+    <string name="screen_onboarding_welcome_title">Feel at home</string>
+    <string name="screen_onboarding_welcome_subtitle">%1$s is our own messenger. Fast, simple, protected.</string>
+    <string name="screen_onboarding_welcome_message">%1$s is our own messenger. Fast, simple, protected.</string>
+    <string name="screen_onboarding_sign_up">I have an invitation</string>
+    <string name="screen_login_error_invalid_user_id">Enter your username, for example dorzho.</string>
+    <!-- Термины Matrix / Element -->
+    <string name="common_invite_unknown_profile">This user can’t be found, so the invite might not be received.</string>
+    <string name="screen_room_timeline_legacy_call">Unsupported call. Ask the caller to update Nyutag.</string>
+    <string name="screen_notification_settings_sound_element_default">Nyutag default</string>
+    <string name="screen_notification_settings_sound_element_fade">Nyutag fade</string>
+    <string name="screen_incoming_call_subtitle_android">Incoming Nyutag call</string>
+    <string name="call_invalid_audio_device_bluetooth_devices_disabled">Nyutag calls do not support Bluetooth audio devices in this Android version. Please select a different audio device.</string>
+    <string name="screen_start_chat_join_room_by_address_supporting_text">e.g. #room-name:nyutag.chat</string>
+</resources>

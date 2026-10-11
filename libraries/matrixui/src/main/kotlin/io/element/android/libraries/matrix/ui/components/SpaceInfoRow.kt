@@ -74,7 +74,12 @@ fun SpaceInfoRow(
     modifier: Modifier = Modifier,
 ) {
     SpaceInfoRow(
-        leftText = visibility.label,
+        // Нютаг: сообщества бывают только открытые и закрытые (по заявке), как в каталоге.
+        leftText = when (visibility) {
+            SpaceRoomVisibility.Public -> stringResource(CommonStrings.nyutag_community_open)
+            SpaceRoomVisibility.Private -> stringResource(CommonStrings.nyutag_community_closed_badge)
+            SpaceRoomVisibility.SpaceMembers -> visibility.label
+        },
         rightText = null,
         modifier = modifier,
         iconVector = visibility.icon,

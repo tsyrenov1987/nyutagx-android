@@ -20,6 +20,7 @@ open class SpaceSettingsStatePreviewParam : PreviewParameterProvider<SpaceSettin
             aSpaceSettingsState(alias = null),
             aSpaceSettingsState(showSecurityAndPrivacy = true),
             aSpaceSettingsState(showRolesAndPermissions = true),
+            aSpaceSettingsState(showKnockRequests = true, knockRequestsCount = 3),
         )
 }
 
@@ -32,6 +33,8 @@ fun aSpaceSettingsState(
     showRolesAndPermissions: Boolean = false,
     showSecurityAndPrivacy: Boolean = false,
     canEditDetails: Boolean = false,
+    showKnockRequests: Boolean = false,
+    knockRequestsCount: Int? = null,
     eventSink: (SpaceSettingsEvent) -> Unit = {},
 ) = SpaceSettingsState(
     roomId = roomId,
@@ -42,5 +45,7 @@ fun aSpaceSettingsState(
     canEditDetails = canEditDetails,
     showRolesAndPermissions = showRolesAndPermissions,
     showSecurityAndPrivacy = showSecurityAndPrivacy,
+    showKnockRequests = showKnockRequests,
+    knockRequestsCount = knockRequestsCount,
     eventSink = eventSink,
 )

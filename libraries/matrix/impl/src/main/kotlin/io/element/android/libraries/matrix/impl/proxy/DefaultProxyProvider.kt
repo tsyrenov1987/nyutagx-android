@@ -15,6 +15,7 @@ import androidx.core.content.getSystemService
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.di.annotations.ApplicationContext
+import io.element.android.libraries.matrix.impl.nyutag.NyutagTunnel
 import timber.log.Timber
 
 /**
@@ -34,6 +35,12 @@ class DefaultProxyProvider(
     private val context: Context
 ) : ProxyProvider {
     override fun provides(): String? {
+        // Нютаг: весь трафик SDK — только через «Кильватер» (SOCKS5 farvater-core), системный прокси не используется.
+        return NyutagTunnel.proxyUrl(context)
+    }
+
+    @Suppress("unused")
+    private fun systemProxy(): String? {
         val defaultProxy = context.getSystemService<ConnectivityManager>()?.defaultProxy
         if (defaultProxy == null) {
             // Note: can be tested by running:

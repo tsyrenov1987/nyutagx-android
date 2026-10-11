@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_identity_confirmation_title">Өөрыгөө баталагты</string>
+    <string name="screen_identity_confirmation_subtitle">Хамгаалалтатай харилсаае тохируулхын тула баталгын аргые шэлэгты.</string>
+    <string name="screen_identity_use_another_device">Ондоо түхеэрэлгэ хэрэглэхэ</string>
+    <string name="screen_identity_waiting_on_other_device">Ондоо түхеэрэлгые хүлеэжэ байна…</string>
+    <string name="screen_identity_confirmed_title">Түхеэрэлгэ баталагдаба</string>
+    <string name="screen_identity_confirmed_subtitle">Мүнөө та мэдээсэлнүүдые аюулгүйгөөр уншажа, эльгээжэ болохот, таниие хөөрэлдэгшэд энэ түхеэрэлгэдэ этигэжэ болохо.</string>
+    <string name="screen_session_verification_enter_recovery_key">Һэргээлгын түлхюур оруулха</string>
+    <string name="screen_session_verification_cancelled_subtitle">Юумэн буруу болобо: хүсэлтын саг дүүрээ али арсагдаа.</string>
+    <string name="screen_session_verification_complete_subtitle">Мүнөө та нүгөө түхеэрэлгэ дээрээ мэдээсэлнүүдые аюулгүйгөөр уншажа, эльгээжэ болохот.</string>
+    <string name="screen_session_verification_open_existing_session_title">Хуушан сессиеэ нээгты</string>
+</resources>

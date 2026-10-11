@@ -6,6 +6,7 @@ val locales = setOf(
     "ar",
     "be",
     "bg",
+    "b+bxr", // Нютаг: бурятский (values-b+bxr)
     "ca",
     "cs",
     "cy",

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: свои строки (общие с iOS, Tools/Nyutag/strings.tsv). Бурятский — черновик для проверки носителем. -->
+<resources>
+    <string name="nyutag_community_open">Открытое</string>
+    <string name="nyutag_community_open_description">Любой найдёт его в поиске и сможет вступить.</string>
+    <string name="nyutag_community_closed">Закрытое</string>
+    <string name="nyutag_community_closed_description">Любой найдёт его в поиске и подаст заявку. Новых участников одобряет админ.</string>
+    <string name="nyutag_community_closed_badge">Закрытое · по заявке</string>
+    <string name="nyutag_communities_search">Поиск сообществ</string>
+    <string name="nyutag_communities_mine">Мои сообщества</string>
+    <string name="nyutag_communities_all">Все сообщества</string>
+    <string name="nyutag_communities_empty">Сообществ пока нет. Создайте первое!</string>
+    <string name="nyutag_community_requests">Заявки на вступление</string>
+    <string name="nyutag_invite_friend">Пригласить друга</string>
+</resources>

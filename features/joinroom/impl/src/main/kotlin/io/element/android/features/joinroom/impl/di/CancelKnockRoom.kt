@@ -12,17 +12,22 @@ import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.nyutag.NyutagKnockedRooms
 
 interface CancelKnockRoom {
     suspend operator fun invoke(roomId: RoomId): Result<Unit>
 }
 
 @ContributesBinding(SessionScope::class)
-class DefaultCancelKnockRoom(private val client: MatrixClient) : CancelKnockRoom {
+class DefaultCancelKnockRoom(
+    private val client: MatrixClient,
+    private val nyutagKnockedRooms: NyutagKnockedRooms,
+) : CancelKnockRoom {
     override suspend fun invoke(roomId: RoomId): Result<Unit> {
         return client
             .getRoom(roomId)
             ?.use { it.leave() }
+            ?.onSuccess { nyutagKnockedRooms.remove(client.sessionId, roomId) }
             ?: Result.failure(IllegalStateException("No pending room found"))
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_room_details_title">Таһалга тухай</string>
+    <string name="screen_room_details_leave_room_title">Таһалгаһаа гараха</string>
+    <string name="screen_room_details_encryption_enabled_title">Мэдээсэлнүүдэй шифрлэлгэ хүсэндөө</string>
+    <string name="screen_room_details_invite_people_title">Хүнүүдые уриха</string>
+    <string name="screen_room_details_notification_title">Мэдүүлгэнүүд</string>
+</resources>

@@ -134,6 +134,7 @@ fun ConfigureRoomView(
                 options = state.availableJoinRules,
                 selected = state.config.visibilityState.joinRuleItem,
                 parentSpace = state.config.parentSpace,
+                isSpace = state.isSpace,
                 onOptionClick = {
                     focusManager.clearFocus()
                     state.eventSink(ConfigureRoomEvent.JoinRuleChanged(it))
@@ -289,6 +290,7 @@ private fun RoomJoinRuleOptions(
     selected: JoinRuleItem,
     onOptionClick: (JoinRuleItem) -> Unit,
     parentSpace: SpaceRoom?,
+    isSpace: Boolean,
     modifier: Modifier = Modifier,
 ) {
     ConfigureRoomOptions(
@@ -314,6 +316,8 @@ private fun RoomJoinRuleOptions(
                 },
                 content = {
                     val title = when (item) {
+                        JoinRuleItem.PublicVisibility.Public if isSpace -> stringResource(CommonStrings.nyutag_community_open)
+                        JoinRuleItem.PublicVisibility.AskToJoin if isSpace -> stringResource(CommonStrings.nyutag_community_closed)
                         JoinRuleItem.PublicVisibility.Public -> stringResource(R.string.screen_create_room_room_access_section_public_option_title)
                         is JoinRuleItem.PrivateVisibility.Restricted -> stringResource(R.string.screen_create_room_room_access_section_restricted_option_title)
                         JoinRuleItem.PublicVisibility.AskToJoin -> stringResource(R.string.screen_create_room_room_access_section_knocking_option_title)
@@ -326,6 +330,8 @@ private fun RoomJoinRuleOptions(
                 },
                 supportingContent = {
                     val description = when (item) {
+                        JoinRuleItem.PublicVisibility.Public if isSpace -> stringResource(CommonStrings.nyutag_community_open_description)
+                        JoinRuleItem.PublicVisibility.AskToJoin if isSpace -> stringResource(CommonStrings.nyutag_community_closed_description)
                         JoinRuleItem.PublicVisibility.Public -> stringResource(R.string.screen_create_room_room_access_section_public_option_description)
                         is JoinRuleItem.PrivateVisibility.Restricted -> stringResource(
                             R.string.screen_create_room_room_access_section_restricted_option_description,

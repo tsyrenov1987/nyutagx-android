@@ -105,6 +105,8 @@ fun SecurityAndPrivacyView(
                     homeserverName = state.homeserverName,
                     onRoomAddressClick = { state.eventSink(SecurityAndPrivacyEvent.EditRoomAddress) },
                     isVisibleInRoomDirectory = state.editedSettings.isVisibleInRoomDirectory,
+                    // Нютаг: сообщества всегда в каталоге — переключатель не нужен.
+                    showVisibilityToggle = !state.isSpace,
                     onVisibilityChange = {
                         state.eventSink(SecurityAndPrivacyEvent.ToggleRoomVisibility)
                     },
@@ -234,65 +236,83 @@ private fun RoomAccessSection(
         title = stringResource(R.string.screen_security_and_privacy_room_access_section_header),
         modifier = modifier,
     ) {
-        ListItem(
-            content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_anyone_option_title)) },
-            supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_anyone_option_description)) },
-            trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.Anyone),
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Public())),
-            onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.Anyone) },
-        )
-        if (state.showSpaceMemberOption) {
+        if (state.isSpace) {
+            // Нютаг: сообщество бывает только открытым или закрытым (по заявке) — решает админ.
             ListItem(
-                content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_space_members_option_title)) },
-                supportingContent = {
-                    Text(text = state.spaceMemberDescription())
-                },
-                trailingContent = ListItemContent.RadioButton(selected = state.editedSettings.roomAccess is SecurityAndPrivacyRoomAccess.SpaceMember),
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Space())),
-                onClick = ::onSpaceMemberAccessClick,
-                enabled = state.isSpaceMemberSelectable,
+                content = { Text(text = stringResource(CommonStrings.nyutag_community_open)) },
+                supportingContent = { Text(text = stringResource(CommonStrings.nyutag_community_open_description)) },
+                trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.Anyone),
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Public())),
+                onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.Anyone) },
             )
-        }
-        if (state.showAskToJoinOption) {
             ListItem(
-                content = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_title)) },
-                supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_description)) },
+                content = { Text(text = stringResource(CommonStrings.nyutag_community_closed)) },
+                supportingContent = { Text(text = stringResource(CommonStrings.nyutag_community_closed_description)) },
                 trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.AskToJoin),
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
                 onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.AskToJoin) },
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
-                enabled = state.isAskToJoinSelectable,
             )
-        }
-        if (state.showAskToJoinWithSpaceMemberOption) {
+        } else {
             ListItem(
-                content = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_title)) },
-                supportingContent = { Text(text = state.askToJoinWithSpaceMembersDescription()) },
-                trailingContent = ListItemContent.RadioButton(selected = edited is SecurityAndPrivacyRoomAccess.AskToJoinWithSpaceMember),
-                onClick = ::onAskToJoinWithSpaceMembersClick,
-                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
-                enabled = state.isAskToJoinWithSpaceMembersSelectable,
+                content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_anyone_option_title)) },
+                supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_anyone_option_description)) },
+                trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.Anyone),
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Public())),
+                onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.Anyone) },
             )
-        }
-        ListItem(
-            content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_invite_only_option_title)) },
-            supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_invite_only_option_description)) },
-            trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.InviteOnly),
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
-            onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.InviteOnly) },
-        )
-        if (state.showManageSpaceFooter) {
-            val footerText = stringWithLink(
-                textRes = R.string.screen_security_and_privacy_room_access_footer,
-                url = "",
-                linkTextRes = R.string.screen_security_and_privacy_room_access_footer_manage_spaces_action,
-                onLinkClick = { onManageSpacesClick() },
+            if (state.showSpaceMemberOption) {
+                ListItem(
+                    content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_space_members_option_title)) },
+                    supportingContent = {
+                        Text(text = state.spaceMemberDescription())
+                    },
+                    trailingContent = ListItemContent.RadioButton(selected = state.editedSettings.roomAccess is SecurityAndPrivacyRoomAccess.SpaceMember),
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Space())),
+                    onClick = ::onSpaceMemberAccessClick,
+                    enabled = state.isSpaceMemberSelectable,
+                )
+            }
+            if (state.showAskToJoinOption) {
+                ListItem(
+                    content = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_title)) },
+                    supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_description)) },
+                    trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.AskToJoin),
+                    onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.AskToJoin) },
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
+                    enabled = state.isAskToJoinSelectable,
+                )
+            }
+            if (state.showAskToJoinWithSpaceMemberOption) {
+                ListItem(
+                    content = { Text(text = stringResource(R.string.screen_security_and_privacy_ask_to_join_option_title)) },
+                    supportingContent = { Text(text = state.askToJoinWithSpaceMembersDescription()) },
+                    trailingContent = ListItemContent.RadioButton(selected = edited is SecurityAndPrivacyRoomAccess.AskToJoinWithSpaceMember),
+                    onClick = ::onAskToJoinWithSpaceMembersClick,
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
+                    enabled = state.isAskToJoinWithSpaceMembersSelectable,
+                )
+            }
+            ListItem(
+                content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_invite_only_option_title)) },
+                supportingContent = { Text(text = stringResource(R.string.screen_security_and_privacy_room_access_invite_only_option_description)) },
+                trailingContent = ListItemContent.RadioButton(selected = edited == SecurityAndPrivacyRoomAccess.InviteOnly),
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Lock())),
+                onClick = { onSelectOption(SecurityAndPrivacyRoomAccess.InviteOnly) },
             )
-            Text(
-                text = footerText,
-                style = ElementTheme.typography.fontBodySmRegular,
-                color = ElementTheme.colors.textSecondary,
-                modifier = Modifier.padding(bottom = 12.dp, start = 56.dp, end = 24.dp)
-            )
+            if (state.showManageSpaceFooter) {
+                val footerText = stringWithLink(
+                    textRes = R.string.screen_security_and_privacy_room_access_footer,
+                    url = "",
+                    linkTextRes = R.string.screen_security_and_privacy_room_access_footer_manage_spaces_action,
+                    onLinkClick = { onManageSpacesClick() },
+                )
+                Text(
+                    text = footerText,
+                    style = ElementTheme.typography.fontBodySmRegular,
+                    color = ElementTheme.colors.textSecondary,
+                    modifier = Modifier.padding(bottom = 12.dp, start = 56.dp, end = 24.dp)
+                )
+            }
         }
     }
 }
@@ -324,6 +344,7 @@ private fun RoomAddressSection(
     onRoomAddressClick: () -> Unit,
     onVisibilityChange: () -> Unit,
     modifier: Modifier = Modifier,
+    showVisibilityToggle: Boolean = true,
 ) {
     SecurityAndPrivacySection(
         title = stringResource(R.string.screen_security_and_privacy_room_address_section_header),
@@ -339,36 +360,38 @@ private fun RoomAddressSection(
             colors = ListItemDefaults.colors(trailingIconColor = ElementTheme.colors.iconAccentPrimary),
         )
 
-        ListItem(
-            content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_directory_visibility_toggle_title)) },
-            supportingContent = {
-                Text(text = stringResource(R.string.screen_security_and_privacy_room_directory_visibility_toggle_description, homeserverName))
-            },
-            onClick = if (isVisibleInRoomDirectory.isSuccess()) onVisibilityChange else null,
-            trailingContent = when (isVisibleInRoomDirectory) {
-                is AsyncData.Uninitialized, is AsyncData.Loading -> {
-                    ListItemContent.Custom {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .progressSemantics()
-                                .size(20.dp),
-                            strokeWidth = 2.dp
+        if (showVisibilityToggle) {
+            ListItem(
+                content = { Text(text = stringResource(R.string.screen_security_and_privacy_room_directory_visibility_toggle_title)) },
+                supportingContent = {
+                    Text(text = stringResource(R.string.screen_security_and_privacy_room_directory_visibility_toggle_description, homeserverName))
+                },
+                onClick = if (isVisibleInRoomDirectory.isSuccess()) onVisibilityChange else null,
+                trailingContent = when (isVisibleInRoomDirectory) {
+                    is AsyncData.Uninitialized, is AsyncData.Loading -> {
+                        ListItemContent.Custom {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .progressSemantics()
+                                    .size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+                    is AsyncData.Failure -> {
+                        ListItemContent.Switch(
+                            checked = false,
+                            enabled = false,
+                        )
+                    }
+                    is AsyncData.Success -> {
+                        ListItemContent.Switch(
+                            checked = isVisibleInRoomDirectory.data,
                         )
                     }
                 }
-                is AsyncData.Failure -> {
-                    ListItemContent.Switch(
-                        checked = false,
-                        enabled = false,
-                    )
-                }
-                is AsyncData.Success -> {
-                    ListItemContent.Switch(
-                        checked = isVisibleInRoomDirectory.data,
-                    )
-                }
-            }
-        )
+            )
+        }
     }
 }
 

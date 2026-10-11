@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Буряад хэлэн. Носитель хэлэнэй шалгалта хэрэгтэй (nyutag-buryat-strings-review.tsv). -->
+<resources>
+    <string name="nyutag_invite_signup_title">Урилгаар бүртхүүлхэ</string>
+    <string name="nyutag_invite_signup_subtitle">Нютаг руу зөөхэн урилгаар ороно. Эндэ байһан хүнһөө код гуйгты.</string>
+    <string name="nyutag_invite_code_label">Урилгын код</string>
+    <string name="nyutag_invite_username_label">Хэрэглэгшын нэрэ</string>
+    <string name="nyutag_invite_username_hint">латин үзэгүүд, тоонууд, . _ -</string>
+    <string name="nyutag_invite_password_label">Нюуса үгэ, 8 тэмдэгһээ доошо бэшэ</string>
+    <string name="nyutag_invite_submit">Аккаунт бүтээхэ</string>
+    <string name="nyutag_invite_error_unknown_code">Иимэ код үгы. Уриһан хүнтэеэ шалгагты.</string>
+    <string name="nyutag_invite_error_used">Энэ код хэрэглэгдэһэн. Шэнэ код гуйгты.</string>
+    <string name="nyutag_invite_error_expired">Кодой болзор дүүрэһэн. Шэнэ код гуйгты.</string>
+    <string name="nyutag_invite_error_bad_code">Код иимэ: XXXX-XXXX.</string>
+    <string name="nyutag_invite_error_user_in_use">Энэ нэрэ эзэлэгдэһэн. Ондоо нэрэ шэлэгты.</string>
+    <string name="nyutag_invite_error_invalid_username">Нэрэ: 2-һоо 32 хүрэтэр тэмдэг, латин үзэгүүд, тоонууд ба . _ -</string>
+    <string name="nyutag_invite_error_weak_password">Нюуса үгэ хэтэ богони гү, али хэтэ хялбар.</string>
+    <string name="nyutag_invite_error_limit">Хэтэ олон оролдолго. Нэгэ минута хүлеэгээд, дахин оролдогты.</string>
+    <string name="nyutag_invite_error_network">Сервертэй холбоо үгы. Дахин оролдогты.</string>
+    <string name="nyutag_invite_error_login_after_register">Аккаунт бүтээгдэбэ, харин орожо шадабагүйбди. «Орохо» гэжэ дараад, тэрэ нэрэ, нюуса үгөө оруулагты.</string>
+    <string name="nyutag_invite_error_generic">Аккаунт бүтээжэ шадабагүйб. Һүүлдэ оролдогты.</string>
+    <string name="nyutag_signup_title">Бүртхүүлхэ</string>
+    <string name="nyutag_signup_subtitle">Утасанай дугаараар али e-mail хаягаар бүртхүүлэгты.</string>
+    <string name="nyutag_contact_title">Утаһан али e-mail</string>
+    <string name="nyutag_contact_title_optional">Утаһан али e-mail (заабол бэшэ)</string>
+    <string name="nyutag_contact_phone">Утаһан</string>
+    <string name="nyutag_contact_email">E-mail</string>
+    <string name="nyutag_contact_phone_hint">+7 900 000-00-00</string>
+    <string name="nyutag_contact_email_hint">name@example.com</string>
+    <string name="nyutag_contact_sending">Код эльгээжэ байна…</string>
+    <string name="nyutag_contact_resend_in">%1$d секундын һүүлээр дахин эльгээхэ</string>
+    <string name="nyutag_contact_resend">Код дахин эльгээхэ</string>
+    <string name="nyutag_contact_send_code">Код абаха</string>
+    <string name="nyutag_contact_code_sms">SMS-һээ код</string>
+    <string name="nyutag_contact_code_email">Бэшэгһээ код</string>
+    <string name="nyutag_contact_error_bad">Утасанай дугаар али почтын хаягаа шалгагты.</string>
+    <string name="nyutag_contact_error_in_use">Энэ дугаар али хаяг аккаунтда холбоотой. Тэрээн руугаа орогты.</string>
+    <string name="nyutag_contact_error_required">Утаһан али e-mail оруулаад, кодоор баталагты.</string>
+    <string name="nyutag_contact_error_not_verified">Түрүүн утаһан али почтоо кодоор баталагты.</string>
+    <string name="nyutag_contact_error_channel_unavailable">Энэ аргаар код эльгээхэ үшөө тохируулагдаагүй. Ондоо аргаар оролдогты.</string>
+    <string name="nyutag_contact_error_delivery">Код эльгээжэ шадабагүйбди. Нэгэ минутын һүүлээр оролдогты.</string>
+    <string name="nyutag_contact_error_wrong_code">Код буруу. Шалгаад, дахин оруулагты.</string>
+    <string name="nyutag_contact_error_code_expired">Кодой болзор дүүрэһэн. Шэнэ код гуйгты.</string>
+    <string name="nyutag_contact_error_attempts">Хэтэ олон буруу оролдолго. Шэнэ код гуйгты.</string>
+    <string name="nyutag_login_identifier_hint">Нэрэ, утаһан али e-mail</string>
+</resources>

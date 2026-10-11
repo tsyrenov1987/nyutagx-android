@@ -27,6 +27,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 
+private val nyutagAccountProvider = AccountProvider.Managed(
+    serverName = "nyutag.chat",
+    baseUrl = "https://core.nyutag.chat:6167",
+    canUseServerName = false, // публичного DNS/.well-known у nyutag.chat нет — ходим по URL ядра через туннель
+)
+
 @ContributesBinding(AppScope::class)
 class DefaultEnterpriseService(
     private val temporaryMatrixClientFactory: TemporaryMatrixClientFactory,
@@ -34,9 +40,10 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
-    override fun accountProviderAllowList(): List<AccountProvider> = emptyList()
-    override fun canConnectToAnyAccountProvider(): Boolean = true
-    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) = true
+    // Нютаг: единственный сервер — ядро nyutag.chat за «Кильватером»; выбор чужих серверов закрыт.
+    override fun accountProviderAllowList(): List<AccountProvider> = listOf(nyutagAccountProvider)
+    override fun canConnectToAnyAccountProvider(): Boolean = false
+    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) = accountProvider.matches(nyutagAccountProvider)
     override suspend fun isElementProEnforced(serverName: String): Boolean {
         val temporaryMatrixClient = temporaryMatrixClientFactory.create(serverName).getOrElse { return false }
         return temporaryMatrixClient.use { client ->

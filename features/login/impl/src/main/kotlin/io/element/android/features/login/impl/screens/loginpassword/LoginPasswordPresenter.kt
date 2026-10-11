@@ -25,6 +25,8 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
+import io.element.android.libraries.matrix.api.nyutag.looksLikeNyutagContact
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -35,6 +37,7 @@ class LoginPasswordPresenter(
     private val authenticationService: MatrixAuthenticationService,
     private val accountProviderDataSource: AccountProviderDataSource,
     private val saveAccountProviderToHistory: SaveAccountProviderToHistory,
+    private val nyutagInvites: NyutagInvites,
 ) : Presenter<LoginPasswordState> {
     @AssistedFactory
     interface Factory {
@@ -83,7 +86,17 @@ class LoginPasswordPresenter(
 
     private fun CoroutineScope.submit(formState: LoginFormState, loggedInState: MutableState<AsyncData<SessionId>>) = launch {
         loggedInState.value = AsyncData.Loading()
-        authenticationService.login(formState.login.trim(), formState.password)
+        // Нютаг: вместо имени можно ввести телефон или почту — сервис ядра вернёт Matrix ID, если пароль верный.
+        val login = formState.login.trim()
+        val userId = if (looksLikeNyutagContact(login)) {
+            nyutagInvites.resolveLogin(login, formState.password).getOrElse {
+                loggedInState.value = AsyncData.Failure(it)
+                return@launch
+            }
+        } else {
+            login
+        }
+        authenticationService.login(userId, formState.password)
             .onSuccess { sessionId ->
                 saveAccountProviderToHistory()
                 loggedInState.value = AsyncData.Success(sessionId)

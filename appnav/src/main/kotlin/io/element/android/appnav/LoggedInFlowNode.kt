@@ -43,6 +43,7 @@ import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
 import io.element.android.appnav.loggedin.LoggedInNode
 import io.element.android.appnav.loggedin.MediaPreviewConfigMigration
+import io.element.android.appnav.loggedin.NyutagKnockAutoJoin
 import io.element.android.appnav.loggedin.SendQueues
 import io.element.android.appnav.room.RoomFlowNode
 import io.element.android.appnav.room.RoomNavigationTarget
@@ -144,6 +145,7 @@ class LoggedInFlowNode(
     private val shareEntryPoint: ShareEntryPoint,
     private val matrixClient: MatrixClient,
     private val sendingQueue: SendQueues,
+    private val nyutagKnockAutoJoin: NyutagKnockAutoJoin,
     private val incomingVerificationEntryPoint: IncomingVerificationEntryPoint,
     private val mediaPreviewConfigMigration: MediaPreviewConfigMigration,
     private val sessionEnterpriseService: SessionEnterpriseService,
@@ -265,6 +267,7 @@ class LoggedInFlowNode(
 
     private fun setupSendingQueue() {
         sendingQueue.launchIn(lifecycleScope)
+        nyutagKnockAutoJoin.launchIn(lifecycleScope)
     }
 
     sealed interface NavTarget : Parcelable {

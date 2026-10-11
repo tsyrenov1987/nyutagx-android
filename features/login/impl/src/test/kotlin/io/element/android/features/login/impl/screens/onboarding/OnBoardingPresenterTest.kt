@@ -9,7 +9,6 @@
 package io.element.android.features.login.impl.screens.onboarding
 
 import com.google.common.truth.Truth.assertThat
-import io.element.android.appconfig.OnBoardingConfig
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.enterprise.api.IsEnterpriseBuild
 import io.element.android.features.enterprise.test.FakeEnterpriseService
@@ -94,11 +93,11 @@ class OnBoardingPresenterTest {
             assertThat(initialState.defaultAccountProvider).isNull()
             assertThat(initialState.canLoginWithQrCode).isFalse()
             assertThat(initialState.productionApplicationName).isEqualTo("B")
-            assertThat(initialState.canCreateAccount).isEqualTo(OnBoardingConfig.CAN_CREATE_ACCOUNT)
+            assertThat(initialState.canCreateAccount).isTrue() // Нютаг: регистрация по приглашению доступна всегда
             assertThat(initialState.canReportBug).isFalse()
             assertThat(initialState.isAddingAccount).isFalse()
             val finalState = awaitItem()
-            assertThat(finalState.canLoginWithQrCode).isTrue()
+            assertThat(finalState.canLoginWithQrCode).isFalse() // Нютаг: вход по QR (OIDC/MSC4108) выключен
         }
     }
 
@@ -152,7 +151,7 @@ class OnBoardingPresenterTest {
             rageshakeFeatureAvailability = { flowOf(false) },
         )
         presenter.test {
-            skipItems(1)
+            // Нютаг: без rageshake и без шага включения QR состояние одно
             awaitItem().also { state ->
                 assertThat(state.canReportBug).isFalse()
                 repeat(7) {
@@ -194,11 +193,11 @@ class OnBoardingPresenterTest {
             ),
         )
         presenter.test {
-            skipItems(3)
+            skipItems(2) // Нютаг: нет шага включения QR
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(AccountProvider.Generic(ACCOUNT_PROVIDER_FROM_LINK))
                 assertThat(it.canLoginWithQrCode).isFalse()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canCreateAccount).isTrue() // Нютаг: регистрация по приглашению доступна всегда
             }
         }
     }
@@ -226,8 +225,8 @@ class OnBoardingPresenterTest {
             skipItems(1)
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isNull()
-                assertThat(it.canLoginWithQrCode).isTrue()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canLoginWithQrCode).isFalse() // Нютаг: вход по QR (OIDC/MSC4108) выключен
+                assertThat(it.canCreateAccount).isTrue() // Нютаг: регистрация по приглашению доступна всегда
             }
         }
     }
@@ -249,8 +248,8 @@ class OnBoardingPresenterTest {
             skipItems(1)
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(anAccountProviderManaged(serverName = ACCOUNT_PROVIDER_FROM_CONFIG))
-                assertThat(it.canLoginWithQrCode).isTrue()
-                assertThat(it.canCreateAccount).isFalse()
+                assertThat(it.canLoginWithQrCode).isFalse() // Нютаг: вход по QR (OIDC/MSC4108) выключен
+                assertThat(it.canCreateAccount).isTrue() // Нютаг: регистрация по приглашению доступна всегда
             }
         }
     }
@@ -319,7 +318,7 @@ class OnBoardingPresenterTest {
             accountProviderDataSource = accountProviderDataSource,
         )
         presenter.test {
-            skipItems(3)
+            skipItems(2) // Нютаг: нет шага включения QR
             awaitItem().also {
                 assertThat(it.defaultAccountProvider).isEqualTo(AccountProvider.Generic(A_HOMESERVER_URL))
                 assertThat(accountProviderDataSource.flow.first()).isEqualTo(matrixOrgAccountProvider)

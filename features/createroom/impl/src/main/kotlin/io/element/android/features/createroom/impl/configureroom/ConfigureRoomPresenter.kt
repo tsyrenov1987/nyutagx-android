@@ -149,6 +149,11 @@ class ConfigureRoomPresenter(
         val availableJoinRules = remember(parentSpace, isSpace, isKnockFeatureEnabled) {
             when {
                 isSpace && parentSpace != null -> TODO("Adding a space to a parent space is not supported yet! How did you get here?")
+                // Нютаг: сообщество всегда видно в каталоге; админ выбирает — открытое или по заявке.
+                isSpace -> persistentListOf(
+                    JoinRuleItem.PublicVisibility.Public,
+                    JoinRuleItem.PublicVisibility.AskToJoin,
+                )
                 parentSpace == null || parentSpace.joinRule == JoinRule.Public -> listOfNotNull(
                     JoinRuleItem.PublicVisibility.Public,
                     JoinRuleItem.PublicVisibility.AskToJoin.takeIf { !isSpace && isKnockFeatureEnabled },
@@ -173,8 +178,8 @@ class ConfigureRoomPresenter(
             }
             when {
                 matchingRule == null -> {
-                    // No matching type fallback to Private (always available)
-                    dataStore.setJoinRule(JoinRuleItem.PrivateVisibility.Private)
+                    // No matching type fallback to Private (always available for rooms; a Nyutag space starts open)
+                    dataStore.setJoinRule(availableJoinRules.find { it == JoinRuleItem.PrivateVisibility.Private } ?: availableJoinRules.first())
                 }
                 matchingRule != currentJoinRule -> {
                     // Same type but different params (e.g., different parentSpaceId), update

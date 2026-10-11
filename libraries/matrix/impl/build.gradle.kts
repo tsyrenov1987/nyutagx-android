@@ -29,6 +29,8 @@ dependencies {
         debugImplementation(libs.matrix.sdk)
     }
     implementation(projects.libraries.rustlsTls)
+    // Нютаг: транспорт «Кильватер» (farvater-core, Go/gomobile) — SOCKS5 для Rust SDK
+    implementation(files("libs/farvater-core.aar"))
 
     implementation(projects.appconfig)
     implementation(projects.features.enterprise.api)

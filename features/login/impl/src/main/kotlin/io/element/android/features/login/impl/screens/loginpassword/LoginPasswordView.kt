@@ -198,7 +198,7 @@ private fun LoginForm(
                 .semantics {
                     contentType = ContentType.Username
                 },
-            placeholder = stringResource(CommonStrings.common_username),
+            placeholder = stringResource(R.string.nyutag_login_identifier_hint),
             onValueChange = {
                 val sanitized = it.sanitize()
                 loginFieldState = sanitized

@@ -1,0 +1,111 @@
+/*
+ * Нютаг — приглашения по одноразовому коду через сервис ядра `/_nyutag/v1/`.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+package io.element.android.libraries.matrix.impl.nyutag
+
+import android.content.Context
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import io.element.android.libraries.di.annotations.ApplicationContext
+import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvite
+import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
+import io.element.android.libraries.matrix.api.nyutag.NyutagSignUpConfig
+import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
+import io.element.android.libraries.sessionstorage.api.SessionStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import timber.log.Timber
+import java.io.IOException
+
+@ContributesBinding(AppScope::class)
+class DefaultNyutagInvites(
+    @ApplicationContext
+    private val context: Context,
+    private val sessionStore: SessionStore,
+) : NyutagInvites {
+    override suspend fun signUpConfig(): Result<NyutagSignUpConfig> = call {
+        val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/config")
+        if (response.status != 200) throw response.toException()
+        val json = response.json()
+        NyutagSignUpConfig(
+            requireInvite = json.optBoolean("require_invite", true),
+            requireContact = json.optBoolean("require_contact", false),
+            emailAvailable = json.optBoolean("email", false),
+            phoneAvailable = json.optBoolean("msisdn", false),
+        )
+    }
+
+    override suspend fun startVerification(medium: NyutagContactMedium, address: String, inviteCode: String): Result<NyutagVerification> = call {
+        val body = JSONObject().put("medium", medium.wire).put("address", address).put("code", inviteCode).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/verify/start", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("sid")) throw response.toException()
+        NyutagVerification(sid = json.getString("sid"), resendAfterSeconds = json.optInt("resend_after_s", 60))
+    }
+
+    override suspend fun checkVerification(sid: String, token: String): Result<Unit> = call {
+        val body = JSONObject().put("sid", sid).put("token", token).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/verify/check", jsonBody = body)
+        if (response.status != 200 || !response.json().optBoolean("verified")) throw response.toException()
+    }
+
+    override suspend fun resolveLogin(identifier: String, password: String): Result<String> = call {
+        val body = JSONObject().put("identifier", identifier).put("password", password).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/resolve", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("user_id")) throw response.toException()
+        json.getString("user_id")
+    }
+
+    override suspend fun register(code: String, username: String, password: String, sid: String?): Result<String> = call {
+        val body = JSONObject()
+            .put("code", code)
+            .put("username", username)
+            .put("password", password)
+            .apply { if (sid != null) put("sid", sid) }
+            .toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/register", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("user_id")) throw response.toException()
+        json.getString("user_id").also { Timber.i("Nyutag: registered $it by invite") }
+    }
+
+    override suspend fun createInvite(sessionId: SessionId): Result<NyutagInvite> = call {
+        val token = sessionStore.getSession(sessionId.value)?.accessToken
+            ?: throw NyutagInviteException("M_UNKNOWN_TOKEN", "No session for ${sessionId.value}")
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/invites", bearer = token)
+        val json = response.json()
+        if (response.status != 200 || !json.has("code")) throw response.toException()
+        NyutagInvite(code = json.getString("code"), expiresAtMillis = json.optLong("expires_at"))
+    }
+
+    private suspend fun <T> call(block: suspend () -> T): Result<T> = withContext(Dispatchers.IO) {
+        try {
+            Timber.d("Nyutag invites: request on ${Thread.currentThread().name}")
+            Result.success(block())
+        } catch (e: NyutagInviteException) {
+            Timber.w("Nyutag invites: ${e.errcode}")
+            Result.failure(e)
+        } catch (e: IOException) {
+            Timber.w(e, "Nyutag invites: network error")
+            Result.failure(NyutagInviteException(NyutagInviteException.NETWORK, e.message ?: "network error"))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "Nyutag invites: unexpected error")
+            Result.failure(NyutagInviteException("NYUTAG_CLIENT_ERROR", e.javaClass.simpleName))
+        }
+    }
+
+    private fun NyutagHttp.Response.toException(): NyutagInviteException {
+        val json = json()
+        return NyutagInviteException(json.optString("errcode", "HTTP_$status"), json.optString("error", "HTTP $status"))
+    }
+}

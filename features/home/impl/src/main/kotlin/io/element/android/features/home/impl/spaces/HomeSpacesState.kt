@@ -19,8 +19,16 @@ data class HomeSpacesState(
     val seenSpaceInvites: ImmutableSet<RoomId>,
     val hideInvitesAvatar: Boolean,
     val canExploreSpaces: Boolean,
+    /** Нютаг: поиск по своим сообществам и каталогу сервера. */
+    val searchQuery: String,
+    /** Нютаг: сообщества сервера, где пользователя ещё нет (каталог как во ВКонтакте). */
+    val catalog: ImmutableList<SpaceRoom>,
+    val isLoadingCatalog: Boolean,
     val eventSink: (HomeSpacesEvent) -> Unit,
-)
+) {
+    val visibleSpaceRooms: List<SpaceRoom>
+        get() = if (searchQuery.isBlank()) spaceRooms else spaceRooms.filter { it.displayName.contains(searchQuery.trim(), ignoreCase = true) }
+}
 
 sealed interface CurrentSpace {
     object Root : CurrentSpace

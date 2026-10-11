@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_create_room_action_create_room">Шэнэ таһалга</string>
+    <string name="screen_create_room_add_people_title">Хүнүүдые уриха</string>
+    <string name="screen_create_room_private_option_title">Хаалтатай</string>
+    <string name="screen_create_room_public_option_title">Нээлтэтэй</string>
+    <string name="screen_create_room_topic_label">Сэдэб (заабол бэшэ)</string>
+</resources>

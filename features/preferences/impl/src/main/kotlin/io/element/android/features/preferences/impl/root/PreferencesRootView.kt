@@ -25,6 +25,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -95,6 +98,7 @@ fun PreferencesRootView(
     onOpenNotificationSettings: () -> Unit,
     onSignOutClick: () -> Unit,
     onDeactivateClick: () -> Unit,
+    onInviteFriendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
@@ -126,6 +130,16 @@ fun PreferencesRootView(
                     onAddAccountClick = onAddAccountClick,
                 )
             }
+            // Нютаг: приглашение — главный способ позвать своих, поэтому сразу под профилем.
+            HorizontalDivider(
+                thickness = 8.dp,
+                color = ElementTheme.colors.bgSubtleSecondary,
+            )
+            ListItem(
+                content = { Text(stringResource(id = CommonStrings.nyutag_invite_friend)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
+                onClick = onInviteFriendClick,
+            )
             HorizontalDivider(
                 thickness = 8.dp,
                 color = ElementTheme.colors.bgSubtleSecondary,
@@ -320,6 +334,19 @@ private fun AppSettingsSection(
                 state.eventSink(PreferencesRootEvent.SetTheme(themeOption))
             }
         )
+        // Nyutag: in-app language switcher (Android < 13 has no per-app language settings)
+        var language by remember { mutableStateOf(NyutagLanguageOption.current()) }
+        PreferenceDropdown(
+            icon = CompoundIcons.Public(),
+            dropDownIcon = CompoundIcons.ChevronUpDown(),
+            title = stringResource(id = R.string.nyutag_language_title),
+            selectedOption = language,
+            options = NyutagLanguageOption.entries.toImmutableList(),
+            onSelectOption = { option ->
+                language = option
+                NyutagLanguageOption.select(option)
+            }
+        )
         ListItem(
             content = { Text(stringResource(id = CommonStrings.common_media_upload_quality)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Image())),
@@ -357,18 +384,7 @@ private fun ColumnScope.GeneralSection(
             onClick = onOpenAnalytics,
         )
     }
-    if (state.showLabsItem) {
-        ListItem(
-            content = { Text(stringResource(id = R.string.screen_labs_title)) },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Labs())),
-            onClick = onOpenLabs,
-        )
-    }
-    ListItem(
-        content = { Text(stringResource(id = CommonStrings.common_about)) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Info())),
-        onClick = onOpenAbout,
-    )
+    // Нютаг: «Лаборатории» и «О приложении» (правила element.io) скрыты — свои правила появятся перед публикацией.
     // Put developer settings at the end, so nothing bad happens if the user clicks 8 times to enable the entry
     AnimatedVisibility(
         visible = state.showDeveloperSettings,
@@ -431,6 +447,7 @@ private fun ContentToPreview(state: PreferencesRootState) {
         onOpenMediaSettings = {},
         onOpenLabs = {},
         onOpenAbout = {},
+        onInviteFriendClick = {},
         onOpenLockScreenSettings = {},
         onEditProfileClick = {},
         onSecureBackupClick = {},

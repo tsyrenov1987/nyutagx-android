@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_chat_backup_key_backup_title">Түлхюурнүүдэй хадагалалга</string>
+    <string name="screen_chat_backup_key_storage_toggle_title">Түлхюурнүүдые хадагалха</string>
+    <string name="screen_chat_backup_key_storage_toggle_description">Энэ түхеэрэлгэһээ түлхюурнүүдые дамжуулха</string>
+    <string name="screen_chat_backup_recovery_action_setup">Һэргээлгын түлхюур абаха</string>
+    <string name="screen_chat_backup_recovery_action_change">Һэргээлгын түлхюур һэлгэхэ</string>
+    <string name="screen_chat_backup_recovery_action_confirm">Һэргээлгын түлхюур оруулха</string>
+    <string name="screen_recovery_key_setup_title">Һэргээлгын түлхюур абаха</string>
+    <string name="screen_recovery_key_confirm_title">Һэргээлгын түлхюурээ оруулагты</string>
+    <string name="screen_recovery_key_confirm_description">Хэншье энэ дэлгэсые харахагүй байг!</string>
+    <string name="screen_recovery_key_confirm_key_placeholder">Оруулагты…</string>
+    <string name="screen_recovery_key_confirm_success">Һэргээлгын түлхюур баталагдаба</string>
+    <string name="screen_recovery_key_save_title">Һэргээлгын түлхюурээ найдамтай газарта хадагалагты</string>
+    <string name="screen_recovery_key_save_description">Энэ түлхюурые найдамтай газарта бэшэжэ абагты: нюуса үгэнүүдэй менеджер, шифрлэгдэһэн тэмдэглэл али сейф.</string>
+    <string name="screen_recovery_key_save_key_description">Хуулахын тула дарагты</string>
+    <string name="screen_recovery_key_generating_key">Байгуулжа байна…</string>
+    <string name="screen_recovery_key_change_title">Һэргээлгын түлхюур һэлгэхэ гүт?</string>
+</resources>

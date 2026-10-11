@@ -33,10 +33,8 @@ object ModulesConfig {
             AnalyticsConfig.Disabled
         }
     } else {
-        println("Analytics enabled with Posthog and Sentry")
-        AnalyticsConfig.Enabled(
-            withPosthog = true,
-            withSentry = true,
-        )
+        // Nyutag: no third-party analytics or crash reporting in the community build.
+        println("Analytics disabled (Nyutag)")
+        AnalyticsConfig.Disabled
     }
 }

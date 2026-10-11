@@ -10,6 +10,7 @@
 
 package io.element.android.features.login.impl.screens.loginpassword
 
+import io.element.android.features.login.impl.R
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -59,7 +60,7 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        val userNameHint = activity!!.getString(R.string.nyutag_login_identifier_hint)
         onNodeWithText(userNameHint).performTextInput(A_USER_NAME)
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin(A_USER_NAME)
@@ -74,7 +75,7 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        val userNameHint = activity!!.getString(R.string.nyutag_login_identifier_hint)
         onNodeWithText(userNameHint).performTextInput("a\nb")
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin("ab")
@@ -89,7 +90,7 @@ class LoginPasswordViewTest : RobolectricTest() {
                 eventSink = eventsRecorder,
             ),
         )
-        val userNameHint = activity!!.getString(CommonStrings.common_username)
+        val userNameHint = activity!!.getString(R.string.nyutag_login_identifier_hint)
         onNodeWithText(userNameHint).performTextInput("a\r\nb")
         eventsRecorder.assertSingle(
             LoginPasswordEvent.SetLogin("ab")

@@ -294,19 +294,17 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Labs invokes the expected callback`() = runAndroidComposeUiTest {
+    fun `Nyutag - Labs and About are hidden`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesRootState(
-                    showLabsItem = true,
-                    eventSink = eventsRecorder,
-                ),
-                onOpenLabs = callback,
-            )
-            val text = activity!!.getString(R.string.screen_labs_title)
-            onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
-        }
+        setView(
+            aPreferencesRootState(
+                showLabsItem = true,
+                eventSink = eventsRecorder,
+            ),
+        )
+        val context = requireNotNull(activity)
+        onNodeWithText(context.getString(R.string.screen_labs_title)).assertDoesNotExist()
+        onNodeWithText(context.getString(CommonStrings.common_about)).assertDoesNotExist()
     }
 
     @Test
@@ -322,16 +320,16 @@ class PreferencesRootViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on About invokes the expected callback`() = runAndroidComposeUiTest {
+    fun `click on Invite a friend invokes the expected callback`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<PreferencesRootEvent>(expectEvents = false)
         ensureCalledOnce { callback ->
             setView(
                 aPreferencesRootState(
                     eventSink = eventsRecorder,
                 ),
-                onOpenAbout = callback,
+                onInviteFriendClick = callback,
             )
-            val text = activity!!.getString(CommonStrings.common_about)
+            val text = activity!!.getString(CommonStrings.nyutag_invite_friend)
             onNode(hasText(text) and hasClickAction()).performScrollTo().performClick()
         }
     }
@@ -411,6 +409,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onOpenNotificationSettings: () -> Unit = EnsureNeverCalled(),
     onSignOutClick: () -> Unit = EnsureNeverCalled(),
     onDeactivateClick: () -> Unit = EnsureNeverCalled(),
+    onInviteFriendClick: () -> Unit = EnsureNeverCalled(),
 ) {
     setContent {
         PreferencesRootView(
@@ -434,6 +433,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onOpenNotificationSettings = onOpenNotificationSettings,
             onSignOutClick = onSignOutClick,
             onDeactivateClick = onDeactivateClick,
+            onInviteFriendClick = onInviteFriendClick,
         )
     }
 }

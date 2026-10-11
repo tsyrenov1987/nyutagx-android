@@ -156,7 +156,7 @@ class RustMatrixAuthenticationService(
                 client.login(
                     username = username,
                     password = password,
-                    initialDeviceName = "Element X Android",
+                    initialDeviceName = "Нютаг Android", // Нютаг: имя устройства в списке сессий
                     deviceId = null,
                 )
                 // Ensure that the user is not already logged in with the same account
@@ -373,6 +373,21 @@ class RustMatrixAuthenticationService(
         }
 
     private suspend fun finalizeClientCreation(sessionData: SessionData): SessionId {
+        // Nyutag: right after login the SDK spawns an E2EE setup task on the login client (cross-signing bootstrap with
+        // the login credentials, key backup creation). Closing the client does not stop that task, so the final client
+        // used to open the same stores while it was still running: it then had no private cross-signing keys, created a
+        // second key backup, recovery stayed "incomplete" and the cross-signing secrets never reached secret storage.
+        // Let the login client finish that setup before handing over.
+        currentClient?.let { loginClient ->
+            val finished = withTimeoutOrNull(30.seconds) {
+                runCatchingExceptions {
+                    loginClient.encryption().use { it.waitForE2eeInitializationTasks() }
+                }.onFailure {
+                    Timber.w(it, "Nyutag: E2EE setup of the login client failed")
+                }
+            }
+            if (finished == null) Timber.w("Nyutag: timed out waiting for the E2EE setup of the login client")
+        }
         // Close the client which was used to perform the login before creating the final client.
         // Both use the same session paths, so their SQLite stores must never be opened at the same time.
         clear()

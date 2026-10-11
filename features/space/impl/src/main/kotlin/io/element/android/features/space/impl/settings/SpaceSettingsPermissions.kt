@@ -7,6 +7,8 @@
 
 package io.element.android.features.space.impl.settings
 
+import io.element.android.features.knockrequests.api.KnockRequestPermissions
+import io.element.android.features.knockrequests.api.knockRequestPermissions
 import io.element.android.features.roomdetailsedit.api.RoomDetailsEditPermissions
 import io.element.android.features.roomdetailsedit.api.roomDetailsEditPermissions
 import io.element.android.features.securityandprivacy.api.SecurityAndPrivacyPermissions
@@ -19,6 +21,7 @@ data class SpaceSettingsPermissions(
     val editDetailsPermissions: RoomDetailsEditPermissions,
     val canEditRolesAndPermissions: Boolean,
     val securityAndPrivacyPermissions: SecurityAndPrivacyPermissions,
+    val knockRequestsPermissions: KnockRequestPermissions = KnockRequestPermissions.DEFAULT,
 ) {
     fun hasAny(joinRule: JoinRule?): Boolean {
         return editDetailsPermissions.hasAny ||
@@ -40,5 +43,6 @@ fun RoomPermissions.spaceSettingsPermissions(): SpaceSettingsPermissions {
         editDetailsPermissions = roomDetailsEditPermissions(),
         canEditRolesAndPermissions = canEditRolesAndPermissions(),
         securityAndPrivacyPermissions = securityAndPrivacyPermissions(),
+        knockRequestsPermissions = knockRequestPermissions(),
     )
 }

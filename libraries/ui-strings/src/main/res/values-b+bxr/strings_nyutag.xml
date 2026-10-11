@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: свои строки (общие с iOS, Tools/Nyutag/strings.tsv). Бурятский — черновик для проверки носителем. -->
+<resources>
+    <string name="nyutag_community_open">Нээлттэй</string>
+    <string name="nyutag_community_open_description">Хэн бүхэн бэдэржэ олоод, ороод болохо.</string>
+    <string name="nyutag_community_closed">Хаалттай</string>
+    <string name="nyutag_community_closed_description">Хэн бүхэн бэдэржэ олоод, гуйлта эльгээхэ. Шэнэ гэшүүдые админ зүбшөөрнэ.</string>
+    <string name="nyutag_community_closed_badge">Хаалттай · гуйлтаар</string>
+    <string name="nyutag_communities_search">Оршон бэдэрхэ</string>
+    <string name="nyutag_communities_mine">Минии оршонууд</string>
+    <string name="nyutag_communities_all">Бүхы оршонууд</string>
+    <string name="nyutag_communities_empty">Оршон одоохондоо үгы. Түрүүшынхиеэ байгуулагты!</string>
+    <string name="nyutag_community_requests">Орохо гуйлтанууд</string>
+    <string name="nyutag_invite_friend">Нүхэрөө уриха</string>
+</resources>

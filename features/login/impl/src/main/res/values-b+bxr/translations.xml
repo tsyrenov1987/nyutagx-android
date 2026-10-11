@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_login_title">Сайн байна!</string>
+    <string name="screen_login_title_with_homeserver">%1$s-та орохо</string>
+    <string name="screen_login_form_header">Мэдээгээ оруулагты</string>
+    <string name="screen_login_subtitle">Нютаг — нютагаархинда зорюулагдаһан мессенджер.</string>
+    <string name="screen_login_error_invalid_credentials">Нэрэ али нюуса үгэ буруу</string>
+    <string name="screen_login_error_deactivated_account">Энэ аккаунт усадхагдаһан байна.</string>
+    <string name="screen_onboarding_sign_in_manually">Гараар орохо</string>
+    <string name="screen_onboarding_sign_in_to">%1$s-та орохо</string>
+    <string name="screen_onboarding_sign_in_with_qr_code">QR-кодоор орохо</string>
+    <string name="screen_onboarding_sign_up">Намда урилга бии</string>
+    <string name="screen_onboarding_welcome_back">Дахин сайн байна</string>
+    <string name="screen_onboarding_welcome_title">Нютагтаа гэртээ мэтэ</string>
+    <string name="screen_onboarding_welcome_subtitle">%1$s — нютагаархинай өөһэдын мессенджер. Түргэн, бэлэн, хамгаалалтатай.</string>
+    <string name="screen_onboarding_welcome_message">%1$s — нютагаархинай өөһэдын мессенджер. Түргэн, бэлэн, хамгаалалтатай.</string>
+    <string name="screen_onboarding_checking_account">Аккаунт шалгажа байна</string>
+</resources>

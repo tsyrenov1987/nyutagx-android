@@ -12,11 +12,13 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.matrix.api.core.RoomAlias
 import io.element.android.libraries.matrix.api.room.alias.RoomAliasHelper
+import io.element.android.libraries.matrix.impl.nyutag.nyutagLatinized
 
 @ContributesBinding(AppScope::class)
 class DefaultRoomAliasHelper : RoomAliasHelper {
     override fun roomAliasNameFromRoomDisplayName(name: String): String {
-        return org.matrix.rustcomponents.sdk.roomAliasNameFromRoomDisplayName(name)
+        // Нютаг: кириллицу (с бурятскими ө, ү, һ) — латиницей, иначе адрес из русского названия пустой.
+        return org.matrix.rustcomponents.sdk.roomAliasNameFromRoomDisplayName(name.nyutagLatinized())
     }
 
     override fun isRoomAliasValid(roomAlias: RoomAlias): Boolean {

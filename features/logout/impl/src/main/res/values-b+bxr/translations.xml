@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+<resources>
+    <string name="screen_signout_confirmation_dialog_title">Энэ түхеэрэлгые хаһаха</string>
+    <string name="screen_signout_confirmation_dialog_content">Энэ түхеэрэлгые хаһахаяа баталнат гүт?</string>
+    <string name="screen_signout_confirmation_dialog_submit">Хаһаха</string>
+</resources>

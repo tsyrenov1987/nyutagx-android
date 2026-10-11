@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nyutag_language_title">Язык</string>
+    <string name="nyutag_language_system">Как в системе</string>
+</resources>

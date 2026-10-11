@@ -20,5 +20,8 @@ data class SpaceSettingsState(
     val canEditDetails: Boolean,
     val showRolesAndPermissions: Boolean,
     val showSecurityAndPrivacy: Boolean,
+    /** Нютаг: заявки в закрытое сообщество видят те, кто может их принять или отклонить. */
+    val showKnockRequests: Boolean,
+    val knockRequestsCount: Int?,
     val eventSink: (SpaceSettingsEvent) -> Unit
 )

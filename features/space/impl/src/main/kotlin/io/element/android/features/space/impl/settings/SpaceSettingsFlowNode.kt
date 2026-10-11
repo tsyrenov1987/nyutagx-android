@@ -19,6 +19,7 @@ import com.bumble.appyx.navmodel.backstack.operation.push
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.features.knockrequests.api.list.KnockRequestsListEntryPoint
 import io.element.android.features.rolesandpermissions.api.RolesAndPermissionsEntryPoint
 import io.element.android.features.roomdetailsedit.api.RoomDetailsEditEntryPoint
 import io.element.android.features.securityandprivacy.api.SecurityAndPrivacyEntryPoint
@@ -36,7 +37,8 @@ class SpaceSettingsFlowNode(
     @Assisted plugins: List<Plugin>,
     private val securityAndPrivacyEntryPoint: SecurityAndPrivacyEntryPoint,
     private val rolesAndPermissionsEntryPoint: RolesAndPermissionsEntryPoint,
-    private val roomDetailsEditEntryPoint: RoomDetailsEditEntryPoint
+    private val roomDetailsEditEntryPoint: RoomDetailsEditEntryPoint,
+    private val knockRequestsListEntryPoint: KnockRequestsListEntryPoint,
 ) : BaseFlowNode<SpaceSettingsFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = initialElement(plugins),
@@ -64,6 +66,9 @@ class SpaceSettingsFlowNode(
 
         @Parcelize
         data object RolesAndPermissions : NavTarget
+
+        @Parcelize
+        data object KnockRequestsList : NavTarget
     }
 
     private val callback: Callback = callback()
@@ -82,6 +87,10 @@ class SpaceSettingsFlowNode(
 
                     override fun navigateToSpaceMembers() {
                         callback.navigateToSpaceMembers()
+                    }
+
+                    override fun navigateToKnockRequests() {
+                        backstack.push(NavTarget.KnockRequestsList)
                     }
 
                     override fun navigateToRolesAndPermissions() {
@@ -124,6 +133,9 @@ class SpaceSettingsFlowNode(
                     buildContext = buildContext,
                     callback = callback,
                 )
+            }
+            NavTarget.KnockRequestsList -> {
+                knockRequestsListEntryPoint.createNode(this, buildContext)
             }
             NavTarget.EditDetails -> {
                 roomDetailsEditEntryPoint.createNode(

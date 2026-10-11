@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: юрта с соёмбо (мастер ~/Desktop/Nyutag-brand/nyutag-mark-yurt-soyombo.svg) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <group android:pivotX="512" android:pivotY="512" android:scaleX="0.82" android:scaleY="0.82">
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="32" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M240,500 L512,384 L784,500" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="32" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M240,500 A272,40 0 0 0 784,500" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="32" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M240,500 L240,700" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="32" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M784,500 L784,700" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="32" android:strokeLineJoin="round" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M784,700 A272,40 0 0 1 430,739 L350,806 L350,731 A272,40 0 0 1 240,700" />
+        <path android:fillColor="#FFFFFF" android:pathData="M460,330 A52,52 0 0 0 564,330 A64,64 0 0 1 460,330 Z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M480,300 a32,32 0 1 0 64,0 a32,32 0 1 0 -64,0 z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M486,266 C468,246 472,224 488,212 C492,228 500,234 500,222 C500,202 508,192 512,178 C516,192 524,202 524,222 C524,234 532,228 536,212 C552,224 556,246 538,266 Z" />
+    </group>
+</vector>

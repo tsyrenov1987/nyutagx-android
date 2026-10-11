@@ -35,6 +35,7 @@ import io.element.android.features.login.impl.qrcode.QrCodeLoginFlowNode
 import io.element.android.features.login.impl.screens.chooseaccountprovider.ChooseAccountProviderNode
 import io.element.android.features.login.impl.screens.classic.ClassicFlowNode
 import io.element.android.features.login.impl.screens.confirmaccountprovider.ConfirmAccountProviderNode
+import io.element.android.features.login.impl.screens.invitesignup.InviteSignUpNode
 import io.element.android.features.login.impl.screens.loginpassword.LoginPasswordNode
 import io.element.android.features.login.impl.screens.onboarding.OnBoardingNode
 import io.element.android.features.preferences.api.PreferencesEntryPoint
@@ -130,6 +131,10 @@ class LoginFlowNode(
         data class LoginPassword(
             val initialLogin: String = "",
         ) : NavTarget
+
+        // Нютаг: регистрация только по одноразовому коду приглашения.
+        @Parcelize
+        data object InviteSignUp : NavTarget
     }
 
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {
@@ -157,9 +162,8 @@ class LoginFlowNode(
             is NavTarget.OnBoarding -> {
                 val callback = object : OnBoardingNode.Callback {
                     override fun navigateToSignUpFlow() {
-                        backstack.push(
-                            NavTarget.ConfirmAccountProvider(isAccountCreation = true)
-                        )
+                        // Нютаг: вместо веб-регистрации на сервере — экран «Регистрация по приглашению».
+                        backstack.push(NavTarget.InviteSignUp)
                     }
 
                     override fun navigateToSignInFlow(mustChooseAccountProvider: Boolean) {
@@ -260,6 +264,9 @@ class LoginFlowNode(
                     initialLogin = navTarget.initialLogin,
                 )
                 createNode<LoginPasswordNode>(buildContext, plugins = listOf(inputs))
+            }
+            NavTarget.InviteSignUp -> {
+                createNode<InviteSignUpNode>(buildContext)
             }
         }
     }

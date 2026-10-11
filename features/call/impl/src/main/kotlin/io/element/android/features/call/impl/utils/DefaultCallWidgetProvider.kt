@@ -27,6 +27,7 @@ class DefaultCallWidgetProvider(
     private val appPreferencesStore: AppPreferencesStore,
     private val callWidgetSettingsProvider: CallWidgetSettingsProvider,
     private val activeRoomsHolder: ActiveRoomsHolder,
+    private val callWebViewRouter: CallWebViewRouter,
 ) : CallWidgetProvider {
     override suspend fun getWidget(
         sessionId: SessionId,
@@ -40,6 +41,9 @@ class DefaultCallWidgetProvider(
         val room = activeRoomsHolder.getActiveRoomMatching(sessionId, roomId)
             ?: matrixClient.getJoinedRoom(roomId)
             ?: error("Room not found")
+
+        // Нютаг: WebView звонка ходит только через туннель (JWT, сигналинг, TCP-запасной путь медиа).
+        callWebViewRouter.routeThroughTunnel()
 
         val customBaseUrl = appPreferencesStore.getCustomElementCallBaseUrlFlow().firstOrNull()
         val baseUrl = customBaseUrl ?: EMBEDDED_CALL_WIDGET_BASE_URL

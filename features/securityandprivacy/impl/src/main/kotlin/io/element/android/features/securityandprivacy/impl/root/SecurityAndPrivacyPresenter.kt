@@ -419,7 +419,10 @@ class SecurityAndPrivacyPresenter(
             val updateRoomVisibility = async {
                 // When a user changes join rules to something other than knock or public,
                 // the room should be automatically made invisible (private) in the room directory.
-                val editedIsVisibleInRoomDirectory = when (editedSettings.roomAccess) {
+                // Нютаг: сообщества, и открытые, и закрытые, всегда видны в каталоге (как во ВКонтакте).
+                val isNyutagCommunity = room.info().isSpace &&
+                    editedSettings.roomAccess in listOf(SecurityAndPrivacyRoomAccess.Anyone, SecurityAndPrivacyRoomAccess.AskToJoin)
+                val editedIsVisibleInRoomDirectory = if (isNyutagCommunity) true else when (editedSettings.roomAccess) {
                     SecurityAndPrivacyRoomAccess.AskToJoin,
                     is SecurityAndPrivacyRoomAccess.AskToJoinWithSpaceMember,
                     SecurityAndPrivacyRoomAccess.Anyone -> editedSettings.isVisibleInRoomDirectory.dataOrNull()

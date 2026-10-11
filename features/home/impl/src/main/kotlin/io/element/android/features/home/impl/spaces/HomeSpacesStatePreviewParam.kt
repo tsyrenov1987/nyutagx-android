@@ -34,6 +34,10 @@ open class HomeSpacesStatePreviewParam : PreviewParameterProvider<HomeSpacesStat
                 space = CurrentSpace.Root,
                 spaceRooms = emptyList(),
             ),
+            aHomeSpacesState(
+                spaceRooms = aListOfSpaceRooms().take(1),
+                catalog = aListOfSpaceRooms().drop(1),
+            ),
         )
 }
 
@@ -43,6 +47,9 @@ internal fun aHomeSpacesState(
     seenSpaceInvites: Set<RoomId> = emptySet(),
     hideInvitesAvatar: Boolean = false,
     canExploreSpaces: Boolean = true,
+    searchQuery: String = "",
+    catalog: List<SpaceRoom> = emptyList(),
+    isLoadingCatalog: Boolean = false,
     eventSink: (HomeSpacesEvent) -> Unit = {},
 ) = HomeSpacesState(
     space = space,
@@ -50,6 +57,9 @@ internal fun aHomeSpacesState(
     seenSpaceInvites = seenSpaceInvites.toImmutableSet(),
     hideInvitesAvatar = hideInvitesAvatar,
     canExploreSpaces = canExploreSpaces,
+    searchQuery = searchQuery,
+    catalog = catalog.toImmutableList(),
+    isLoadingCatalog = isLoadingCatalog,
     eventSink = eventSink,
 )
 
