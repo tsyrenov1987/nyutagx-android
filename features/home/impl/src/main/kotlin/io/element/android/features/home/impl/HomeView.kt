@@ -293,6 +293,7 @@ private fun HomeScaffold(
                         onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
                         onRoomClick = ::onRoomClick,
                         onCreateRoomClick = onStartChatClick,
+                        onInviteFriendClick = { onMenuActionClick(RoomListMenuAction.InviteFriends) },
                         contentPadding = lazyColumnContentPadding + contentPadding,
                         modifier = Modifier
                             .padding(outerPadding)

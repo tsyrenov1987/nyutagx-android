@@ -52,6 +52,7 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.OnVisibleRangeChangeEffect
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -69,6 +70,7 @@ fun RoomListContentView(
     onConfirmRecoveryKeyClick: () -> Unit,
     onRoomClick: (RoomListRoomSummary) -> Unit,
     onCreateRoomClick: () -> Unit,
+    onInviteFriendClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -88,6 +90,7 @@ fun RoomListContentView(
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
                 onCreateRoomClick = onCreateRoomClick,
+                onInviteFriendClick = onInviteFriendClick,
             )
         }
         is RoomListContentState.Rooms -> {
@@ -136,6 +139,7 @@ private fun EmptyView(
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
     onCreateRoomClick: () -> Unit,
+    onInviteFriendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.fillMaxSize()) {
@@ -143,7 +147,14 @@ private fun EmptyView(
             title = R.string.screen_roomlist_empty_title,
             subtitle = R.string.screen_roomlist_empty_message,
             action = {
+                // Нютаг: в мессенджер попадают по приглашению — главное действие пустого списка «Пригласить друга».
                 Button(
+                    text = stringResource(CommonStrings.nyutag_invite_friend),
+                    leadingIcon = IconSource.Vector(CompoundIcons.UserAdd()),
+                    onClick = onInviteFriendClick,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
                     text = stringResource(CommonStrings.action_start_chat),
                     leadingIcon = IconSource.Vector(CompoundIcons.Compose()),
                     onClick = onCreateRoomClick,
@@ -354,6 +365,7 @@ internal fun RoomListContentViewPreview(@PreviewParameter(RoomListContentStatePr
         onConfirmRecoveryKeyClick = {},
         onRoomClick = {},
         onCreateRoomClick = {},
+        onInviteFriendClick = {},
         lazyListState = rememberLazyListState(),
         contentPadding = PaddingValues(0.dp),
     )

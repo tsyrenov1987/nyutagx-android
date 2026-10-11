@@ -148,6 +148,21 @@ class RoomListViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `Nyutag - clicking on invite a friend when the session has no room invokes the menu action`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<RoomListEvent>(expectEvents = false)
+        ensureCalledOnceWithParam(RoomListMenuAction.InviteFriends) { callback ->
+            setRoomListView(
+                state = aRoomListState(
+                    eventSink = eventsRecorder,
+                    contentState = anEmptyContentState(),
+                ),
+                onMenuActionClick = callback,
+            )
+            clickOn(CommonStrings.nyutag_invite_friend)
+        }
+    }
+
+    @Test
     fun `clicking on a room invokes the expected callback`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<RoomListEvent>()
         val state = aRoomListState(
