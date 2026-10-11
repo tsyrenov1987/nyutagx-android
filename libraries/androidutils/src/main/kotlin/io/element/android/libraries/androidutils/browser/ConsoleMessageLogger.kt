@@ -34,8 +34,8 @@ class DefaultConsoleMessageLogger : ConsoleMessageLogger {
         }
 
         // Avoid logging any messages that contain "password" to prevent leaking sensitive information
-        // Нютаг: и токены — Element Call пишет в консоль OpenID-токен для LiveKit.
-        if (consoleMessage.message().contains("password=") || consoleMessage.message().contains("access_token")) {
+        // Нютаг: и токены — Element Call пишет в консоль OpenID-токен и JWT для LiveKit.
+        if (consoleMessage.message().contains("password=") || consoleMessage.message().contains("access_token") || consoleMessage.message().contains("eyJ")) {
             return
         }
 
