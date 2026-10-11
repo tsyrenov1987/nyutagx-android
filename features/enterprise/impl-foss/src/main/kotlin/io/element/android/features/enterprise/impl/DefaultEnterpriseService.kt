@@ -67,8 +67,9 @@ class DefaultEnterpriseService(
         return flowOf(null)
     }
 
+    // Нютаг: синий акцент вместо зелёного и чёрных кнопок Element, как на iOS.
     override fun semanticColorsFlow(sessionId: SessionId?): Flow<SemanticColorsLightDark> {
-        return flowOf(SemanticColorsLightDark.default)
+        return flowOf(nyutagSemanticColors)
     }
 
     override fun firebasePushGateway(): String? = null

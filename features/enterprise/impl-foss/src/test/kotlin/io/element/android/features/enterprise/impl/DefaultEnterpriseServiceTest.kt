@@ -10,7 +10,6 @@ package io.element.android.features.enterprise.impl
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.features.enterprise.api.BugReportUrl
 import io.element.android.libraries.androidutils.json.JsonProvider
 import io.element.android.libraries.core.uri.ensureProtocol
@@ -27,21 +26,25 @@ import org.junit.Test
 
 class DefaultEnterpriseServiceTest {
     @Test
-    fun accountProviderAllowList() {
+    fun `accountProviderAllowList contains only the Nyutag core`() {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.accountProviderAllowList()).isEmpty()
+        val allowList = defaultEnterpriseService.accountProviderAllowList()
+        assertThat(allowList).hasSize(1)
+        assertThat(allowList.single().serverNameOrBaseUrl()).isEqualTo("core.nyutag.chat:6167")
     }
 
     @Test
-    fun `canConnectToAnyAccountProvider is always true`() {
+    fun `canConnectToAnyAccountProvider is false`() {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isTrue()
+        assertThat(defaultEnterpriseService.canConnectToAnyAccountProvider()).isFalse()
     }
 
     @Test
-    fun `isAllowedToConnectToAccountProvider is true for all account providers`() = runTest {
+    fun `isAllowedToConnectToAccountProvider is true only for the Nyutag core`() = runTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
-        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric())).isTrue()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(anAccountProviderGeneric())).isFalse()
+        val nyutag = defaultEnterpriseService.accountProviderAllowList().single()
+        assertThat(defaultEnterpriseService.isAllowedToConnectToAccountProvider(nyutag)).isTrue()
     }
 
     @Test
@@ -55,7 +58,7 @@ class DefaultEnterpriseServiceTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
         defaultEnterpriseService.semanticColorsFlow(null).test {
             val initialState = awaitItem()
-            assertThat(initialState).isEqualTo(SemanticColorsLightDark.default)
+            assertThat(initialState).isEqualTo(nyutagSemanticColors)
             awaitComplete()
         }
     }
@@ -75,7 +78,7 @@ class DefaultEnterpriseServiceTest {
         val defaultEnterpriseService = createDefaultEnterpriseService()
         defaultEnterpriseService.semanticColorsFlow(A_SESSION_ID).test {
             val initialState = awaitItem()
-            assertThat(initialState).isEqualTo(SemanticColorsLightDark.default)
+            assertThat(initialState).isEqualTo(nyutagSemanticColors)
             awaitComplete()
         }
     }
