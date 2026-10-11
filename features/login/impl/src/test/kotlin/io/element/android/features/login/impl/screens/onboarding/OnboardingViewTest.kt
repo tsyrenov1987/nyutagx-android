@@ -50,7 +50,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 ),
                 onCreateAccount = callback,
             )
-            clickOn(R.string.screen_onboarding_sign_up)
+            clickOn(R.string.nyutag_start_have_invite)
             // Developer settings should not be shown
             val developerSettingsText = activity!!.getString(CommonStrings.common_developer_options)
             onNodeWithContentDescription(developerSettingsText).assertDoesNotExist()
@@ -104,7 +104,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 ),
                 onSignIn = callback,
             )
-            clickOn(R.string.screen_onboarding_sign_in_manually)
+            clickOn(R.string.nyutag_start_sign_in)
         }
     }
 
@@ -126,7 +126,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 ),
                 onSignIn = callback,
             )
-            clickOn(CommonStrings.action_continue)
+            clickOn(R.string.nyutag_start_sign_in)
         }
     }
 
@@ -139,7 +139,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 eventSink = eventSink,
             ),
         )
-        val buttonText = activity!!.getString(R.string.screen_onboarding_sign_in_to, "element.io")
+        val buttonText = activity!!.getString(R.string.nyutag_start_sign_in)
         onNodeWithText(buttonText).performClick()
         eventSink.assertSingle(OnBoardingEvent.OnSignIn(AccountProvider.Generic("element.io")))
     }

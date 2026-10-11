@@ -39,7 +39,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
-import io.element.android.features.preferences.impl.R
 import io.element.android.features.preferences.impl.account.PreferencesAccountView
 import io.element.android.features.preferences.impl.user.UserPreferences
 import io.element.android.features.preferences.impl.userstatus.UserStatusState
@@ -55,6 +54,7 @@ import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
 import io.element.android.libraries.designsystem.components.preferences.PreferenceDropdown
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
+import io.element.android.libraries.designsystem.nyutag.NyutagLanguageOption
 import io.element.android.libraries.designsystem.preview.ElementPreviewDark
 import io.element.android.libraries.designsystem.preview.ElementPreviewLight
 import io.element.android.libraries.designsystem.preview.PreviewWithLargeHeight
@@ -339,7 +339,7 @@ private fun AppSettingsSection(
         PreferenceDropdown(
             icon = CompoundIcons.Public(),
             dropDownIcon = CompoundIcons.ChevronUpDown(),
-            title = stringResource(id = R.string.nyutag_language_title),
+            title = stringResource(id = CommonStrings.nyutag_language_title),
             selectedOption = language,
             options = NyutagLanguageOption.entries.toImmutableList(),
             onSelectOption = { option ->

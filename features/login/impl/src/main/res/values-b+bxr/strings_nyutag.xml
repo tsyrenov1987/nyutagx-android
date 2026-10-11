@@ -43,4 +43,21 @@
     <string name="nyutag_contact_error_code_expired">Кодой болзор дүүрэһэн. Шэнэ код гуйгты.</string>
     <string name="nyutag_contact_error_attempts">Хэтэ олон буруу оролдолго. Шэнэ код гуйгты.</string>
     <string name="nyutag_login_identifier_hint">Нэрэ, утаһан али e-mail</string>
+    <string name="nyutag_start_sign_in">Орохо</string>
+    <string name="nyutag_start_have_invite">Намда урилга бии</string>
+    <string name="nyutag_signup_step">%2$d алхамһаа %1$d-дэхи</string>
+    <string name="nyutag_signup_code_title">Урилгын кодоо оруулагты</string>
+    <string name="nyutag_signup_paste">Оруулха</string>
+    <string name="nyutag_signup_contact_subtitle">Баталха код эльгээхэбди. Үөр хүн харахагүй.</string>
+    <string name="nyutag_signup_name_title">Таныень нэрэ хэн бэ?</string>
+    <string name="nyutag_signup_name_subtitle">Энэ нэрые нүхэд чатнуудта харана.</string>
+    <string name="nyutag_signup_name_label">Нэрэ</string>
+    <string name="nyutag_signup_username_footer">Орохо нэрэ: %1$s</string>
+    <string name="nyutag_signup_username_edit">Нэрээ һэлгэхэ</string>
+    <string name="nyutag_signup_password_title">Нюуса үгэ зохёогты</string>
+    <string name="nyutag_signup_password_subtitle">8 тэмдэгһээ доошо бэшэ. Ондоо түхеэрэлгэ дээрэ энээгээр ороходоо хэрэглэхэт.</string>
+    <string name="nyutag_signup_password_repeat">Нюуса үгөө дахин оруулагты</string>
+    <string name="nyutag_signup_password_mismatch">Нюуса үгэнүүд таарахагүй.</string>
+    <string name="nyutag_signup_creating">Аккаунт бүтээжэ байна…</string>
+    <string name="nyutag_signup_invited_by">Урилга: %1$s</string>
 </resources>

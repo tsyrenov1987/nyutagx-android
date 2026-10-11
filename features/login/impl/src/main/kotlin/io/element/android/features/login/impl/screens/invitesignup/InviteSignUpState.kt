@@ -1,5 +1,5 @@
 /*
- * Нютаг — регистрация по приглашению с подтверждением телефона или почты.
+ * Нютаг — регистрация по приглашению по шагам, как на iOS: код → телефон или почта (если сервер их включил) → имя → пароль.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -7,42 +7,49 @@
 package io.element.android.features.login.impl.screens.invitesignup
 
 import android.os.Parcelable
-import io.element.android.libraries.architecture.AsyncData
-import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
-import io.element.android.libraries.matrix.api.nyutag.NyutagSignUpConfig
 import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
 import kotlinx.parcelize.Parcelize
 
+enum class SignUpStep {
+    Code,
+    Contact,
+    Name,
+    Password,
+}
+
 data class InviteSignUpState(
-    val config: AsyncData<NyutagSignUpConfig>,
+    val steps: List<SignUpStep>,
+    val step: SignUpStep,
     val form: InviteSignUpForm,
-    val verification: AsyncData<NyutagVerification>,
+    /** Код проверен сервером; [inviter] — Matrix ID пригласившего. */
+    val isCodeValid: Boolean,
+    val inviter: String?,
+    val availableMedia: List<NyutagContactMedium>,
+    val canSkipContact: Boolean,
+    val verification: NyutagVerification?,
     val resendInSeconds: Int,
-    val action: AsyncData<SessionId>,
+    val isBusy: Boolean,
+    /** Ошибка текущего шага — показывается под полем, без всплывающих окон. */
+    val error: Throwable?,
     val eventSink: (InviteSignUpEvent) -> Unit,
 ) {
-    val requireInvite: Boolean get() = config.dataOrNull()?.requireInvite ?: true
-    val requireContact: Boolean get() = config.dataOrNull()?.requireContact ?: false
-    val codeSent: Boolean get() = verification is AsyncData.Success
+    val stepNumber: Int get() = steps.indexOf(step) + 1
 
-    val canSendCode: Boolean
-        get() = form.contact.isNotBlank() &&
-            verification !is AsyncData.Loading &&
-            resendInSeconds == 0 &&
-            (!requireInvite || form.code.isNotBlank())
+    /** Ник для входа: придуманный самим человеком или из имени. */
+    val username: String
+        get() = if (form.isEditingUsername) NyutagUsername.sanitize(form.username) else NyutagUsername.suggest(form.displayName)
 
-    val submitEnabled: Boolean
-        get() = action !is AsyncData.Failure &&
-            (!requireInvite || form.code.isNotBlank()) &&
-            form.username.isNotBlank() &&
-            form.password.length >= MIN_PASSWORD_LENGTH &&
-            when {
-                codeSent -> form.verifyCode.length == VERIFY_CODE_LENGTH
-                // Номер/почту ввели, но код не запросили — сначала «Получить код».
-                form.contact.isNotBlank() -> false
-                else -> !requireContact
-            }
+    val canContinue: Boolean
+        get() = !isBusy && when (step) {
+            SignUpStep.Code -> form.code.length == NyutagInviteCode.LENGTH
+            SignUpStep.Contact -> if (verification == null) form.contact.isNotBlank() else form.verifyCode.length == VERIFY_CODE_LENGTH
+            SignUpStep.Name -> form.displayName.isNotBlank() && username.isNotEmpty()
+            SignUpStep.Password -> form.password.length >= MIN_PASSWORD_LENGTH && form.password == form.passwordRepeat
+        }
+
+    val showsPasswordMismatch: Boolean
+        get() = form.passwordRepeat.isNotEmpty() && form.passwordRepeat.length >= form.password.length && form.password != form.passwordRepeat
 
     companion object {
         const val MIN_PASSWORD_LENGTH = 8
@@ -56,8 +63,11 @@ data class InviteSignUpForm(
     val medium: NyutagContactMedium = NyutagContactMedium.Phone,
     val contact: String = "",
     val verifyCode: String = "",
+    val displayName: String = "",
     val username: String = "",
+    val isEditingUsername: Boolean = false,
     val password: String = "",
+    val passwordRepeat: String = "",
 ) : Parcelable
 
 sealed interface InviteSignUpEvent {
@@ -65,9 +75,13 @@ sealed interface InviteSignUpEvent {
     data class SetMedium(val medium: NyutagContactMedium) : InviteSignUpEvent
     data class SetContact(val contact: String) : InviteSignUpEvent
     data class SetVerifyCode(val verifyCode: String) : InviteSignUpEvent
+    data class SetDisplayName(val displayName: String) : InviteSignUpEvent
     data class SetUsername(val username: String) : InviteSignUpEvent
     data class SetPassword(val password: String) : InviteSignUpEvent
-    data object SendCode : InviteSignUpEvent
-    data object Submit : InviteSignUpEvent
-    data object ClearError : InviteSignUpEvent
+    data class SetPasswordRepeat(val password: String) : InviteSignUpEvent
+    data object EditUsername : InviteSignUpEvent
+    data object ResendCode : InviteSignUpEvent
+    data object SkipContact : InviteSignUpEvent
+    data object Next : InviteSignUpEvent
+    data object Back : InviteSignUpEvent
 }

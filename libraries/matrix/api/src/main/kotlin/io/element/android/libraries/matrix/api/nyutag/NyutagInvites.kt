@@ -16,6 +16,12 @@ interface NyutagInvites {
     /** Что требует сервер при регистрации и какие каналы доставки кодов настроены. */
     suspend fun signUpConfig(): Result<NyutagSignUpConfig>
 
+    /** Проверяет код приглашения на первом шаге регистрации; Matrix ID пригласившего, если сервер его назвал. */
+    suspend fun checkInvite(code: String): Result<String?>
+
+    /** Свободен ли ник: занятый или неподходящий приходит ошибкой `M_USER_IN_USE` / `M_INVALID_USERNAME`. */
+    suspend fun checkUsername(username: String): Result<Unit>
+
     /** Шлёт шестизначный код на телефон или почту. Код приглашения нужен серверу, чтобы не слать SMS чужим. */
     suspend fun startVerification(medium: NyutagContactMedium, address: String, inviteCode: String): Result<NyutagVerification>
 

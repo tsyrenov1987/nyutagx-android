@@ -12,4 +12,6 @@
     <string name="nyutag_communities_empty">No communities yet. Create the first one!</string>
     <string name="nyutag_community_requests">Requests to join</string>
     <string name="nyutag_invite_friend">Invite a friend</string>
+    <string name="nyutag_language_title">Language</string>
+    <string name="nyutag_language_system">System language</string>
 </resources>

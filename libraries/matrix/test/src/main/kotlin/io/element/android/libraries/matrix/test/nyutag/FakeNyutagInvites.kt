@@ -20,11 +20,18 @@ class FakeNyutagInvites(
     var verificationResult: Result<NyutagVerification> = Result.success(NyutagVerification("sid", 60)),
     var checkResult: Result<Unit> = Result.success(Unit),
     var inviteResult: Result<NyutagInvite> = Result.success(NyutagInvite("ABCD-EFGH", 0L)),
+    var checkInviteResult: Result<String?> = Result.success("@bob:nyutag.chat"),
+    var checkUsernameResult: Result<Unit> = Result.success(Unit),
 ) : NyutagInvites {
+    val checkedUsernames = mutableListOf<String>()
+    var registeredUsername: String? = null
+
     override suspend fun signUpConfig() = config
+    override suspend fun checkInvite(code: String) = checkInviteResult
+    override suspend fun checkUsername(username: String) = checkUsernameResult.also { checkedUsernames += username }
     override suspend fun startVerification(medium: NyutagContactMedium, address: String, inviteCode: String) = verificationResult
     override suspend fun checkVerification(sid: String, token: String) = checkResult
-    override suspend fun register(code: String, username: String, password: String, sid: String?) = registerResult
+    override suspend fun register(code: String, username: String, password: String, sid: String?) = registerResult.also { registeredUsername = username }
     override suspend fun resolveLogin(identifier: String, password: String) = resolveResult
     override suspend fun createInvite(sessionId: SessionId) = inviteResult
 }

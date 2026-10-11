@@ -12,4 +12,6 @@
     <string name="nyutag_communities_empty">Сообществ пока нет. Создайте первое!</string>
     <string name="nyutag_community_requests">Заявки на вступление</string>
     <string name="nyutag_invite_friend">Пригласить друга</string>
+    <string name="nyutag_language_title">Язык</string>
+    <string name="nyutag_language_system">Как в системе</string>
 </resources>

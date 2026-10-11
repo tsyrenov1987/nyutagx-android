@@ -8,7 +8,6 @@
 
 package io.element.android.features.login.impl.screens.onboarding
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -49,8 +47,8 @@ import io.element.android.libraries.designsystem.theme.components.Button
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.matrix.api.auth.OAuthDetails
 import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPermissionDialogView
 import io.element.android.libraries.testtags.TestTags
@@ -133,16 +131,21 @@ private fun AddFirstAccountScaffold(
     modifier: Modifier = Modifier,
 ) {
     OnBoardingPage(
-        modifier = modifier,
+        // Нютаг: свой фон под знаком вместо картинки Element.
+        modifier = if (state.onBoardingLogoResId != null) modifier.nyutagStartBackground() else modifier,
         renderBackground = state.onBoardingLogoResId == null,
         content = {
             Box(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (state.onBoardingLogoResId != null) {
-                    OnBoardingLogo(
-                        onBoardingLogoResId = state.onBoardingLogoResId,
+                    NyutagStartContent(
+                        state = state,
+                        logoResId = state.onBoardingLogoResId,
                     )
+                    if (!state.showBackButton) {
+                        NyutagLanguageChip(modifier = Modifier.align(Alignment.TopEnd))
+                    }
                 } else {
                     OnBoardingContent(state = state)
                 }
@@ -244,23 +247,6 @@ private fun OnBoardingContent(state: OnBoardingState) {
     }
 }
 
-@Composable
-private fun OnBoardingLogo(
-    onBoardingLogoResId: Int,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = painterResource(id = onBoardingLogoResId),
-            contentDescription = null
-        )
-    }
-}
 
 @Composable
 private fun OnBoardingButtons(
@@ -277,11 +263,8 @@ private fun OnBoardingButtons(
     }
 
     ButtonColumnMolecule {
-        val signInButtonStringRes = if (state.canLoginWithQrCode || state.canCreateAccount) {
-            R.string.screen_onboarding_sign_in_manually
-        } else {
-            CommonStrings.action_continue
-        }
+        // Нютаг: как на iOS — просто «Войти», без «вручную» и адреса сервера.
+        val signInButtonStringRes = R.string.nyutag_start_sign_in
         if (state.canLoginWithQrCode) {
             Button(
                 text = stringResource(id = R.string.screen_onboarding_sign_in_with_qr_code),
@@ -303,7 +286,7 @@ private fun OnBoardingButtons(
             )
         } else {
             Button(
-                text = stringResource(id = R.string.screen_onboarding_sign_in_to, defaultAccountProvider.friendlyServerName()),
+                text = stringResource(id = signInButtonStringRes),
                 showProgress = isLoading,
                 onClick = {
                     state.eventSink(OnBoardingEvent.OnSignIn(defaultAccountProvider))
@@ -314,8 +297,8 @@ private fun OnBoardingButtons(
             )
         }
         if (state.canCreateAccount) {
-            TextButton(
-                text = stringResource(id = R.string.screen_onboarding_sign_up),
+            OutlinedButton(
+                text = stringResource(id = R.string.nyutag_start_have_invite),
                 onClick = onCreateAccount,
                 modifier = Modifier
                     .fillMaxWidth()

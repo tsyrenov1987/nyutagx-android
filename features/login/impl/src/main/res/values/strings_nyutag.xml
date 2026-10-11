@@ -43,4 +43,21 @@
     <string name="nyutag_contact_error_code_expired">The code has expired. Request a new one.</string>
     <string name="nyutag_contact_error_attempts">Too many wrong codes. Request a new one.</string>
     <string name="nyutag_login_identifier_hint">Username, phone or email</string>
+    <string name="nyutag_start_sign_in">Sign in</string>
+    <string name="nyutag_start_have_invite">I have an invitation</string>
+    <string name="nyutag_signup_step">Step %1$d of %2$d</string>
+    <string name="nyutag_signup_code_title">Enter the invitation code</string>
+    <string name="nyutag_signup_paste">Paste</string>
+    <string name="nyutag_signup_contact_subtitle">We will send a code to confirm it. Nobody else will see it.</string>
+    <string name="nyutag_signup_name_title">What is your name?</string>
+    <string name="nyutag_signup_name_subtitle">Friends will see this name in chats.</string>
+    <string name="nyutag_signup_name_label">Name</string>
+    <string name="nyutag_signup_username_footer">Username for signing in: %1$s</string>
+    <string name="nyutag_signup_username_edit">Change username</string>
+    <string name="nyutag_signup_password_title">Create a password</string>
+    <string name="nyutag_signup_password_subtitle">At least 8 characters. You will use it to sign in on other devices.</string>
+    <string name="nyutag_signup_password_repeat">Repeat the password</string>
+    <string name="nyutag_signup_password_mismatch">The passwords do not match.</string>
+    <string name="nyutag_signup_creating">Creating the account…</string>
+    <string name="nyutag_signup_invited_by">Invitation from %1$s</string>
 </resources>

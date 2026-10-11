@@ -1,5 +1,5 @@
 /*
- * Нютаг — регистрация: приглашение + подтверждённый телефон или почта, затем обычный вход паролем.
+ * Нютаг — регистрация по шагам: код приглашения, подтверждённый телефон или почта, имя и ник, пароль; затем обычный вход паролем.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -9,23 +9,27 @@ package io.element.android.features.login.impl.screens.invitesignup
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Inject
 import io.element.android.features.login.impl.accountprovider.AccountProviderDataSource
 import io.element.android.features.login.impl.accountprovider.SaveAccountProviderToHistory
-import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.di.annotations.AppCoroutineScope
+import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
-import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
 import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.api.nyutag.NyutagSignUpConfig
 import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -36,23 +40,39 @@ class InviteSignUpPresenter(
     private val authenticationService: MatrixAuthenticationService,
     private val accountProviderDataSource: AccountProviderDataSource,
     private val saveAccountProviderToHistory: SaveAccountProviderToHistory,
+    private val matrixClientProvider: MatrixClientProvider,
+    @AppCoroutineScope private val appCoroutineScope: CoroutineScope,
 ) : Presenter<InviteSignUpState> {
     @Composable
     override fun present(): InviteSignUpState {
         val scope = rememberCoroutineScope()
-        val form = rememberSaveable { mutableStateOf(InviteSignUpForm()) }
-        val config: MutableState<AsyncData<NyutagSignUpConfig>> = remember { mutableStateOf(AsyncData.Uninitialized) }
-        val verification: MutableState<AsyncData<NyutagVerification>> = remember { mutableStateOf(AsyncData.Uninitialized) }
+        var form by rememberSaveable { mutableStateOf(InviteSignUpForm()) }
+        var step by rememberSaveable { mutableStateOf(SignUpStep.Code) }
+        val config: MutableState<NyutagSignUpConfig?> = remember { mutableStateOf(null) }
+        var isCodeValid by rememberSaveable { mutableStateOf(false) }
+        var inviter by rememberSaveable { mutableStateOf<String?>(null) }
+        var verification by remember { mutableStateOf<NyutagVerification?>(null) }
+        var isContactVerified by remember { mutableStateOf(false) }
         val resendIn = remember { mutableIntStateOf(0) }
-        val action: MutableState<AsyncData<SessionId>> = remember { mutableStateOf(AsyncData.Uninitialized) }
+        // Аккаунт уже создан, осталось войти (если вход после регистрации сорвался).
+        var registeredUserId by rememberSaveable { mutableStateOf<String?>(null) }
+        var isBusy by remember { mutableStateOf(false) }
+        var error by remember { mutableStateOf<Throwable?>(null) }
+        var job by remember { mutableStateOf<Job?>(null) }
 
-        LaunchedEffect(Unit) {
-            config.value = AsyncData.Loading()
-            invites.signUpConfig().fold(
-                onSuccess = { config.value = AsyncData.Success(it) },
-                onFailure = { config.value = AsyncData.Failure(it) },
-            )
+        val steps = config.value.steps()
+
+        suspend fun loadConfig() {
+            if (config.value != null) return
+            invites.signUpConfig().onSuccess {
+                config.value = it
+                if (it.phoneAvailable || it.emailAvailable) {
+                    form = form.copy(medium = if (it.phoneAvailable) NyutagContactMedium.Phone else NyutagContactMedium.Email)
+                }
+            }
         }
+
+        LaunchedEffect(Unit) { loadConfig() }
         LaunchedEffect(resendIn.intValue) {
             if (resendIn.intValue > 0) {
                 delay(1_000)
@@ -60,102 +80,243 @@ class InviteSignUpPresenter(
             }
         }
 
-        fun state() = InviteSignUpState(config.value, form.value, verification.value, resendIn.intValue, action.value) {}
+        fun state() = InviteSignUpState(
+            steps = steps,
+            step = step,
+            form = form,
+            isCodeValid = isCodeValid,
+            inviter = inviter,
+            availableMedia = config.value.media(),
+            canSkipContact = config.value?.requireContact == false,
+            verification = verification,
+            resendInSeconds = resendIn.intValue,
+            isBusy = isBusy,
+            error = error,
+            eventSink = {},
+        )
 
-        fun resetVerification() {
-            verification.value = AsyncData.Uninitialized
-            resendIn.intValue = 0
-            form.value = form.value.copy(verifyCode = "")
+        fun advance() {
+            val current = config.value.steps()
+            val index = current.indexOf(step)
+            if (index + 1 < current.size) {
+                error = null
+                step = current[index + 1]
+            }
+        }
+
+        fun launchBusy(block: suspend CoroutineScope.() -> Unit) {
+            job?.cancel()
+            isBusy = true
+            // Новая попытка — старая ошибка больше не к месту.
+            error = null
+            val newJob = scope.launch(block = block)
+            job = newJob
+            newJob.invokeOnCompletion { if (job === newJob) isBusy = false }
+        }
+
+        /** Шаг «Контакт» появляется только по настройкам сервера — без них дальше не идём. */
+        suspend fun advanceFromCode() {
+            loadConfig()
+            if (config.value == null) {
+                error = NyutagInviteException(NyutagInviteException.NETWORK, "No sign-up configuration")
+                return
+            }
+            // Шаги могли измениться после загрузки настроек.
+            val current = config.value.steps()
+            step = current[current.indexOf(SignUpStep.Code) + 1]
+            error = null
+        }
+
+        fun checkCode(advanceOnSuccess: Boolean) {
+            val code = form.code
+            launchBusy {
+                invites.checkInvite(code).fold(
+                    onSuccess = {
+                        if (form.code != code) return@fold
+                        inviter = it
+                        isCodeValid = true
+                        if (advanceOnSuccess) advanceFromCode()
+                    },
+                    onFailure = { if (form.code == code) error = it },
+                )
+            }
+        }
+
+        fun sendVerification() = launchBusy {
+            invites.startVerification(form.medium, form.contact.trim(), form.code).fold(
+                onSuccess = {
+                    Timber.i("Nyutag: ${form.medium.wire} verification code sent")
+                    verification = it
+                    resendIn.intValue = it.resendAfterSeconds
+                },
+                onFailure = { error = it },
+            )
+        }
+
+        fun checkVerification() {
+            val sid = verification?.sid ?: return
+            launchBusy {
+                invites.checkVerification(sid, form.verifyCode).fold(
+                    onSuccess = {
+                        isContactVerified = true
+                        advance()
+                    },
+                    onFailure = { error = it },
+                )
+            }
+        }
+
+        fun checkUsername() {
+            val username = state().username
+            launchBusy {
+                invites.checkUsername(username).fold(
+                    onSuccess = { if (state().username == username) advance() },
+                    onFailure = {
+                        if (state().username != username) return@fold
+                        error = it
+                        if (!form.isEditingUsername && (it as? NyutagInviteException)?.errcode != NyutagInviteException.NETWORK) {
+                            // Ник из имени занят или не подходит — даём поправить его самому.
+                            form = form.copy(username = username, isEditingUsername = true)
+                        }
+                    },
+                )
+            }
+        }
+
+        fun createAccount() {
+            val username = state().username
+            val password = form.password
+            val displayName = form.displayName.trim()
+            launchBusy {
+                if (registeredUserId == null) {
+                    val sid = verification?.sid?.takeIf { isContactVerified }
+                    Timber.i("Nyutag: sign-up started, contact=${sid != null}")
+                    invites.register(form.code, username, password, sid).fold(
+                        onSuccess = { registeredUserId = it },
+                        onFailure = {
+                            Timber.w("Nyutag: sign-up rejected: ${(it as? NyutagInviteException)?.errcode ?: it.javaClass.simpleName}")
+                            error = it
+                            return@launchBusy
+                        },
+                    )
+                }
+                // Аккаунт создан: дальше обычный вход тем же паролем, как с экрана «Войти».
+                authenticationService.setHomeserver(accountProviderDataSource.flow.value.serverNameOrBaseUrl())
+                    .fold(
+                        onSuccess = { authenticationService.login(username, password) },
+                        onFailure = { Result.failure(it) },
+                    )
+                    .onSuccess { sessionId ->
+                        saveAccountProviderToHistory()
+                        // Экран входа закроется сразу после входа, поэтому имя ставим в области приложения.
+                        appCoroutineScope.launch {
+                            matrixClientProvider.getOrRestore(sessionId)
+                                .mapCatching { client -> client.setDisplayName(displayName).getOrThrow() }
+                                .onFailure { Timber.w(it, "Nyutag: display name not set after registration") }
+                        }
+                    }
+                    .onFailure {
+                        Timber.w(it, "Nyutag: sign-in after registration failed")
+                        error = NyutagInviteException(LOGIN_AFTER_REGISTER, it.message ?: "login failed")
+                    }
+            }
         }
 
         fun handleEvent(event: InviteSignUpEvent) {
             when (event) {
-                is InviteSignUpEvent.SetCode -> form.value = form.value.copy(code = event.code)
-                is InviteSignUpEvent.SetMedium -> if (event.medium != form.value.medium) {
-                    form.value = form.value.copy(medium = event.medium, contact = "")
-                    resetVerification()
+                is InviteSignUpEvent.SetCode -> {
+                    val code = NyutagInviteCode.format(event.code)
+                    if (code == form.code) return
+                    form = form.copy(code = code)
+                    isCodeValid = false
+                    inviter = null
+                    error = null
+                    job?.cancel()
+                    // Как в Telegram: код проверяется сам, как только введён целиком.
+                    if (code.length == NyutagInviteCode.LENGTH) checkCode(advanceOnSuccess = false)
                 }
-                is InviteSignUpEvent.SetContact -> if (event.contact != form.value.contact) {
-                    form.value = form.value.copy(contact = event.contact)
-                    if (verification.value !is AsyncData.Uninitialized) resetVerification()
+                is InviteSignUpEvent.SetMedium -> if (event.medium != form.medium) {
+                    form = form.copy(medium = event.medium, contact = "", verifyCode = "")
+                    verification = null
+                    isContactVerified = false
+                    resendIn.intValue = 0
+                    error = null
                 }
-                is InviteSignUpEvent.SetVerifyCode -> form.value = form.value.copy(verifyCode = event.verifyCode.filter { it.isDigit() }.take(6))
-                is InviteSignUpEvent.SetUsername -> form.value = form.value.copy(username = event.username)
-                is InviteSignUpEvent.SetPassword -> form.value = form.value.copy(password = event.password)
-                InviteSignUpEvent.SendCode -> if (state().canSendCode) scope.sendCode(form.value, verification, resendIn)
-                InviteSignUpEvent.Submit -> if (state().submitEnabled && action.value !is AsyncData.Loading) {
-                    scope.submit(form.value, verification.value.dataOrNull()?.sid, action)
+                is InviteSignUpEvent.SetContact -> if (event.contact != form.contact) {
+                    form = form.copy(contact = event.contact, verifyCode = "")
+                    verification = null
+                    isContactVerified = false
+                    resendIn.intValue = 0
+                    error = null
                 }
-                InviteSignUpEvent.ClearError -> {
-                    if (action.value is AsyncData.Failure) action.value = AsyncData.Uninitialized
-                    if (verification.value is AsyncData.Failure) verification.value = AsyncData.Uninitialized
+                is InviteSignUpEvent.SetVerifyCode -> {
+                    val digits = event.verifyCode.filter { it.isDigit() }.take(InviteSignUpState.VERIFY_CODE_LENGTH)
+                    if (digits == form.verifyCode) return
+                    form = form.copy(verifyCode = digits)
+                    error = null
+                    if (digits.length == InviteSignUpState.VERIFY_CODE_LENGTH && !isBusy) checkVerification()
+                }
+                is InviteSignUpEvent.SetDisplayName -> {
+                    form = form.copy(displayName = event.displayName)
+                    error = null
+                }
+                is InviteSignUpEvent.SetUsername -> {
+                    form = form.copy(username = event.username)
+                    error = null
+                }
+                is InviteSignUpEvent.SetPassword -> {
+                    form = form.copy(password = event.password)
+                    error = null
+                }
+                is InviteSignUpEvent.SetPasswordRepeat -> {
+                    form = form.copy(passwordRepeat = event.password)
+                    error = null
+                }
+                InviteSignUpEvent.EditUsername -> {
+                    form = form.copy(username = state().username, isEditingUsername = true)
+                    error = null
+                }
+                InviteSignUpEvent.ResendCode -> if (resendIn.intValue == 0 && !isBusy) {
+                    form = form.copy(verifyCode = "")
+                    sendVerification()
+                }
+                InviteSignUpEvent.SkipContact -> if (step == SignUpStep.Contact && state().canSkipContact) advance()
+                InviteSignUpEvent.Back -> {
+                    val current = config.value.steps()
+                    val index = current.indexOf(step)
+                    if (index > 0) {
+                        job?.cancel()
+                        isBusy = false
+                        error = null
+                        step = current[index - 1]
+                    }
+                }
+                InviteSignUpEvent.Next -> if (state().canContinue) {
+                    when (step) {
+                        SignUpStep.Code -> if (isCodeValid) launchBusy { advanceFromCode() } else checkCode(advanceOnSuccess = true)
+                        SignUpStep.Contact -> if (verification == null) sendVerification() else checkVerification()
+                        SignUpStep.Name -> checkUsername()
+                        SignUpStep.Password -> createAccount()
+                    }
                 }
             }
         }
 
-        return InviteSignUpState(
-            config = config.value,
-            form = form.value,
-            verification = verification.value,
-            resendInSeconds = resendIn.intValue,
-            action = action.value,
-            eventSink = ::handleEvent,
-        )
-    }
-
-    private fun CoroutineScope.sendCode(
-        form: InviteSignUpForm,
-        verification: MutableState<AsyncData<NyutagVerification>>,
-        resendIn: androidx.compose.runtime.MutableIntState,
-    ) = launch {
-        verification.value = AsyncData.Loading()
-        invites.startVerification(form.medium, form.contact.trim(), form.code.trim()).fold(
-            onSuccess = {
-                Timber.i("Nyutag: ${form.medium.wire} verification code sent")
-                verification.value = AsyncData.Success(it)
-                resendIn.intValue = it.resendAfterSeconds
-            },
-            onFailure = {
-                Timber.w("Nyutag: verification not started: ${(it as? NyutagInviteException)?.errcode ?: it.javaClass.simpleName}")
-                verification.value = AsyncData.Failure(it)
-            },
-        )
-    }
-
-    private fun CoroutineScope.submit(form: InviteSignUpForm, sid: String?, action: MutableState<AsyncData<SessionId>>) = launch {
-        action.value = AsyncData.Loading()
-        Timber.i("Nyutag: sign-up started, contact=${sid != null}")
-        val username = form.username.trim().lowercase().removePrefix("@").substringBefore(":")
-        if (sid != null) {
-            invites.checkVerification(sid, form.verifyCode).onFailure {
-                action.value = AsyncData.Failure(it)
-                return@launch
-            }
-        }
-        invites.register(form.code.trim(), username, form.password, sid).onFailure {
-            Timber.w("Nyutag: sign-up rejected: ${(it as? NyutagInviteException)?.errcode ?: it.javaClass.simpleName}")
-            action.value = AsyncData.Failure(it)
-            return@launch
-        }
-        Timber.i("Nyutag: sign-up registered, signing in")
-        // Аккаунт уже создан: при сбое входа ниже человек войдёт обычной кнопкой «Войти» тем же именем и паролем.
-        val loginResult = authenticationService.setHomeserver(accountProviderDataSource.flow.value.serverNameOrBaseUrl())
-            .fold(
-                onSuccess = { authenticationService.login(username, form.password) },
-                onFailure = { Result.failure(it) },
-            )
-        loginResult
-            .onSuccess { sessionId ->
-                saveAccountProviderToHistory()
-                action.value = AsyncData.Success(sessionId)
-            }
-            .onFailure {
-                Timber.w(it, "Nyutag: sign-in after registration failed")
-                action.value = AsyncData.Failure(NyutagInviteException(LOGIN_AFTER_REGISTER, it.message ?: "login failed"))
-            }
+        return state().copy(eventSink = ::handleEvent)
     }
 
     companion object {
         const val LOGIN_AFTER_REGISTER = "NYUTAG_LOGIN_AFTER_REGISTER"
     }
 }
+
+private fun NyutagSignUpConfig?.steps(): List<SignUpStep> = if (this != null && (phoneAvailable || emailAvailable)) {
+    listOf(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Name, SignUpStep.Password)
+} else {
+    listOf(SignUpStep.Code, SignUpStep.Name, SignUpStep.Password)
+}
+
+private fun NyutagSignUpConfig?.media(): List<NyutagContactMedium> = listOfNotNull(
+    NyutagContactMedium.Phone.takeIf { this?.phoneAvailable == true },
+    NyutagContactMedium.Email.takeIf { this?.emailAvailable == true },
+)

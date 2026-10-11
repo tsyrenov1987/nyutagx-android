@@ -12,4 +12,6 @@
     <string name="nyutag_communities_empty">Оршон одоохондоо үгы. Түрүүшынхиеэ байгуулагты!</string>
     <string name="nyutag_community_requests">Орохо гуйлтанууд</string>
     <string name="nyutag_invite_friend">Нүхэрөө уриха</string>
+    <string name="nyutag_language_title">Хэлэн</string>
+    <string name="nyutag_language_system">Системын хэлэн</string>
 </resources>

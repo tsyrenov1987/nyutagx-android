@@ -1,23 +1,23 @@
 /*
- * Nyutag: in-app language switcher option.
+ * Nyutag: in-app language switcher option (settings and the welcome screen).
  * Buryat is paired with Russian as the fallback locale so untranslated strings show in Russian, not English.
  */
 
-package io.element.android.features.preferences.impl.root
+package io.element.android.libraries.designsystem.nyutag
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
-import io.element.android.features.preferences.impl.R
 import io.element.android.libraries.designsystem.components.preferences.DropdownOption
+import io.element.android.libraries.ui.strings.CommonStrings
 
 enum class NyutagLanguageOption(val tags: String) : DropdownOption {
     System("") {
         @Composable
         @ReadOnlyComposable
-        override fun getText(): String = stringResource(R.string.nyutag_language_system)
+        override fun getText(): String = stringResource(CommonStrings.nyutag_language_system)
     },
     Buryat("bxr,ru") {
         @Composable

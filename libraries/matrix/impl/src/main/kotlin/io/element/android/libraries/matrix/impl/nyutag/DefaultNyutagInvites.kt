@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
+import java.net.URLEncoder
 
 @ContributesBinding(AppScope::class)
 class DefaultNyutagInvites(
@@ -40,6 +41,21 @@ class DefaultNyutagInvites(
             emailAvailable = json.optBoolean("email", false),
             phoneAvailable = json.optBoolean("msisdn", false),
         )
+    }
+
+    override suspend fun checkInvite(code: String): Result<String?> = call {
+        val body = JSONObject().put("code", code).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/invites/check", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.optBoolean("valid")) throw response.toException()
+        json.optString("inviter").takeIf { it.isNotEmpty() }
+    }
+
+    override suspend fun checkUsername(username: String): Result<Unit> = call {
+        val path = "/_matrix/client/v3/register/available?username=" + URLEncoder.encode(username, "UTF-8")
+        val response = NyutagHttp.request(context, "GET", path)
+        if (response.status != 200) throw response.toException()
+        if (!response.json().optBoolean("available")) throw NyutagInviteException(NyutagInviteException.USER_IN_USE, "Username is taken")
     }
 
     override suspend fun startVerification(medium: NyutagContactMedium, address: String, inviteCode: String): Result<NyutagVerification> = call {
