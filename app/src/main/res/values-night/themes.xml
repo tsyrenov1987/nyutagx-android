@@ -5,7 +5,7 @@
   ~ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial.
   ~ Please see LICENSE files in the repository root for full details.
   -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.ElementX.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splashscreen_bg_dark</item>
@@ -17,6 +17,8 @@
     </style>
 
     <style name="Theme.ElementX" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Нютаг: MIUI «умная тёмная тема» без этого перекрашивает тёмный текст на светлых кнопках в белый. -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowBackground">@color/splashscreen_bg_dark</item>
         <item name="android:statusBarColor">@color/splashscreen_bg_dark</item>
         <item name="android:navigationBarColor">@color/splashscreen_bg_dark</item>
