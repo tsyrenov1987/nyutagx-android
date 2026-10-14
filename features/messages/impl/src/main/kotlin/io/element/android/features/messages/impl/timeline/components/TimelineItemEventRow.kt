@@ -90,6 +90,7 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemVoiceContent
 import io.element.android.features.messages.impl.timeline.model.event.aTimelineItemImageContent
 import io.element.android.features.messages.impl.timeline.model.event.aTimelineItemTextContent
+import io.element.android.features.messages.impl.timeline.model.event.canReact
 import io.element.android.features.messages.impl.timeline.model.event.ensureActiveLiveLocation
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.features.messages.impl.timeline.protection.mustBeProtected
@@ -157,6 +158,9 @@ val NEGATIVE_MARGIN_FOR_BUBBLE = (-8).dp
 val SENDER_AVATAR_BORDER_WIDTH = 3.dp
 
 private val BUBBLE_INCOMING_OFFSET = 16.dp
+
+// Нютаг: реакция на двойной тап.
+private const val NYUTAG_QUICK_REACTION = "❤️"
 
 @Composable
 fun TimelineItemEventRow(
@@ -560,6 +564,17 @@ private fun TimelineItemEventRowContent(
             interactionSource = interactionSource,
             onClick = onContentClick,
             onLongClick = onLongClick,
+            onDoubleClick = if (
+                timelineMode !is Timeline.Mode.PinnedEvents &&
+                timelineMode !is Timeline.Mode.Media &&
+                timelineRoomInfo.userHasPermissionToSendReaction &&
+                event.isRemote &&
+                event.content.canReact()
+            ) {
+                { onReactionClick(NYUTAG_QUICK_REACTION) }
+            } else {
+                null
+            },
             customBackgroundColor = dangerousContentBubbleColor,
             borderColor = borderColor,
         ) {

@@ -30,4 +30,6 @@
     <string name="nyutag_community_empty_title">Эндэ бүлэг одоохондоо үгы</string>
     <string name="nyutag_community_empty_subtitle">Удангүй админ нэмэхэ. Тиихэдээ нүхэдөө уригты.</string>
     <string name="nyutag_community_invite_text">Нютаг соо «%1$s» оршондо оро: %2$s</string>
+    <string name="nyutag_saved_messages">Хадагалһан</string>
+    <string name="nyutag_saved_messages_topic">Өөртөө тэмдэглэл, холбоос, файлнууд</string>
 </resources>

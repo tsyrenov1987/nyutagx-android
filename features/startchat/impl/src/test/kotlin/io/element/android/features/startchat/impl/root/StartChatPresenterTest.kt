@@ -13,6 +13,7 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.invitepeople.test.FakeStartDMAction
 import io.element.android.features.startchat.api.ConfirmingStartDmWithMatrixUser
 import io.element.android.features.startchat.api.StartDMAction
+import io.element.android.features.startchat.impl.NyutagSavedMessages
 import io.element.android.features.startchat.impl.userlist.FakeUserListPresenter
 import io.element.android.features.startchat.impl.userlist.FakeUserListPresenterFactory
 import io.element.android.features.startchat.impl.userlist.UserListDataStore
@@ -66,6 +67,18 @@ class StartChatPresenterTest {
             awaitItem().also { state ->
                 assertThat(state.startDmAction.isUninitialized()).isTrue()
             }
+        }
+    }
+
+    @Test
+    fun `present - open saved messages emits the room to open`() = runTest {
+        val presenter = createStartChatPresenter(savedMessages = { name, _ ->
+            assertThat(name).isEqualTo("Saved")
+            Result.success(A_ROOM_ID)
+        })
+        presenter.test {
+            awaitItem().eventSink(StartChatEvent.OpenSavedMessages("Saved", "Notes"))
+            assertThat(expectMostRecentItem().startDmAction).isEqualTo(AsyncAction.Success(A_ROOM_ID))
         }
     }
 
@@ -157,12 +170,14 @@ class StartChatPresenterTest {
 
 internal fun createStartChatPresenter(
     startDMAction: StartDMAction = FakeStartDMAction(),
+    savedMessages: NyutagSavedMessages = NyutagSavedMessages { _, _ -> error("not expected") },
 ): StartChatPresenter {
     return StartChatPresenter(
         presenterFactory = FakeUserListPresenterFactory(FakeUserListPresenter()),
         userRepository = FakeUserRepository(),
         userListDataStore = UserListDataStore(),
         startDMAction = startDMAction,
+        savedMessages = savedMessages,
         buildMeta = aBuildMeta(),
     )
 }

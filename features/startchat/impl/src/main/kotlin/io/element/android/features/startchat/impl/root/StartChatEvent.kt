@@ -13,4 +13,5 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 sealed interface StartChatEvent {
     data class StartDM(val matrixUser: MatrixUser) : StartChatEvent
     data object CancelStartDM : StartChatEvent
+    data class OpenSavedMessages(val name: String, val topic: String) : StartChatEvent
 }

@@ -66,6 +66,8 @@ fun MessageEventBubble(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    // Нютаг: двойной тап по сообщению — быстрая реакция, как в Telegram.
+    onDoubleClick: (() -> Unit)? = null,
     customBackgroundColor: Color? = null,
     borderColor: Color? = null,
     content: @Composable BoxScope.() -> Unit = {},
@@ -77,6 +79,7 @@ fun MessageEventBubble(
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
+                onDoubleClick = onDoubleClick,
                 indication = ripple(),
                 interactionSource = interactionSource
             )

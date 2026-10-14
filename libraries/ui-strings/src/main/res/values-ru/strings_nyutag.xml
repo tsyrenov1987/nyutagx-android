@@ -30,4 +30,6 @@
     <string name="nyutag_community_empty_title">Здесь пока нет групп</string>
     <string name="nyutag_community_empty_subtitle">Скоро их добавит админ. А пока позовите друзей.</string>
     <string name="nyutag_community_invite_text">Вступайте в сообщество «%1$s» в Нютаге: %2$s</string>
+    <string name="nyutag_saved_messages">Избранное</string>
+    <string name="nyutag_saved_messages_topic">Заметки, ссылки и файлы для себя</string>
 </resources>

@@ -210,7 +210,10 @@ private fun NyutagPresence.subtitle(): String {
     val time = DateFormat.getTimeFormat(context).format(Date(lastActive))
     val day = Calendar.getInstance().apply { timeInMillis = lastActive }
     val today = Calendar.getInstance().apply { timeInMillis = now }
-    val yesterday = Calendar.getInstance().apply { timeInMillis = now; add(Calendar.DAY_OF_YEAR, -1) }
+    val yesterday = Calendar.getInstance().apply {
+        timeInMillis = now
+        add(Calendar.DAY_OF_YEAR, -1)
+    }
     return when {
         day.isSameDay(today) -> stringResource(CommonStrings.nyutag_presence_today_at, time)
         day.isSameDay(yesterday) -> stringResource(CommonStrings.nyutag_presence_yesterday_at, time)

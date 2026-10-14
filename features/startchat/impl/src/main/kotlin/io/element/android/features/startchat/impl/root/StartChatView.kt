@@ -175,6 +175,15 @@ private fun CreateRoomActionButtonsList(
         contentPadding = lazyColumnContentPadding,
     ) {
         item {
+            val name = stringResource(CommonStrings.nyutag_saved_messages)
+            val topic = stringResource(CommonStrings.nyutag_saved_messages_topic)
+            CreateRoomActionButton(
+                iconRes = CompoundDrawables.ic_compound_favourite,
+                text = name,
+                onClick = { state.eventSink(StartChatEvent.OpenSavedMessages(name, topic)) },
+            )
+        }
+        item {
             CreateRoomActionButton(
                 iconRes = CompoundDrawables.ic_compound_plus,
                 text = stringResource(id = R.string.screen_create_room_action_create_room),

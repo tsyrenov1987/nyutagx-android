@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import dev.zacsweers.metro.Inject
 import io.element.android.features.startchat.api.StartDMAction
+import io.element.android.features.startchat.impl.NyutagSavedMessages
 import io.element.android.features.startchat.impl.userlist.SelectionMode
 import io.element.android.features.startchat.impl.userlist.UserListDataStore
 import io.element.android.features.startchat.impl.userlist.UserListPresenter
@@ -32,6 +33,7 @@ class StartChatPresenter(
     userRepository: UserRepository,
     userListDataStore: UserListDataStore,
     private val startDMAction: StartDMAction,
+    private val savedMessages: NyutagSavedMessages,
     private val buildMeta: BuildMeta,
 ) : Presenter<StartChatState> {
     private val presenter = presenterFactory.create(
@@ -59,6 +61,13 @@ class StartChatPresenter(
                     )
                 }
                 StartChatEvent.CancelStartDM -> startDmActionState.value = AsyncAction.Uninitialized
+                is StartChatEvent.OpenSavedMessages -> localCoroutineScope.launch {
+                    startDmActionState.value = AsyncAction.Loading
+                    startDmActionState.value = savedMessages.roomId(event.name, event.topic).fold(
+                        onSuccess = { AsyncAction.Success(it) },
+                        onFailure = { AsyncAction.Failure(it) },
+                    )
+                }
             }
         }
 

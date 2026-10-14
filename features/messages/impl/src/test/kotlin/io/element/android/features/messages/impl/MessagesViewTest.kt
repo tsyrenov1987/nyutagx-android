@@ -175,6 +175,8 @@ class MessagesViewTest : RobolectricTest() {
         )
         // Cannot perform click on "Text", it's not detected. Use tag instead
         onAllNodesWithTag(TestTags.messageBubble.value).onFirst().performClick()
+        // Нютаг: у пузыря есть двойной тап (реакция), одиночный клик срабатывает после окна двойного.
+        mainClock.advanceTimeBy(1_000)
         callback.assertSuccess()
     }
 
