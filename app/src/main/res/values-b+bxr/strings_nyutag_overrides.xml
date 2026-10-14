@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: бурятские переопределения строк Element X. Черновик для проверки носителем. -->
+<resources>
+    <!-- Поиск по сообщениям -->
+    <string name="start_searching_title">Бэдэржэ эхилэгты…</string>
+    <string name="start_searching_subtitle">Чат, зурбас бэдэрэгты</string>
+    <string name="search_section_chats">Чадууд</string>
+    <string name="search_section_messages">Зурбаснууд</string>
+    <string name="search_from_your_messages_header">Таны зурбаснуудһаа</string>
+    <string name="search_no_results_title">Юумэн олдобогүй</string>
+    <string name="search_no_results_subtitle">«%1$s» гэжэ юумэн олдобогүй. Ондоо үгэ оролдогты.</string>
+    <string name="screen_search_recent_searches_section_title">Һүүлшын бэдэрэлгэнүүд</string>
+</resources>

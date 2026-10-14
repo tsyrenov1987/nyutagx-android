@@ -21,4 +21,13 @@
     <string name="common_app_settings">Настройки приложения</string>
     <string name="common_media_upload_quality">Качество отправки медиа</string>
     <string name="common_moderation_and_safety">Модерация и безопасность</string>
+    <!-- Поиск по сообщениям -->
+    <string name="start_searching_title">Начните поиск…</string>
+    <string name="start_searching_subtitle">Ищите чаты и сообщения</string>
+    <string name="search_section_chats">Чаты</string>
+    <string name="search_section_messages">Сообщения</string>
+    <string name="search_from_your_messages_header">Из ваших сообщений</string>
+    <string name="search_no_results_title">Ничего не найдено</string>
+    <string name="search_no_results_subtitle">По запросу «%1$s» ничего не найдено. Попробуйте другие слова.</string>
+    <string name="screen_search_recent_searches_section_title">Недавние запросы</string>
 </resources>

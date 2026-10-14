@@ -152,7 +152,8 @@ enum class FeatureFlags(
         key = "feature.message_search",
         title = "Message search",
         description = "Index messages locally so they can be searched. Only messages received while enabled are indexed.",
-        defaultValue = { false },
+        // Нютаг: поиск по сообщениям включён у всех.
+        defaultValue = { true },
         isFinished = false,
     ),
     NewTimelineEventRenderer(
