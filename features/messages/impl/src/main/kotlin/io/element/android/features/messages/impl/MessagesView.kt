@@ -106,6 +106,7 @@ import io.element.android.libraries.designsystem.components.ExpandableBottomShee
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.components.dialogs.TextFieldDialog
 import io.element.android.libraries.designsystem.components.rememberExpandableBottomSheetLayoutState
+import io.element.android.libraries.designsystem.nyutag.NyutagChatWallpaper
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.text.toAnnotatedString
@@ -560,6 +561,8 @@ private fun MessagesViewContent(
         }
 
         Box {
+            // Нютаг: фон-узор под лентой (вариант — в настройках).
+            NyutagChatWallpaper(modifier = Modifier.matchParentSize())
             val scrollBehavior = PinnedMessagesBannerViewDefaults.rememberScrollBehavior(
                 pinnedMessagesCount = (state.pinnedMessagesBannerState as? PinnedMessagesBannerState.Visible)?.pinnedMessagesCount() ?: 0,
             )

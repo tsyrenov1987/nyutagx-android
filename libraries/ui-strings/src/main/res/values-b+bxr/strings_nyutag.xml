@@ -36,4 +36,10 @@
     <string name="nyutag_room_search_hint">Бэшэг бэдэрхэ</string>
     <string name="nyutag_room_search_empty">Юуншье олдобогүй</string>
     <string name="nyutag_room_search_note">Энэ утаһан дээрэ бэдэрэлгэ эхилхэһээ урда ерэһэн бэшэгүүд олдохогүй байжа магад.</string>
+    <string name="nyutag_wallpaper_title">Хөөрэлдөөнэй дэбисхэр</string>
+    <string name="nyutag_wallpaper_sky">Тэнгэри</string>
+    <string name="nyutag_wallpaper_steppe">Тала</string>
+    <string name="nyutag_wallpaper_sand">Элһэн</string>
+    <string name="nyutag_wallpaper_dusk">Бүрэнхы</string>
+    <string name="nyutag_wallpaper_plain">Хээгүй</string>
 </resources>

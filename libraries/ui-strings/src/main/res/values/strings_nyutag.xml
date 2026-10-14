@@ -36,4 +36,10 @@
     <string name="nyutag_room_search_hint">Search messages</string>
     <string name="nyutag_room_search_empty">Nothing found</string>
     <string name="nyutag_room_search_note">Messages that arrived before search was turned on for this device may not be found.</string>
+    <string name="nyutag_wallpaper_title">Chat background</string>
+    <string name="nyutag_wallpaper_sky">Sky</string>
+    <string name="nyutag_wallpaper_steppe">Steppe</string>
+    <string name="nyutag_wallpaper_sand">Sand</string>
+    <string name="nyutag_wallpaper_dusk">Dusk</string>
+    <string name="nyutag_wallpaper_plain">No pattern</string>
 </resources>

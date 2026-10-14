@@ -36,4 +36,10 @@
     <string name="nyutag_room_search_hint">Найти сообщение</string>
     <string name="nyutag_room_search_empty">Ничего не найдено</string>
     <string name="nyutag_room_search_note">Сообщения, пришедшие до включения поиска на этом устройстве, могут не находиться.</string>
+    <string name="nyutag_wallpaper_title">Фон чатов</string>
+    <string name="nyutag_wallpaper_sky">Небо</string>
+    <string name="nyutag_wallpaper_steppe">Степь</string>
+    <string name="nyutag_wallpaper_sand">Песок</string>
+    <string name="nyutag_wallpaper_dusk">Сумерки</string>
+    <string name="nyutag_wallpaper_plain">Без узора</string>
 </resources>
