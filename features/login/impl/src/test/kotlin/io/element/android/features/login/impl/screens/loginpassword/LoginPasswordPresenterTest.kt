@@ -15,7 +15,6 @@ import io.element.android.features.login.impl.accountprovider.anAccountProviderD
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.accountprovider.matrixOrgAccountProvider
 import io.element.android.libraries.matrix.api.core.SessionId
-import io.element.android.libraries.matrix.test.nyutag.FakeNyutagInvites
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.A_PASSWORD
 import io.element.android.libraries.matrix.test.A_SESSION_ID
@@ -23,6 +22,7 @@ import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.A_USER_NAME_2
 import io.element.android.libraries.matrix.test.auth.FakeMatrixAuthenticationService
 import io.element.android.libraries.matrix.test.auth.aMatrixHomeServerDetails
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagInvites
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.preferences.test.InMemoryAppPreferencesStore
 import io.element.android.tests.testutils.WarmUpRule

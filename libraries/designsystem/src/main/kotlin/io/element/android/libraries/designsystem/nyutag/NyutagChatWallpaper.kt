@@ -97,11 +97,21 @@ private class Glyph(val x: Float, val y: Float, val angle: Float, val size: Floa
 private const val TILE = 240f
 
 private val LAYOUT = listOf(
-    Glyph(24f, 22f, -12f, 22f), Glyph(92f, 40f, 10f, 20f), Glyph(170f, 18f, -6f, 22f),
-    Glyph(214f, 70f, 16f, 18f), Glyph(40f, 92f, 8f, 20f), Glyph(128f, 104f, -14f, 24f),
-    Glyph(196f, 136f, 6f, 20f), Glyph(22f, 160f, -8f, 22f), Glyph(84f, 172f, 14f, 18f),
-    Glyph(150f, 186f, -10f, 22f), Glyph(220f, 214f, 12f, 18f), Glyph(60f, 226f, -4f, 20f),
-    Glyph(110f, 60f, 20f, 16f), Glyph(16f, 116f, -18f, 16f), Glyph(176f, 84f, -20f, 16f),
+    Glyph(24f, 22f, -12f, 22f),
+    Glyph(92f, 40f, 10f, 20f),
+    Glyph(170f, 18f, -6f, 22f),
+    Glyph(214f, 70f, 16f, 18f),
+    Glyph(40f, 92f, 8f, 20f),
+    Glyph(128f, 104f, -14f, 24f),
+    Glyph(196f, 136f, 6f, 20f),
+    Glyph(22f, 160f, -8f, 22f),
+    Glyph(84f, 172f, 14f, 18f),
+    Glyph(150f, 186f, -10f, 22f),
+    Glyph(220f, 214f, 12f, 18f),
+    Glyph(60f, 226f, -4f, 20f),
+    Glyph(110f, 60f, 20f, 16f),
+    Glyph(16f, 116f, -18f, 16f),
+    Glyph(176f, 84f, -20f, 16f),
     Glyph(130f, 230f, 8f, 16f),
 )
 
@@ -117,10 +127,22 @@ fun NyutagWallpaper(style: NyutagWallpaperStyle, modifier: Modifier = Modifier, 
     val background = style.background(isLight) ?: return
     val ink = style.ink(isLight) ?: return
     val painters = listOf(
-        CompoundIcons.Chat(), CompoundIcons.Favourite(), CompoundIcons.DarkMode(), CompoundIcons.Cloud(),
-        CompoundIcons.Audio(), CompoundIcons.TakePhoto(), CompoundIcons.Tree(), CompoundIcons.Home(),
-        CompoundIcons.Send(), CompoundIcons.Reaction(), CompoundIcons.Sticker(), CompoundIcons.VoiceCall(),
-        CompoundIcons.LocationPin(), CompoundIcons.Image(), CompoundIcons.Space(), CompoundIcons.Mention(),
+        CompoundIcons.Chat(),
+        CompoundIcons.Favourite(),
+        CompoundIcons.DarkMode(),
+        CompoundIcons.Cloud(),
+        CompoundIcons.Audio(),
+        CompoundIcons.TakePhoto(),
+        CompoundIcons.Tree(),
+        CompoundIcons.Home(),
+        CompoundIcons.Send(),
+        CompoundIcons.Reaction(),
+        CompoundIcons.Sticker(),
+        CompoundIcons.VoiceCall(),
+        CompoundIcons.LocationPin(),
+        CompoundIcons.Image(),
+        CompoundIcons.Space(),
+        CompoundIcons.Mention(),
     ).map { rememberVectorPainter(it) }
     val filter = remember(ink) { ColorFilter.tint(ink) }
     Canvas(modifier = modifier.background(background)) {

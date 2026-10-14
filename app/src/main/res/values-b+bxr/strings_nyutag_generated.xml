@@ -36,6 +36,7 @@
     <string name="screen_roomlist_filter_people">Хубиин</string>
     <string name="screen_roomlist_knock_event_sent_description">Гуйлта эльгээгдэбэ</string>
     <string name="screen_security_and_privacy_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
+    <string name="screen_server_confirmation_message_login_matrix_dot_org">Өөрынхидтэеэ бэшэлгэ, дуудалга. Бүхы юумэн таны утаһан дээрэ шифрлэгдэнэ.</string>
     <string name="screen_signout_confirmation_dialog_content">Энэ түхеэрэлгэ дээрэ аккаунтһаа гарахадаа итгэлтэй гүт?</string>
     <string name="screen_signout_confirmation_dialog_submit">Гараха</string>
     <string name="screen_signout_confirmation_dialog_title">Аккаунтһаа гараха гүт?</string>

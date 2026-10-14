@@ -247,7 +247,6 @@ private fun OnBoardingContent(state: OnBoardingState) {
     }
 }
 
-
 @Composable
 private fun OnBoardingButtons(
     state: OnBoardingState,

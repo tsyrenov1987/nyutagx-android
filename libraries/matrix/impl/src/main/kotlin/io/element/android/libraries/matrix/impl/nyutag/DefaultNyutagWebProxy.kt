@@ -104,7 +104,10 @@ class DefaultNyutagWebProxy(
             }
             up.soTimeout = 0
             client.soTimeout = 0
-            client.getOutputStream().apply { write("HTTP/1.1 200 Connection established\r\n\r\n".toByteArray()); flush() }
+            client.getOutputStream().apply {
+                write("HTTP/1.1 200 Connection established\r\n\r\n".toByteArray())
+                flush()
+            }
             Timber.i("Nyutag web proxy: CONNECT $host:$port ok in ${System.currentTimeMillis() - started} ms")
             val upBytes = LongArray(1)
             val downward = pool.submit(Callable { pipe(up.getInputStream(), client.getOutputStream(), client) })

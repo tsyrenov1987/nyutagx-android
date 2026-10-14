@@ -40,6 +40,7 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
+
     // Нютаг: единственный сервер — ядро nyutag.chat за «Кильватером»; выбор чужих серверов закрыт.
     override fun accountProviderAllowList(): List<AccountProvider> = listOf(nyutagAccountProvider)
     override fun canConnectToAnyAccountProvider(): Boolean = false

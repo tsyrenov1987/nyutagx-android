@@ -89,7 +89,12 @@ internal fun NyutagStartContent(
             contentDescription = null,
             modifier = Modifier
                 .size(112.dp)
-                .shadow(elevation = 18.dp, shape = shape, ambientColor = ElementTheme.colors.bgActionPrimaryRest, spotColor = ElementTheme.colors.bgActionPrimaryRest),
+                .shadow(
+                    elevation = 18.dp,
+                    shape = shape,
+                    ambientColor = ElementTheme.colors.bgActionPrimaryRest,
+                    spotColor = ElementTheme.colors.bgActionPrimaryRest
+                ),
         )
         Spacer(Modifier.weight(1f))
         Text(

@@ -10,7 +10,6 @@
 
 package io.element.android.features.login.impl.screens.loginpassword
 
-import io.element.android.features.login.impl.R
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -24,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runAndroidComposeUiTest
+import io.element.android.features.login.impl.R
 import io.element.android.libraries.matrix.test.A_PASSWORD
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.testtags.TestTags

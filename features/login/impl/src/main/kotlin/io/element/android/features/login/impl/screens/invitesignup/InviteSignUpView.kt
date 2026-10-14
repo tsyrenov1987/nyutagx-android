@@ -353,7 +353,14 @@ private fun ContactStep(state: InviteSignUpState, onDone: () -> Unit) {
     val isPhone = state.form.medium == NyutagContactMedium.Phone
     StepHeader(
         icon = if (isPhone) CompoundIcons.Mobile() else CompoundIcons.Email(),
-        title = stringResource(R.string.nyutag_contact_title),
+        // Один способ (сейчас только почта) — заголовок называет его, а не «Телефон или e-mail».
+        title = stringResource(
+            when {
+                state.availableMedia.size > 1 -> R.string.nyutag_contact_title
+                isPhone -> R.string.nyutag_contact_phone
+                else -> R.string.nyutag_contact_email
+            }
+        ),
         subtitle = stringResource(R.string.nyutag_signup_contact_subtitle),
     )
     if (state.availableMedia.size > 1) {

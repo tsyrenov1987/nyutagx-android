@@ -21,8 +21,8 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.paths.SessionPaths
 import io.element.android.libraries.matrix.impl.analytics.UtdTracker
-import io.element.android.libraries.matrix.impl.paths.getSessionPaths
 import io.element.android.libraries.matrix.impl.nyutag.NyutagTunnel
+import io.element.android.libraries.matrix.impl.paths.getSessionPaths
 import io.element.android.libraries.matrix.impl.proxy.ProxyProvider
 import io.element.android.libraries.matrix.impl.room.TimelineEventFilterFactory
 import io.element.android.libraries.matrix.impl.scanner.RustContentScanner
