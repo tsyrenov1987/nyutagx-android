@@ -23,6 +23,7 @@ interface StartChatNavigator : Plugin {
     fun onShowJoinRoomByAddress()
     fun onDismissJoinRoomByAddress()
     fun onOpenRoomDirectory()
+    fun onFindByPhone() {}
 }
 
 class DefaultStartChatNavigator(
@@ -42,6 +43,10 @@ class DefaultStartChatNavigator(
 
     override fun onShowJoinRoomByAddress() {
         overlay.show(NavTarget.JoinByAddress)
+    }
+
+    override fun onFindByPhone() {
+        backstack.push(NavTarget.FindByPhone)
     }
 
     override fun onDismissJoinRoomByAddress() {

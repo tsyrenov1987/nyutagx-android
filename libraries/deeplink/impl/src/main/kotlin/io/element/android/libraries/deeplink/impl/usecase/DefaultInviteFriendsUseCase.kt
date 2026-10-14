@@ -20,6 +20,7 @@ import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
+import io.element.android.libraries.matrix.api.nyutag.nyutagInviteLink
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.toolbox.api.strings.StringProvider
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +55,7 @@ class DefaultInviteFriendsUseCase(
                         host.startSharePlainTextIntent(
                             activityResultLauncher = null,
                             chooserTitle = stringProvider.getString(CommonStrings.action_invite_friends),
-                            text = stringProvider.getString(R.string.nyutag_invite_share_text, appName, invite.code),
+                            text = stringProvider.getString(R.string.nyutag_invite_share_text, appName, invite.code, nyutagInviteLink(invite.code)),
                             extraTitle = stringProvider.getString(CommonStrings.invite_friends_rich_title, appName),
                             noActivityFoundMessage = stringProvider.getString(AndroidUtilsR.string.error_no_compatible_app_found)
                         )

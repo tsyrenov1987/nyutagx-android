@@ -157,6 +157,7 @@ fun InviteSignUpView(
                     when (step) {
                         SignUpStep.Code -> CodeStep(state, onDone = next)
                         SignUpStep.Contact -> ContactStep(state, onDone = next)
+                        SignUpStep.Phone -> PhoneStep(state, onDone = next)
                         SignUpStep.Name -> NameStep(state, onDone = next)
                         SignUpStep.Password -> PasswordStep(state, onDone = next)
                     }
@@ -441,6 +442,35 @@ private fun ContactStep(state: InviteSignUpState, onDone: () -> Unit) {
 }
 
 @Composable
+private fun PhoneStep(state: InviteSignUpState, onDone: () -> Unit) {
+    StepHeader(
+        icon = CompoundIcons.Mobile(),
+        title = stringResource(R.string.nyutag_contact_phone),
+        subtitle = stringResource(R.string.nyutag_signup_phone_subtitle),
+    )
+    var phone by textFieldState(stateValue = state.form.phone)
+    TextField(
+        label = stringResource(R.string.nyutag_contact_phone),
+        value = phone,
+        placeholder = stringResource(R.string.nyutag_contact_phone_hint),
+        onValueChange = {
+            phone = it.oneLine()
+            state.eventSink(InviteSignUpEvent.SetPhone(phone))
+        },
+        supportingText = state.error?.let { stringResource(inviteErrorRes(it)) },
+        validity = if (state.error != null) TextFieldValidity.Invalid else TextFieldValidity.None,
+        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(rememberAutoFocus())
+            .bringIntoViewOnImeVisible()
+            .semantics { contentType = ContentType.PhoneNumber },
+    )
+}
+
+@Composable
 private fun NameStep(state: InviteSignUpState, onDone: () -> Unit) {
     StepHeader(
         icon = CompoundIcons.UserProfileSolid(),
@@ -593,6 +623,8 @@ private fun inviteErrorRes(error: Throwable): Int = when ((error as? NyutagInvit
     NyutagInviteException.BAD_CONTACT -> R.string.nyutag_contact_error_bad
     NyutagInviteException.CONTACT_IN_USE -> R.string.nyutag_contact_error_in_use
     NyutagInviteException.CONTACT_REQUIRED -> R.string.nyutag_contact_error_required
+    NyutagInviteException.EMAIL_REQUIRED -> R.string.nyutag_signup_error_email_required
+    NyutagInviteException.PHONE_REQUIRED -> R.string.nyutag_signup_error_phone_required
     NyutagInviteException.CONTACT_NOT_VERIFIED, NyutagInviteException.UNKNOWN_SESSION -> R.string.nyutag_contact_error_not_verified
     NyutagInviteException.CHANNEL_UNAVAILABLE -> R.string.nyutag_contact_error_channel_unavailable
     NyutagInviteException.DELIVERY_FAILED -> R.string.nyutag_contact_error_delivery
@@ -604,7 +636,7 @@ private fun inviteErrorRes(error: Throwable): Int = when ((error as? NyutagInvit
 }
 
 internal class InviteSignUpStateProvider : PreviewParameterProvider<InviteSignUpState> {
-    private val allSteps = listOf(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Name, SignUpStep.Password)
+    private val allSteps = listOf(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Phone, SignUpStep.Name, SignUpStep.Password)
     private val code = "7KQ2-M9XA"
     override val values = sequenceOf(
         aState(SignUpStep.Code),
@@ -617,6 +649,7 @@ internal class InviteSignUpStateProvider : PreviewParameterProvider<InviteSignUp
             verification = NyutagVerification("sid", 60),
             resendIn = 42,
         ),
+        aState(SignUpStep.Phone, InviteSignUpForm(code = code, phone = "+7 900 000-00-00")),
         aState(SignUpStep.Name, InviteSignUpForm(code = code, displayName = "Доржо Цыренов")),
         aState(
             SignUpStep.Name,

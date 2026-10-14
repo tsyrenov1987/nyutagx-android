@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="nyutag_invite_creating">Создаю приглашение…</string>
-    <string name="nyutag_invite_share_text">Приглашаю тебя в %1$s, наш мессенджер. Код приглашения: %2$s. Он сработает один раз и действует 7 дней. Установи %1$s и нажми «У меня есть приглашение».</string>
+    <string name="nyutag_invite_share_text">Приглашаю тебя в %1$s, наш мессенджер: %3$s\nКод приглашения: %2$s (сработает один раз, действует 7 дней). Установи %1$s и нажми «У меня есть приглашение».</string>
     <string name="nyutag_invite_limit">Лимит приглашений: не больше 10 неиспользованных кодов и 20 в сутки.</string>
     <string name="nyutag_invite_network">Нет связи с сервером. Попробуйте ещё раз.</string>
     <string name="nyutag_invite_failed">Не удалось создать приглашение. Попробуйте позже.</string>

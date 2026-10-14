@@ -24,6 +24,7 @@ import io.element.android.annotations.ContributesNode
 import io.element.android.features.createroom.api.CreateRoomEntryPoint
 import io.element.android.features.startchat.DefaultStartChatNavigator
 import io.element.android.features.startchat.api.StartChatEntryPoint
+import io.element.android.features.startchat.impl.byphone.FindByPhoneNode
 import io.element.android.features.startchat.impl.joinbyaddress.JoinRoomByAddressNode
 import io.element.android.features.startchat.impl.root.StartChatNode
 import io.element.android.libraries.architecture.BackstackView
@@ -59,6 +60,9 @@ class StartChatFlowNode(
 
         @Parcelize
         data object JoinByAddress : NavTarget
+
+        @Parcelize
+        data object FindByPhone : NavTarget
     }
 
     private val callback: StartChatEntryPoint.Callback = callback()
@@ -91,6 +95,9 @@ class StartChatFlowNode(
             }
             NavTarget.JoinByAddress -> {
                 createNode<JoinRoomByAddressNode>(buildContext = buildContext, plugins = listOf(navigator))
+            }
+            NavTarget.FindByPhone -> {
+                createNode<FindByPhoneNode>(buildContext = buildContext, plugins = listOf(navigator))
             }
         }
     }

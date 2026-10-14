@@ -60,4 +60,7 @@
     <string name="nyutag_signup_password_mismatch">The passwords do not match.</string>
     <string name="nyutag_signup_creating">Creating the account…</string>
     <string name="nyutag_signup_invited_by">Invitation from %1$s</string>
+    <string name="nyutag_signup_phone_subtitle">Friends will find you in Nyutag by this number. Nobody will see the number itself.</string>
+    <string name="nyutag_signup_error_email_required">Confirm your email with the code from the letter.</string>
+    <string name="nyutag_signup_error_phone_required">Enter your phone number.</string>
 </resources>

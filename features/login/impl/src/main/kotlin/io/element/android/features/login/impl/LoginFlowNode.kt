@@ -132,9 +132,9 @@ class LoginFlowNode(
             val initialLogin: String = "",
         ) : NavTarget
 
-        // Нютаг: регистрация только по одноразовому коду приглашения.
+        // Нютаг: регистрация только по одноразовому коду приглашения; [code] — из ссылки-приглашения.
         @Parcelize
-        data object InviteSignUp : NavTarget
+        data class InviteSignUp(val code: String = "") : NavTarget
     }
 
     override fun resolve(navTarget: NavTarget, buildContext: BuildContext): Node {
@@ -163,7 +163,11 @@ class LoginFlowNode(
                 val callback = object : OnBoardingNode.Callback {
                     override fun navigateToSignUpFlow() {
                         // Нютаг: вместо веб-регистрации на сервере — экран «Регистрация по приглашению».
-                        backstack.push(NavTarget.InviteSignUp)
+                        backstack.push(NavTarget.InviteSignUp())
+                    }
+
+                    override fun navigateToInviteSignUp(code: String) {
+                        backstack.push(NavTarget.InviteSignUp(code))
                     }
 
                     override fun navigateToSignInFlow(mustChooseAccountProvider: Boolean) {
@@ -265,8 +269,8 @@ class LoginFlowNode(
                 )
                 createNode<LoginPasswordNode>(buildContext, plugins = listOf(inputs))
             }
-            NavTarget.InviteSignUp -> {
-                createNode<InviteSignUpNode>(buildContext)
+            is NavTarget.InviteSignUp -> {
+                createNode<InviteSignUpNode>(buildContext, plugins = listOf(InviteSignUpNode.Inputs(navTarget.code)))
             }
         }
     }

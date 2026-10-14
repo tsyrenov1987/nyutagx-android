@@ -60,4 +60,7 @@
     <string name="nyutag_signup_password_mismatch">Нюуса үгэнүүд таарахагүй.</string>
     <string name="nyutag_signup_creating">Аккаунт бүтээжэ байна…</string>
     <string name="nyutag_signup_invited_by">Урилга: %1$s</string>
+    <string name="nyutag_signup_phone_subtitle">Энэ дугаараар танилнуудтнай Нютагта таниие олохо. Дугаарыетнай хэншье харахагүй.</string>
+    <string name="nyutag_signup_error_email_required">E-mail хаягаа захидалай кодоор баталагты.</string>
+    <string name="nyutag_signup_error_phone_required">Утаһанай дугаараа оруулагты.</string>
 </resources>

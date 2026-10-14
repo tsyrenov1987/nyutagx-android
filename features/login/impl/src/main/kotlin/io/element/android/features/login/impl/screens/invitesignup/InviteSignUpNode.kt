@@ -15,6 +15,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
+import io.element.android.libraries.architecture.NodeInputs
 
 @ContributesNode(AppScope::class)
 @AssistedInject
@@ -23,6 +24,13 @@ class InviteSignUpNode(
     @Assisted plugins: List<Plugin>,
     private val presenter: InviteSignUpPresenter,
 ) : Node(buildContext, plugins = plugins) {
+    /** Код из ссылки-приглашения; пусто — человек введёт его сам. */
+    data class Inputs(val code: String) : NodeInputs
+
+    init {
+        presenter.initialCode = plugins.filterIsInstance<Inputs>().firstOrNull()?.code.orEmpty()
+    }
+
     @Composable
     override fun View(modifier: Modifier) {
         val state = presenter.present()

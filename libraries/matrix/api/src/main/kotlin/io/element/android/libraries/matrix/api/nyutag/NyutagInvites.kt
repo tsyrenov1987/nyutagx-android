@@ -28,17 +28,39 @@ interface NyutagInvites {
     /** Проверяет код из SMS или письма. */
     suspend fun checkVerification(sid: String, token: String): Result<Unit>
 
+    /** Шаг «Телефон»: номер годен и ещё не занят; возвращает номер в виде `+79…`. Нужен годный код приглашения. */
+    suspend fun checkPhone(phone: String, inviteCode: String): Result<String>
+
     /**
      * Регистрирует аккаунт и возвращает его Matrix ID; войти нужно обычным паролем.
      * [sid] — подтверждённый телефон или почта; сервер привяжет их к аккаунту для входа.
+     * [phone] — номер без подтверждения (пока у сервера нет SMS): по нему человека найдут друзья.
      */
-    suspend fun register(code: String, username: String, password: String, sid: String? = null): Result<String>
+    suspend fun register(code: String, username: String, password: String, sid: String? = null, phone: String? = null): Result<String>
 
     /** Вход по телефону или почте: Matrix ID аккаунта, если пароль верный. */
     suspend fun resolveLogin(identifier: String, password: String): Result<String>
 
     /** Выпускает одноразовый код от имени участника [sessionId]; код живёт 7 дней. */
     suspend fun createInvite(sessionId: SessionId): Result<NyutagInvite>
+
+    /** Ищет участников Нютага по номерам телефонов: номер (как передан) → Matrix ID. Ненайденных в ответе нет. */
+    suspend fun lookupPhones(sessionId: SessionId, phones: List<String>): Result<Map<String, String>>
+
+    /** Указан ли у участника [sessionId] свой номер телефона (по нему его находят друзья). */
+    suspend fun hasPhone(sessionId: SessionId): Result<Boolean>
+
+    /** Указывает или меняет свой номер телефона. */
+    suspend fun setPhone(sessionId: SessionId, phone: String): Result<Unit>
+}
+
+/** Ссылка-приглашение: страница на nyutag.chat с кодом; если Нютаг установлен, ссылка открывает регистрацию с этим кодом. */
+fun nyutagInviteLink(code: String): String = "https://nyutag.chat/i/#$code"
+
+/** Код приглашения из ссылки [nyutagInviteLink] или `nyutag://invite/КОД`; null, если ссылка не наша. */
+fun nyutagInviteCodeFromLink(link: String): String? {
+    val match = Regex("""^(?:https://nyutag\.chat/i/?#|nyutag://invite/)([0-9A-Za-z]{4}-?[0-9A-Za-z]{4})/?$""").find(link.trim())
+    return match?.groupValues?.get(1)?.uppercase()
 }
 
 enum class NyutagContactMedium(val wire: String) {
@@ -52,6 +74,12 @@ data class NyutagSignUpConfig(
     val requireContact: Boolean,
     val emailAvailable: Boolean,
     val phoneAvailable: Boolean,
+    /** Почта обязательна (с кодом из письма). */
+    val requireEmail: Boolean = false,
+    /** Телефон обязателен. */
+    val requirePhone: Boolean = false,
+    /** Телефон пока без подтверждения: у сервера нет SMS, номер просто вводится на своём шаге. */
+    val phoneUnverified: Boolean = false,
 )
 
 data class NyutagVerification(
@@ -97,5 +125,7 @@ class NyutagInviteException(val errcode: String, message: String) : Exception(me
         const val VERIFY_ATTEMPTS = "NYUTAG_VERIFY_ATTEMPTS"
         const val UNKNOWN_SESSION = "NYUTAG_UNKNOWN_SESSION"
         const val FORBIDDEN = "M_FORBIDDEN"
+        const val EMAIL_REQUIRED = "NYUTAG_EMAIL_REQUIRED"
+        const val PHONE_REQUIRED = "NYUTAG_PHONE_REQUIRED"
     }
 }

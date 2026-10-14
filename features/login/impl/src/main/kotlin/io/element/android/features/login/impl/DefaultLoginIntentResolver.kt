@@ -13,10 +13,20 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.login.api.LoginIntentResolver
 import io.element.android.features.login.api.LoginParams
+import io.element.android.libraries.matrix.api.nyutag.nyutagInviteCodeFromLink
+
+private const val NYUTAG_SERVER = "nyutag.chat"
+
+/** Префикс loginHint для кода из ссылки-приглашения: экран приветствия сразу открывает регистрацию. */
+const val NYUTAG_INVITE_HINT_PREFIX = "nyutag-invite:"
 
 @ContributesBinding(AppScope::class)
 class DefaultLoginIntentResolver : LoginIntentResolver {
     override fun parse(uriString: String): LoginParams? {
+        // Нютаг: ссылка-приглашение nyutag.chat/i/#КОД или nyutag://invite/КОД — регистрация с этим кодом.
+        nyutagInviteCodeFromLink(uriString)?.let {
+            return LoginParams(accountProvider = NYUTAG_SERVER, loginHint = NYUTAG_INVITE_HINT_PREFIX + it)
+        }
         val uri = uriString.toUri()
         if (uri.host != "mobile.element.io") return null
         if (uri.path.orEmpty().startsWith("/element").not()) return null

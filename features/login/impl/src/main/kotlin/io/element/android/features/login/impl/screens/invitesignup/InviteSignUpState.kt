@@ -1,5 +1,5 @@
 /*
- * Нютаг — регистрация по приглашению по шагам, как на iOS: код → телефон или почта (если сервер их включил) → имя → пароль.
+ * Нютаг — регистрация по приглашению по шагам, как на iOS: код → почта (если сервер её включил) → телефон (если обязателен) → имя → пароль.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -14,6 +14,7 @@ import kotlinx.parcelize.Parcelize
 enum class SignUpStep {
     Code,
     Contact,
+    Phone,
     Name,
     Password,
 }
@@ -44,6 +45,7 @@ data class InviteSignUpState(
         get() = !isBusy && when (step) {
             SignUpStep.Code -> form.code.length == NyutagInviteCode.LENGTH
             SignUpStep.Contact -> if (verification == null) form.contact.isNotBlank() else form.verifyCode.length == VERIFY_CODE_LENGTH
+            SignUpStep.Phone -> form.phone.count { it.isDigit() } >= MIN_PHONE_DIGITS
             SignUpStep.Name -> form.displayName.isNotBlank() && username.isNotEmpty()
             SignUpStep.Password -> form.password.length >= MIN_PASSWORD_LENGTH && form.password == form.passwordRepeat
         }
@@ -54,6 +56,7 @@ data class InviteSignUpState(
     companion object {
         const val MIN_PASSWORD_LENGTH = 8
         const val VERIFY_CODE_LENGTH = 6
+        const val MIN_PHONE_DIGITS = 10
     }
 }
 
@@ -63,6 +66,8 @@ data class InviteSignUpForm(
     val medium: NyutagContactMedium = NyutagContactMedium.Phone,
     val contact: String = "",
     val verifyCode: String = "",
+    /** Телефон на своём шаге (пока без SMS-подтверждения). */
+    val phone: String = "",
     val displayName: String = "",
     val username: String = "",
     val isEditingUsername: Boolean = false,
@@ -75,6 +80,7 @@ sealed interface InviteSignUpEvent {
     data class SetMedium(val medium: NyutagContactMedium) : InviteSignUpEvent
     data class SetContact(val contact: String) : InviteSignUpEvent
     data class SetVerifyCode(val verifyCode: String) : InviteSignUpEvent
+    data class SetPhone(val phone: String) : InviteSignUpEvent
     data class SetDisplayName(val displayName: String) : InviteSignUpEvent
     data class SetUsername(val username: String) : InviteSignUpEvent
     data class SetPassword(val password: String) : InviteSignUpEvent

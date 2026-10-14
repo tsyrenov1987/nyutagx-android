@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: поиск по номеру телефона и приглашение. Бурятский — черновик, ждёт проверки носителем. -->
+<resources>
+    <string name="nyutag_by_phone_title">Find by phone number</string>
+    <string name="nyutag_by_phone_subtitle">Enter the number of someone you know. If they are in Nyutag, you can write to them right away. If not, send them an invitation.</string>
+    <string name="nyutag_by_phone_label">Phone number</string>
+    <string name="nyutag_by_phone_pick_contact">Choose from contacts</string>
+    <string name="nyutag_by_phone_search">Find</string>
+    <string name="nyutag_by_phone_found">Found in Nyutag</string>
+    <string name="nyutag_by_phone_write">Write</string>
+    <string name="nyutag_by_phone_not_found_title">Not in Nyutag yet</string>
+    <string name="nyutag_by_phone_not_found_subtitle">Invite them: send a link by SMS or any messenger, or show the QR code. The invitation works once and for 7 days.</string>
+    <string name="nyutag_by_phone_invite">Invite to Nyutag</string>
+    <string name="nyutag_by_phone_qr_hint">Point the camera at the code: the link opens sign-up</string>
+    <string name="nyutag_by_phone_code">Code: %1$s</string>
+    <string name="nyutag_by_phone_sms">SMS</string>
+    <string name="nyutag_by_phone_share">Send</string>
+    <string name="nyutag_by_phone_invite_text">Join me in Nyutag, our messenger: %2$s\nInvitation code: %1$s</string>
+    <string name="nyutag_by_phone_no_sms_app">No app for SMS</string>
+    <string name="nyutag_by_phone_own_title">Your number is not set</string>
+    <string name="nyutag_by_phone_own_subtitle">Add it so friends can find you. Nobody will see the number itself.</string>
+    <string name="nyutag_by_phone_own_label">Your phone number</string>
+    <string name="nyutag_by_phone_error_network">No connection to the server. Try again.</string>
+    <string name="nyutag_by_phone_error_limit">Too many searches today. Try tomorrow.</string>
+    <string name="nyutag_by_phone_error_invite_limit">Invitation limit reached: up to 10 unused codes and 20 per day.</string>
+    <string name="nyutag_by_phone_error_bad_phone">This does not look like a phone number.</string>
+    <string name="nyutag_by_phone_error_phone_in_use">This number is already taken by another account.</string>
+    <string name="nyutag_by_phone_error_generic">Something went wrong. Try again later.</string>
+</resources>

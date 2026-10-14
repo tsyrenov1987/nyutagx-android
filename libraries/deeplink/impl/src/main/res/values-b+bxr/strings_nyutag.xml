@@ -2,7 +2,7 @@
 <!-- Буряад хэлэн. Носитель хэлэнэй шалгалта хэрэгтэй (nyutag-buryat-strings-review.tsv). -->
 <resources>
     <string name="nyutag_invite_creating">Урилга бэлдэжэ байна…</string>
-    <string name="nyutag_invite_share_text">%1$s — манай мессенджер руу урижа байнаб. Урилгын код: %2$s. Нэгэ удаа хэрэглэгдэхэ, 7 хоног хүсэнтэй. %1$s табяад, «Намда урилга бии» гэжэ дарагты.</string>
+    <string name="nyutag_invite_share_text">%1$s — манай мессенджер руу урижа байнаб: %3$s\nУрилгын код: %2$s (нэгэ удаа, 7 хоног хүсэнтэй). %1$s табяад, «Намда урилга бии» гэжэ дарагты.</string>
     <string name="nyutag_invite_limit">Урилгын хизаар: 10 хэрэглэгдээгүй код, хоногто 20 хүрэтэр.</string>
     <string name="nyutag_invite_network">Сервертэй холбоо үгы. Дахин оролдогты.</string>
     <string name="nyutag_invite_failed">Урилга бүтээжэ шадабагүйб. Һүүлдэ оролдогты.</string>

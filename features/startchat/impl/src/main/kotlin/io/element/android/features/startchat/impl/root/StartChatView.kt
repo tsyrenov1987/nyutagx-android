@@ -64,6 +64,7 @@ fun StartChatView(
     onJoinByAddressClick: () -> Unit,
     onRoomDirectorySearchClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onFindByPhoneClick: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -107,6 +108,7 @@ fun StartChatView(
                     onInvitePeopleClick = onInviteFriendsClick,
                     onJoinByAddressClick = onJoinByAddressClick,
                     onRoomDirectorySearchClick = onRoomDirectorySearchClick,
+                    onFindByPhoneClick = onFindByPhoneClick,
                     onDmClick = onOpenDM,
                 )
             }
@@ -169,11 +171,20 @@ private fun CreateRoomActionButtonsList(
     onInvitePeopleClick: () -> Unit,
     onJoinByAddressClick: () -> Unit,
     onRoomDirectorySearchClick: () -> Unit,
+    onFindByPhoneClick: () -> Unit,
     onDmClick: (RoomId) -> Unit,
 ) {
     LazyColumn(
         contentPadding = lazyColumnContentPadding,
     ) {
+        item {
+            // Нютаг: найти знакомого по номеру; нет в Нютаге — пригласить ссылкой, QR или SMS.
+            CreateRoomActionButton(
+                iconRes = CompoundDrawables.ic_compound_mobile,
+                text = stringResource(R.string.nyutag_by_phone_title),
+                onClick = onFindByPhoneClick,
+            )
+        }
         item {
             val name = stringResource(CommonStrings.nyutag_saved_messages)
             val topic = stringResource(CommonStrings.nyutag_saved_messages_topic)

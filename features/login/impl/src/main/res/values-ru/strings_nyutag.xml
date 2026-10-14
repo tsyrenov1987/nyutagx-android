@@ -59,4 +59,7 @@
     <string name="nyutag_signup_password_mismatch">Пароли не совпадают.</string>
     <string name="nyutag_signup_creating">Создаём аккаунт…</string>
     <string name="nyutag_signup_invited_by">Приглашение от %1$s</string>
+    <string name="nyutag_signup_phone_subtitle">По этому номеру вас найдут знакомые в Нютаге. Сам номер никто не увидит.</string>
+    <string name="nyutag_signup_error_email_required">Подтвердите e-mail кодом из письма.</string>
+    <string name="nyutag_signup_error_phone_required">Укажите номер телефона.</string>
 </resources>

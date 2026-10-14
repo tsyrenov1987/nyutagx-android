@@ -27,6 +27,17 @@ class DefaultLoginIntentResolverTest : RobolectricTest() {
     }
 
     @Test
+    fun `nyutag invitation links open sign-up with the code`() {
+        val sut = DefaultLoginIntentResolver()
+        val expected = LoginParams(accountProvider = "nyutag.chat", loginHint = "nyutag-invite:7KQ2-M9XA")
+        assertThat(sut.parse("https://nyutag.chat/i/#7KQ2-M9XA")).isEqualTo(expected)
+        assertThat(sut.parse("https://nyutag.chat/i#7KQ2-M9XA")).isEqualTo(expected)
+        assertThat(sut.parse("nyutag://invite/7kq2-m9xa")).isEqualTo(LoginParams("nyutag.chat", "nyutag-invite:7KQ2-M9XA"))
+        assertThat(sut.parse("https://nyutag.chat/i/")).isNull()
+        assertThat(sut.parse("https://evil.example/i/#7KQ2-M9XA")).isNull()
+    }
+
+    @Test
     fun `extra unknown param`() {
         val sut = DefaultLoginIntentResolver()
         val uriString = "https://mobile.element.io/element/?account_provider=example.org&login_hint=mxid:@alice:example.org&extra=uknown"

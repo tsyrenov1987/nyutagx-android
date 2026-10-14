@@ -101,6 +101,29 @@
                 <data android:host="staging.element.io" />
             </intent-filter>
             <!--
+              Нютаг: ссылка-приглашение https://nyutag.chat/i/#КОД (страница с QR и кодом) — открывает регистрацию с кодом.
+              Файл подтверждения: https://nyutag.chat/.well-known/assetlinks.json
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
+                <data android:host="nyutag.chat" />
+                <data android:pathPrefix="/i" />
+            </intent-filter>
+            <!-- Нютаг: кнопка «Открыть в Нютаге» на странице приглашения -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="nyutag" android:host="invite" />
+            </intent-filter>
+            <!--
               Element mobile links
               Example: https://mobile.element.io/element/?account_provider=example.org&login_hint=mxid:@alice:example.org
             -->

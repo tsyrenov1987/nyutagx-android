@@ -1,5 +1,5 @@
 /*
- * Нютаг — регистрация по шагам: код приглашения, подтверждённый телефон или почта, имя и ник, пароль; затем обычный вход паролем.
+ * Нютаг — регистрация по шагам: код приглашения, подтверждённая почта, телефон, имя и ник, пароль; затем обычный вход паролем.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -43,16 +43,21 @@ class InviteSignUpPresenter(
     private val matrixClientProvider: MatrixClientProvider,
     @AppCoroutineScope private val appCoroutineScope: CoroutineScope,
 ) : Presenter<InviteSignUpState> {
+    /** Код из ссылки-приглашения: подставляется в первый шаг и сразу проверяется. */
+    var initialCode: String = ""
+
     @Composable
     override fun present(): InviteSignUpState {
         val scope = rememberCoroutineScope()
-        var form by rememberSaveable { mutableStateOf(InviteSignUpForm()) }
+        var form by rememberSaveable { mutableStateOf(InviteSignUpForm(code = NyutagInviteCode.format(initialCode))) }
         var step by rememberSaveable { mutableStateOf(SignUpStep.Code) }
         val config: MutableState<NyutagSignUpConfig?> = remember { mutableStateOf(null) }
         var isCodeValid by rememberSaveable { mutableStateOf(false) }
         var inviter by rememberSaveable { mutableStateOf<String?>(null) }
         var verification by remember { mutableStateOf<NyutagVerification?>(null) }
         var isContactVerified by remember { mutableStateOf(false) }
+        // Номер, который сервер признал годным и свободным, в виде +79…
+        var checkedPhone by rememberSaveable { mutableStateOf<String?>(null) }
         val resendIn = remember { mutableIntStateOf(0) }
         // Аккаунт уже создан, осталось войти (если вход после регистрации сорвался).
         var registeredUserId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -87,7 +92,7 @@ class InviteSignUpPresenter(
             isCodeValid = isCodeValid,
             inviter = inviter,
             availableMedia = config.value.media(),
-            canSkipContact = config.value?.requireContact == false,
+            canSkipContact = config.value?.let { !it.requireContact && !it.requireEmail } == true,
             verification = verification,
             resendInSeconds = resendIn.intValue,
             isBusy = isBusy,
@@ -142,6 +147,11 @@ class InviteSignUpPresenter(
             }
         }
 
+        // Код пришёл из ссылки-приглашения — проверяем сразу, как при вводе вручную.
+        LaunchedEffect(Unit) {
+            if (form.code.length == NyutagInviteCode.LENGTH && !isCodeValid) checkCode(advanceOnSuccess = false)
+        }
+
         fun sendVerification() = launchBusy {
             invites.startVerification(form.medium, form.contact.trim(), form.code).fold(
                 onSuccess = {
@@ -162,6 +172,20 @@ class InviteSignUpPresenter(
                         advance()
                     },
                     onFailure = { error = it },
+                )
+            }
+        }
+
+        fun checkPhone() {
+            val phone = form.phone
+            launchBusy {
+                invites.checkPhone(phone.trim(), form.code).fold(
+                    onSuccess = {
+                        if (form.phone != phone) return@fold
+                        checkedPhone = it
+                        advance()
+                    },
+                    onFailure = { if (form.phone == phone) error = it },
                 )
             }
         }
@@ -190,8 +214,9 @@ class InviteSignUpPresenter(
             launchBusy {
                 if (registeredUserId == null) {
                     val sid = verification?.sid?.takeIf { isContactVerified }
-                    Timber.i("Nyutag: sign-up started, contact=${sid != null}")
-                    invites.register(form.code, username, password, sid).fold(
+                    val phone = checkedPhone?.takeIf { SignUpStep.Phone in config.value.steps() }
+                    Timber.i("Nyutag: sign-up started, contact=${sid != null}, phone=${phone != null}")
+                    invites.register(form.code, username, password, sid, phone).fold(
                         onSuccess = { registeredUserId = it },
                         onFailure = {
                             Timber.w("Nyutag: sign-up rejected: ${(it as? NyutagInviteException)?.errcode ?: it.javaClass.simpleName}")
@@ -256,6 +281,11 @@ class InviteSignUpPresenter(
                     error = null
                     if (digits.length == InviteSignUpState.VERIFY_CODE_LENGTH && !isBusy) checkVerification()
                 }
+                is InviteSignUpEvent.SetPhone -> if (event.phone != form.phone) {
+                    form = form.copy(phone = event.phone)
+                    checkedPhone = null
+                    error = null
+                }
                 is InviteSignUpEvent.SetDisplayName -> {
                     form = form.copy(displayName = event.displayName)
                     error = null
@@ -295,6 +325,7 @@ class InviteSignUpPresenter(
                     when (step) {
                         SignUpStep.Code -> if (isCodeValid) launchBusy { advanceFromCode() } else checkCode(advanceOnSuccess = true)
                         SignUpStep.Contact -> if (verification == null) sendVerification() else checkVerification()
+                        SignUpStep.Phone -> if (checkedPhone != null) advance() else checkPhone()
                         SignUpStep.Name -> checkUsername()
                         SignUpStep.Password -> createAccount()
                     }
@@ -310,13 +341,17 @@ class InviteSignUpPresenter(
     }
 }
 
-private fun NyutagSignUpConfig?.steps(): List<SignUpStep> = if (this != null && (phoneAvailable || emailAvailable)) {
-    listOf(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Name, SignUpStep.Password)
-} else {
-    listOf(SignUpStep.Code, SignUpStep.Name, SignUpStep.Password)
-}
+private fun NyutagSignUpConfig?.steps(): List<SignUpStep> = listOfNotNull(
+    SignUpStep.Code,
+    SignUpStep.Contact.takeIf { this != null && (phoneAvailable || emailAvailable) },
+    // Телефон без SMS — свой шаг: номер вводится без кода, по нему человека находят друзья.
+    SignUpStep.Phone.takeIf { this != null && requirePhone && phoneUnverified },
+    SignUpStep.Name,
+    SignUpStep.Password,
+)
 
 private fun NyutagSignUpConfig?.media(): List<NyutagContactMedium> = listOfNotNull(
-    NyutagContactMedium.Phone.takeIf { this?.phoneAvailable == true },
+    // Почта обязательна — на шаге «Контакт» только она, телефон спрашивается отдельно.
+    NyutagContactMedium.Phone.takeIf { this?.phoneAvailable == true && !requireEmail },
     NyutagContactMedium.Email.takeIf { this?.emailAvailable == true },
 )

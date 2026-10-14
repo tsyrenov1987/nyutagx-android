@@ -20,6 +20,7 @@ import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.IOException
@@ -40,6 +41,9 @@ class DefaultNyutagInvites(
             requireContact = json.optBoolean("require_contact", false),
             emailAvailable = json.optBoolean("email", false),
             phoneAvailable = json.optBoolean("msisdn", false),
+            requireEmail = json.optBoolean("require_email", false),
+            requirePhone = json.optBoolean("require_phone", false),
+            phoneUnverified = json.optBoolean("phone_unverified", false),
         )
     }
 
@@ -80,12 +84,21 @@ class DefaultNyutagInvites(
         json.getString("user_id")
     }
 
-    override suspend fun register(code: String, username: String, password: String, sid: String?): Result<String> = call {
+    override suspend fun checkPhone(phone: String, inviteCode: String): Result<String> = call {
+        val body = JSONObject().put("phone", phone).put("code", inviteCode).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/phone/check", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("phone")) throw response.toException()
+        json.getString("phone")
+    }
+
+    override suspend fun register(code: String, username: String, password: String, sid: String?, phone: String?): Result<String> = call {
         val body = JSONObject()
             .put("code", code)
             .put("username", username)
             .put("password", password)
             .apply { if (sid != null) put("sid", sid) }
+            .apply { if (phone != null) put("phone", phone) }
             .toString()
         val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/register", jsonBody = body)
         val json = response.json()
@@ -101,6 +114,33 @@ class DefaultNyutagInvites(
         if (response.status != 200 || !json.has("code")) throw response.toException()
         NyutagInvite(code = json.getString("code"), expiresAtMillis = json.optLong("expires_at"))
     }
+
+    override suspend fun lookupPhones(sessionId: SessionId, phones: List<String>): Result<Map<String, String>> = call {
+        val body = JSONObject().put("phones", JSONArray(phones)).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/lookup", jsonBody = body, bearer = token(sessionId))
+        val json = response.json()
+        if (response.status != 200 || !json.has("matches")) throw response.toException()
+        val matches = json.getJSONArray("matches")
+        (0 until matches.length()).associate { i ->
+            val match = matches.getJSONObject(i)
+            match.getString("phone") to match.getString("user_id")
+        }
+    }
+
+    override suspend fun hasPhone(sessionId: SessionId): Result<Boolean> = call {
+        val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/me", bearer = token(sessionId))
+        if (response.status != 200) throw response.toException()
+        response.json().optBoolean("phone")
+    }
+
+    override suspend fun setPhone(sessionId: SessionId, phone: String): Result<Unit> = call {
+        val body = JSONObject().put("phone", phone).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/me/phone", jsonBody = body, bearer = token(sessionId))
+        if (response.status != 200) throw response.toException()
+    }
+
+    private suspend fun token(sessionId: SessionId): String = sessionStore.getSession(sessionId.value)?.accessToken
+        ?: throw NyutagInviteException("M_UNKNOWN_TOKEN", "No session for ${sessionId.value}")
 
     private suspend fun <T> call(block: suspend () -> T): Result<T> = withContext(Dispatchers.IO) {
         try {
