@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_start_chat_error_starting_chat">Чат эхилхэдэ алдуу гараба</string>
+    <string name="screen_start_chat_join_room_by_address_action">Хаягаар бүлэгтэ орохо</string>
+    <string name="screen_start_chat_join_room_by_address_invalid_address">Буруу хаяг</string>
+    <string name="screen_start_chat_join_room_by_address_placeholder">Хаяг оруулагты…</string>
+    <string name="screen_start_chat_join_room_by_address_room_found">Бүлэг олдобо</string>
+    <string name="screen_start_chat_join_room_by_address_room_not_found">Бүлэг олдобогүй</string>
+</resources>

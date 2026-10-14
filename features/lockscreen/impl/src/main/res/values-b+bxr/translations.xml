@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_app_lock_biometric_authentication">биометриин танилта</string>
+    <string name="screen_app_lock_biometric_unlock">биометриин тайлалга</string>
+    <string name="screen_app_lock_biometric_unlock_title_android">Биометриээр тайлаха</string>
+    <string name="screen_app_lock_confirm_biometric_authentication_android">Биометри баталха</string>
+    <string name="screen_app_lock_forgot_pin">PIN мартаа гүт?</string>
+    <string name="screen_app_lock_settings_change_pin">PIN-код һэлгэхэ</string>
+    <string name="screen_app_lock_settings_enable_biometric_unlock">Биометриээр тайлахые зүбшөөхэ</string>
+    <string name="screen_app_lock_settings_remove_pin">PIN хаһаха</string>
+    <string name="screen_app_lock_settings_remove_pin_alert_message">PIN хаһахадаа итгэлтэй гүт?</string>
+    <string name="screen_app_lock_settings_remove_pin_alert_title">PIN хаһаха гү?</string>
+    <string name="screen_app_lock_setup_biometric_unlock_allow_title">%1$s зүбшөөхэ</string>
+    <string name="screen_app_lock_setup_biometric_unlock_skip">PIN хэрэглэхэ</string>
+    <string name="screen_app_lock_setup_biometric_unlock_subtitle">Саг хэмнэжэ, аппликациие ходо %1$s-аар тайлагты</string>
+    <string name="screen_app_lock_setup_choose_pin">PIN шэлэхэ</string>
+    <string name="screen_app_lock_setup_confirm_pin">PIN баталха</string>
+    <string name="screen_app_lock_setup_pin_context">Чатнуудайнгаа аюулгүй байдал нэмэхын тула %1$s түгжэгты.\n\nһанаһаа гарахагүй юумэ шэлэгты. PIN мартабал, аппликациһаа гаргагдахат.</string>
+    <string name="screen_app_lock_setup_pin_forbidden_dialog_content">Аюулгүй байдалай шалтагаанаар энэ PIN-код шэлэжэ болохогүй</string>
+    <string name="screen_app_lock_setup_pin_forbidden_dialog_title">Ондоо PIN шэлэхэ</string>
+    <string name="screen_app_lock_setup_pin_mismatch_dialog_content">Нэгэ PIN хоёр дахин оруулагты</string>
+    <string name="screen_app_lock_setup_pin_mismatch_dialog_title">PIN-кодууд таарахагүй</string>
+    <string name="screen_app_lock_signout_alert_message">Үргэлжэлүүлхын тула дахин ороод, шэнэ PIN байгуулха хэрэгтэй</string>
+    <string name="screen_app_lock_signout_alert_title">Энэ түхеэрэлгэ хаһагдажа байна</string>
+    <plurals name="screen_app_lock_subtitle">
+        <item quantity="other">Тайлаха %1$d оролдолго танда бии</item>
+    </plurals>
+    <plurals name="screen_app_lock_subtitle_wrong_pin">
+        <item quantity="other">Буруу PIN. %1$d оролдолго үлөө</item>
+    </plurals>
+    <string name="screen_app_lock_use_biometric_android">Биометри хэрэглэхэ</string>
+    <string name="screen_app_lock_use_pin_android">PIN хэрэглэхэ</string>
+    <string name="screen_signout_in_progress_dialog_content">Түхеэрэлгэ хаһажа байна…</string>
+</resources>

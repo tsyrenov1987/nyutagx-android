@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_create_poll_add_option_btn">Хубилбари нэмэхэ</string>
+    <string name="screen_create_poll_anonymous_desc">Дүнгүүдые һанал асуулга дүүрэһэнэй һүүлээр лэ харуулха</string>
+    <string name="screen_create_poll_anonymous_headline">Һаналнуудые нюуха</string>
+    <string name="screen_create_poll_answer_hint">%1$d-дэхи хубилбари</string>
+    <string name="screen_create_poll_cancel_confirmation_content_android">Хубилалтанууд хадагалагдаагүй. Гэдэргээ бусахадаа итгэлтэй гүт?</string>
+    <string name="screen_create_poll_delete_option_a11y">%1$s хубилбари усадхаха</string>
+    <string name="screen_create_poll_max_selections_headline">Нэгэ хүндэ зүбшөөгдэһэн һаналнууд</string>
+    <string name="screen_create_poll_question_desc">Асуудал али сэдэб</string>
+    <string name="screen_create_poll_question_hint">Һанал асуулга юун тухай бэ?</string>
+    <string name="screen_create_poll_title">Һанал асуулга байгуулха</string>
+    <string name="screen_edit_poll_delete_confirmation">Энэ һанал асуулгые усадхахадаа итгэлтэй гүт?</string>
+    <string name="screen_edit_poll_delete_confirmation_title">Һанал асуулга усадхаха</string>
+    <string name="screen_edit_poll_title">Һанал асуулга заһаха</string>
+    <string name="screen_polls_history_empty_ongoing">Үргэлжэлжэ байһан һанал асуулга олдобогүй.</string>
+    <string name="screen_polls_history_empty_past">Үнгэрһэн һанал асуулга олдобогүй.</string>
+    <string name="screen_polls_history_filter_ongoing">Үргэлжэлжэ байһан</string>
+    <string name="screen_polls_history_filter_past">Үнгэрһэн</string>
+    <string name="screen_polls_history_title">Һанал асуулганууд</string>
+</resources>

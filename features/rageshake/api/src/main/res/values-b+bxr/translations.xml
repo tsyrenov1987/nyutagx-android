@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="crash_detection_dialog_content">%1$s һүүлшын удаа хэрэглэгдэхэдээ гэнтэ хаагдаа. Алдуунай мэдүүлэг манда эльгээхэ гү?</string>
+    <string name="rageshake_detection_dialog_content">Та утаһаа ууртайгаар һэжэрэжэ байһан шэнгитэйт. Алдуунай мэдүүлэгэй дэлгэсэ нээхэ гү?</string>
+    <string name="settings_rageshake">Һэжэрхэ</string>
+    <string name="settings_rageshake_detection_threshold">Мэдэрхэ хизаар</string>
+</resources>

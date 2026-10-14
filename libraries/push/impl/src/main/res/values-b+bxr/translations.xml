@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="notification_channel_call">Дуудалга</string>
+    <string name="notification_channel_listening_for_events">Үйлэ хэрэгүүдые шагнажа байна</string>
+    <string name="notification_channel_noisy">Дуутай мэдээсэлнүүд</string>
+    <string name="notification_channel_ringing_calls">Хонходожо байһан дуудалганууд</string>
+    <string name="notification_channel_silent">Дуугүй мэдээсэлнүүд</string>
+    <plurals name="notification_compat_summary_line_for_room">
+        <item quantity="other">%1$s: %2$d бэшэг</item>
+    </plurals>
+    <plurals name="notification_compat_summary_title">
+        <item quantity="other">%d мэдээсэл</item>
+    </plurals>
+    <string name="notification_error_unified_push_unregistered_android">UnifiedPush мэдээсэлэй дистрибьютор бүртхэгдэбэгүй, тиимэһээ мэдээсэл абахаа болихот. Аппликациин мэдээсэлэй тохируулганууд болон push-дистрибьюторай байдал шалгагты.</string>
+    <string name="notification_fallback_content">Танда шэнэ бэшэгүүд бии.</string>
+    <plurals name="notification_fallback_n_content">
+        <item quantity="other">Танда %d шэнэ бэшэг бии.</item>
+    </plurals>
+    <plurals name="notification_gallery_body">
+        <item quantity="other">%1$d хабсарга хубаалдаба</item>
+    </plurals>
+    <string name="notification_incoming_audio_call">📞 Дуудалга ерэжэ байна</string>
+    <string name="notification_incoming_call">📹 Дуудалга ерэжэ байна</string>
+    <string name="notification_inline_reply_failed">** Эльгээжэ шадабагүй — бүлэгөө нээгты</string>
+    <string name="notification_invitation_action_join">Нэгэдэхэ</string>
+    <string name="notification_invitation_action_reject">Арсаха</string>
+    <plurals name="notification_invitations">
+        <item quantity="other">%d урилга</item>
+    </plurals>
+    <string name="notification_invite_body">Таниие чатта уриба</string>
+    <string name="notification_invite_body_with_sender">%1$s таниие чатта уриба</string>
+    <string name="notification_knock_request_body">Орохо гуйлта эльгээбэ</string>
+    <string name="notification_live_location_started_body">Шууд байрлалаараа хубаалдажа эхилбэ</string>
+    <string name="notification_mentioned_you_body">Таниие дурдаба: %1$s</string>
+    <string name="notification_new_messages">Шэнэ бэшэгүүд</string>
+    <plurals name="notification_new_messages_for_room">
+        <item quantity="other">%d шэнэ бэшэг</item>
+    </plurals>
+    <string name="notification_reaction_body">%1$s реакци табиба</string>
+    <string name="notification_room_action_mark_as_read">Уншаһан гэжэ тэмдэглэхэ</string>
+    <string name="notification_room_action_quick_reply">Түргэн харюу</string>
+    <string name="notification_room_invite_body">Таниие бүлэгтэ уриба</string>
+    <string name="notification_room_invite_body_with_sender">%1$s таниие бүлэгтэ уриба</string>
+    <string name="notification_sender_me">Би</string>
+    <string name="notification_sender_mention_reply">%1$s дурдаба али харюусаба</string>
+    <string name="notification_space_invite_body">Таниие оршондо уриба</string>
+    <string name="notification_space_invite_body_with_sender">%1$s таниие оршондо уриба</string>
+    <string name="notification_test_push_notification_content">Та мэдээсэл хаража байнат! Намайе дарагты!</string>
+    <string name="notification_thread_in_room">%1$s соо һудал</string>
+    <string name="notification_ticker_text_dm">%1$s: %2$s</string>
+    <string name="notification_ticker_text_group">%1$s: %2$s %3$s</string>
+    <plurals name="notification_unread_notified_messages">
+        <item quantity="other">%d уншаагүй мэдээсэл</item>
+    </plurals>
+    <string name="notification_unread_notified_messages_and_invitation">%1$s болон %2$s</string>
+    <string name="notification_unread_notified_messages_in_room">%2$s соо %1$s</string>
+    <string name="notification_unread_notified_messages_in_room_and_invitation">%2$s болон %3$s соо %1$s</string>
+    <plurals name="notification_unread_notified_messages_in_room_rooms">
+        <item quantity="other">%d бүлэг</item>
+    </plurals>
+    <string name="push_distributor_background_sync_android">Арадахи синхронизаци</string>
+    <string name="push_distributor_firebase_android">Google сервисүүд</string>
+    <string name="push_no_valid_google_play_services_apk_android">Хүсэнтэй Google Play сервисүүд олдобогүй. Мэдээсэлнүүд зүб ажаллахагүй байжа магад.</string>
+    <string name="troubleshoot_notifications_test_blocked_users_description">Блоклогдоһон хэрэглэгшэдые шалгажа байна</string>
+    <string name="troubleshoot_notifications_test_blocked_users_quick_fix">Блоклогдоһон хэрэглэгшэдые харах</string>
+    <string name="troubleshoot_notifications_test_blocked_users_result_none">Блоклогдоһон хэрэглэгшэ үгы.</string>
+    <plurals name="troubleshoot_notifications_test_blocked_users_result_some">
+        <item quantity="other">Та %1$d хэрэглэгшэ блоклобот. Эдэ хэрэглэгшэдһээ мэдээсэл абахагүйт.</item>
+    </plurals>
+    <string name="troubleshoot_notifications_test_blocked_users_title">Блоклогдоһон хэрэглэгшэд</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_description">Мүнөөнэй сервисэй нэрые абаха.</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_failure">Push-сервис шэлэгдээгүй.</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_failure_distributor_not_found">Мүнөөнэй push-сервис: %1$s, мүнөөнэй дистрибьютор: %2$s. Харин %3$s дистрибьютор олдобогүй. Аппликаци хаһагдаа байжа магад?</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_failure_no_distributor">Мүнөөнэй push-сервис: %1$s, харин нэгэшье дистрибьютор тохируулагдаагүй.</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_success">Мүнөөнэй push-сервис: %1$s.</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_success_with_distributor">Мүнөөнэй push-сервис: %1$s (%2$s)</string>
+    <string name="troubleshoot_notifications_test_current_push_provider_title">Мүнөөнэй push-сервис</string>
+    <string name="troubleshoot_notifications_test_detect_push_provider_description">Аппликаци багаһаа нэгэ push-сервис дэмжэнэ гэжэ шалгагты.</string>
+    <string name="troubleshoot_notifications_test_detect_push_provider_failure">Push-сервисэй дэмжэлгэ олдобогүй.</string>
+    <plurals name="troubleshoot_notifications_test_detect_push_provider_success">
+        <item quantity="other">%1$d push-сервис олдобо: %2$s</item>
+    </plurals>
+    <string name="troubleshoot_notifications_test_detect_push_provider_success_2">Аппликаци иимэ дэмжэлгэтэйгээр бүтээгдэһэн: %1$s</string>
+    <string name="troubleshoot_notifications_test_detect_push_provider_title">Push-сервисэй дэмжэлгэ</string>
+    <string name="troubleshoot_notifications_test_display_notification_description">Аппликаци мэдээсэл харуулжа шадаха гэжэ шалгагты.</string>
+    <string name="troubleshoot_notifications_test_display_notification_failure">Мэдээсэл дээрэ дараагүй.</string>
+    <string name="troubleshoot_notifications_test_display_notification_permission_failure">Мэдээсэл харуулжа шадахагүй.</string>
+    <string name="troubleshoot_notifications_test_display_notification_success">Мэдээсэл дээрэ дараба!</string>
+    <string name="troubleshoot_notifications_test_display_notification_title">Мэдээсэл харуулха</string>
+    <string name="troubleshoot_notifications_test_display_notification_waiting">Туршалга үргэлжэлүүлхын тула мэдээсэл дээрэ дарагты.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_description">Аппликаци push абажа байна гэжэ шалгагты.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_failure_1">Алдуу: pusher гуйлтаһаа арсаба.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_failure_2">Алдуу: %1$s.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_failure_3">Алдуу, push туршажа шадахагүй.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_failure_4">Алдуу, push хүлеэхэ болзор дүүрэбэ.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_failure_rate_limit">Алдуу: push-шлюз энэ түхеэрэлгые хизаарлажа байна, тиимэһээ мэдээсэлнүүд найдамгүй байха. Ондоо push-шлюз тохируулагты.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_success">Push эрьелтэ %1$d мс боложо дүүрэбэ.</string>
+    <string name="troubleshoot_notifications_test_push_loop_back_title">Push эрьелтэ туршаха</string>
+</resources>

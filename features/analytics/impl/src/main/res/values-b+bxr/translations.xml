@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_analytics_prompt_data_usage">Хубиин мэдээн бэшэжэ, профиль зохёохогүйбди</string>
+    <string name="screen_analytics_prompt_help_us_improve">Асуудалнуудые олохонь туһалхын тула нэрэгүй хэрэглээнэй мэдээн хубаалдагты.</string>
+    <string name="screen_analytics_prompt_read_terms">Манай бүхы болзолнуудые %1$s уншажа болохот.</string>
+    <string name="screen_analytics_prompt_read_terms_content_link">эндэ</string>
+    <string name="screen_analytics_prompt_settings">Энэниие хэзээшье унтараажа болохот</string>
+    <string name="screen_analytics_prompt_third_party_sharing">Таны мэдээн гуравдахи талада дамжуулхагүйбди</string>
+    <string name="screen_analytics_prompt_title">%1$s һайжаруулхада туһалагты</string>
+</resources>

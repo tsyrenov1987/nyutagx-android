@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_report_room_leave_failed_alert_message">Таны гомдол амжалтатай эльгээгдэбэ, харин бүлэгһээ гарахада асуудал гараба. Дахин оролдогты.</string>
+    <string name="screen_report_room_leave_failed_alert_title">Бүлэгһээ гаража шадахагүй</string>
+    <string name="screen_report_room_reason_footer">Энэ чат тухай аккаунтайнгаа сервертэ гомдол мэдүүлхэ. Бэшэгүүд шифрлэгдэһэн һаа, сервер тэдэниие уншажа шадахагүй.</string>
+    <string name="screen_report_room_reason_placeholder">Гомдолой шалтагаан бэшэгты…</string>
+    <string name="screen_report_room_title">Бүлэг тухай гомдол мэдүүлхэ</string>
+</resources>

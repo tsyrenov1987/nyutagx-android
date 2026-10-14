@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="leave_conversation_alert_subtitle">Энэ хөөрэлдөөнһөө гарахадаа итгэлтэй гүт? Энэ хөөрэлдөөн нээлттэй бэшэ, урилгагүйгөөр дахин орожо шадахагүйт.</string>
+    <string name="leave_room_alert_empty_subtitle">Энэ бүлэгһээ гарахадаа итгэлтэй гүт? Эндэ ганса Та байнат. Гарабал, хэншье, Таныешье оруулжа, саашадаа энэ бүлэгтэ орожо шадахагүй.</string>
+    <string name="leave_room_alert_private_subtitle">Энэ бүлэгһээ гарахадаа итгэлтэй гүт? Энэ бүлэг нээлттэй бэшэ, урилгагүйгөөр дахин орожо шадахагүйт.</string>
+    <string name="leave_room_alert_select_new_owner_action">Эзэдые шэлэхэ</string>
+    <string name="leave_room_alert_select_new_owner_subtitle">Та энэ бүлэгэй ганса эзэн гээшэт. Гарахынгаа урда эзэмдэлээ ондоо хүндэ дамжуулха хэрэгтэй.</string>
+    <string name="leave_room_alert_select_new_owner_title">Эзэмдэлэ дамжуулха</string>
+    <string name="leave_room_alert_subtitle">Бүлэгһээ гарахадаа итгэлтэй гүт?</string>
+</resources>

@@ -7,7 +7,6 @@
     <string name="action_signout_anyway">Тиигэбэшье гараха</string>
     <string name="banner_set_up_recovery_content">Бүхы утаһаа гээбэл, түүнгүйгөөр бэшэлгээ бусаажа шадахагүйт.</string>
     <string name="banner_set_up_recovery_title">Сэргээхэ түлхюурээ хадагалагты</string>
-    <string name="common_invite_unknown_profile">Иимэ хэрэглэгшэ олдобогүй, урилга хүрэхэгүй байжа магад.</string>
     <string name="common_people">Гэшүүд</string>
     <string name="common_private_space">Хаалттай оршон</string>
     <string name="common_public_space">Нээлттэй оршон</string>
@@ -23,14 +22,9 @@
     <string name="screen_knock_requests_list_empty_state_title">Шэнэ гуйлта үгы</string>
     <string name="screen_knock_requests_list_title">Орохо гуйлтанууд</string>
     <string name="screen_login_form_header">Таны мэдээн</string>
-    <string name="screen_login_subtitle">Нэрээрээ, утаһаараа али e-mail хаягаараа орогты.</string>
     <string name="screen_login_title_with_homeserver">Нютаг руу орохо</string>
-    <string name="screen_notification_settings_sound_element_default">Нютаг (үндэһэн)</string>
-    <string name="screen_onboarding_welcome_message">Өөрынхидтэеэ бэшэлгэ, дуудалга. Бүхы юумэн таны утаһан дээрэ шифрлэгдэнэ.</string>
-    <string name="screen_onboarding_welcome_title">Нютаг</string>
     <string name="screen_room_details_invite_people_title">Хүнүүдые уриха</string>
     <string name="screen_room_details_requests_to_join_title">Орохо гуйлтанууд</string>
-    <string name="screen_room_timeline_legacy_call">Дуудалга дэмжэгдэхэгүй. Хүндэ Нютагаа шэнэлхэ хэрэгтэй.</string>
     <string name="screen_roomlist_empty_message">Нютаг руу урилгаар ороно. Нүхэдөө, түрэлөө уригты.</string>
     <string name="screen_roomlist_empty_title">Эндэ таны чатнууд гараха</string>
     <string name="screen_roomlist_filter_people">Хубиин</string>

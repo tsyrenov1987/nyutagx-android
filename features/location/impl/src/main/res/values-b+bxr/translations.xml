@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_share_location_live_location_disclaimer_title">Таны шууд байрлалай түүхэ бүлэгтэ хадагалагдажа, сеанс дүүрэһэнэй һүүлээр гэшүүдтэ харагдаха.</string>
+    <string name="screen_share_location_live_location_duration_picker_title">Шууд байрлалаараа хэр удаан хубаалдахаа шэлэгты.</string>
+    <string name="screen_share_location_live_location_missing_permissions">Энэ бүлэгтэ шууд байрлалаараа хубаалдаха эрхэ Танда үгы</string>
+</resources>

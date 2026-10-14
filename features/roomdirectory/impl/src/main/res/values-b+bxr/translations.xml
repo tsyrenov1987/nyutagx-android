@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_room_directory_search_loading_error">Ашаалжа шадабагүй</string>
+    <string name="screen_room_directory_search_title">Бүлэгүүдэй каталог</string>
+</resources>

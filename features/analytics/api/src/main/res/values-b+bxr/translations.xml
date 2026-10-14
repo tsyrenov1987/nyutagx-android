@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_analytics_settings_help_us_improve">Асуудалнуудые олохонь туһалхын тула нэрэгүй хэрэглээнэй мэдээн хубаалдагты.</string>
+    <string name="screen_analytics_settings_read_terms">Манай бүхы болзолнуудые %1$s уншажа болохот.</string>
+    <string name="screen_analytics_settings_read_terms_content_link">эндэ</string>
+    <string name="screen_analytics_settings_share_data">Аналитика эльгээхэ</string>
+</resources>

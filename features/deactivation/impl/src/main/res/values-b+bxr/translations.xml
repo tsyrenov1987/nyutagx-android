@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_deactivate_account_confirmation_dialog_content">Аккаунтаа усадхахые баталагты. Энэ үйлэдэлые бусааха аргагүй.</string>
+    <string name="screen_deactivate_account_delete_all_messages">Минии бүхы бэшэгүүдые усадхаха</string>
+    <string name="screen_deactivate_account_delete_all_messages_notice">Анхарагты: саашадаа хэрэглэгшэд дүүрэн бэшэ хөөрэлдөөнүүдые хаража магад.</string>
+    <string name="screen_deactivate_account_description">Аккаунтаа усадхалга %1$s, тиихэдээ:</string>
+    <string name="screen_deactivate_account_description_bold_part">бусаагдахагүй</string>
+    <string name="screen_deactivate_account_list_item_1">Таны аккаунт %1$s (дахин орожо шадахагүйт, таны ID дахин хэрэглэгдэхэгүй).</string>
+    <string name="screen_deactivate_account_list_item_1_bold_part">Үүрэ мүнхэдөө унтарааха</string>
+    <string name="screen_deactivate_account_list_item_2">Таниие бүхы чатнуудһаа хаһаха.</string>
+    <string name="screen_deactivate_account_list_item_3">Таны аккаунтай мэдээн манай танилтын серверһээ усадхагдаха.</string>
+    <string name="screen_deactivate_account_list_item_4">Бэшэгүүдээ усадхахаар шиидэбэл, бүртхэлтэй хэрэглэгшэдтэ харагдаһаар байха, харин шэнэ али бүртхэлгүй хэрэглэгшэдтэ харагдахагүй.</string>
+    <string name="screen_deactivate_account_title">Аккаунт усадхаха</string>
+</resources>

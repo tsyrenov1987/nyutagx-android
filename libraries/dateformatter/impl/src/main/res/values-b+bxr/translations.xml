@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="common_date_date_at_time">%1$s, %2$s сагта</string>
+    <string name="common_date_this_month">Энэ һарада</string>
+</resources>

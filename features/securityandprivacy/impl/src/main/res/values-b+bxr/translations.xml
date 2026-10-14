@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_manage_authorized_spaces_header">Гэшүүдынь урилгагүйгөөр бүлэгтэ орожо шадаха оршонууд.</string>
+    <string name="screen_manage_authorized_spaces_title">Оршонуудые хүтэлхэ</string>
+    <string name="screen_manage_authorized_spaces_unknown_space">(Мэдэгдээгүй оршон)</string>
+    <string name="screen_manage_authorized_spaces_unknown_spaces_section_title">Таныень гэшүүн бэшэ ондоо оршонууд</string>
+    <string name="screen_manage_authorized_spaces_your_spaces_section_title">Таны оршонууд</string>
+</resources>

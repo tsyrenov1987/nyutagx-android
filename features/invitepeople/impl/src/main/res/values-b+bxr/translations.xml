@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_invite_users_already_a_member">Гэшүүн болонхой</string>
+    <string name="screen_invite_users_already_invited">Уригдаһан</string>
+    <string name="screen_invite_users_confirm_dialog_subtitle_multiple_users">Эдэ хүнүүдтэй Танда чат үшөө үгы. Саашаа ябахынгаа урда тэдэниие энэ бүлэгтэ урихые баталагты.</string>
+    <string name="screen_invite_users_confirm_dialog_subtitle_one_user">Энэ хүнтэй Танда чат үшөө үгы. Саашаа ябахынгаа урда тэрэниие энэ бүлэгтэ урихые баталагты.</string>
+    <string name="screen_invite_users_confirm_dialog_title_mutiple_users">Шэнэ хүнүүдые энэ бүлэгтэ уриха гү?</string>
+    <string name="screen_invite_users_confirm_dialog_title_one_user">Шэнэ хүниие энэ бүлэгтэ уриха гү?</string>
+</resources>

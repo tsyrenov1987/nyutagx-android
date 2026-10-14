@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="troubleshoot_notifications_test_check_permission_description">Аппликаци мэдээсэл харуулжа шадаха гэжэ шалгагты.</string>
+    <string name="troubleshoot_notifications_test_check_permission_title">Зүбшөөлнүүдые шалгаха</string>
+</resources>

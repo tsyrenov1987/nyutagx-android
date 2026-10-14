@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="emoji_picker_category_activity">Үйлэ ябуулганууд</string>
+    <string name="emoji_picker_category_flags">Тугууд</string>
+    <string name="emoji_picker_category_foods">Эдеэ хоол ба ундан</string>
+    <string name="emoji_picker_category_nature">Амитад ба байгаали</string>
+    <string name="emoji_picker_category_objects">Юумэнүүд</string>
+    <string name="emoji_picker_category_people">Энеэдэ ба хүнүүд</string>
+    <string name="emoji_picker_category_places">Аяншалга ба газарнууд</string>
+    <string name="emoji_picker_category_recent">Һаяын эмодзинууд</string>
+    <string name="emoji_picker_category_symbols">Тэмдэгүүд</string>
+    <string name="emoji_picker_search_placeholder">Эмодзи бэдэрхэ</string>
+</resources>

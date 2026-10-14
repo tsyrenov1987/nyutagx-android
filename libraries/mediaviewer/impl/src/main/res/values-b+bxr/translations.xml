@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_media_browser_delete_confirmation_subtitle">Энэ файл бүлэгһээ хаһагдажа, гэшүүд тэрээн руу орожо шадахагүй.</string>
+    <string name="screen_media_browser_delete_confirmation_title">Файл усадхаха гү?</string>
+    <string name="screen_media_browser_download_error_message">Интернет холбоогоо шалгаад, дахин оролдогты.</string>
+    <string name="screen_media_browser_files_empty_state_subtitle">Энэ бүлэгтэ ашаалагдаһан документнууд, аудио болон дуун бэшэгүүд эндэ харагдаха.</string>
+    <string name="screen_media_browser_files_empty_state_title">Ашаалагдаһан файл үшөө үгы</string>
+    <string name="screen_media_browser_list_loading_files">Файлнууд ашаалжа байна…</string>
+    <string name="screen_media_browser_list_loading_media">Медиа ашаалжа байна…</string>
+    <string name="screen_media_browser_list_mode_files">Файлнууд</string>
+    <string name="screen_media_browser_list_mode_media">Медиа</string>
+    <string name="screen_media_browser_media_empty_state_subtitle">Энэ бүлэгтэ ашаалагдаһан зурагууд болон видео эндэ харагдаха.</string>
+    <string name="screen_media_browser_media_empty_state_title">Ашаалагдаһан медиа үшөө үгы</string>
+    <string name="screen_media_browser_title">Медиа болон файлнууд</string>
+    <string name="screen_media_details_file_format">Хэлбэри</string>
+    <string name="screen_media_details_filename">Нэрэ</string>
+    <string name="screen_media_details_no_more_files_to_show">Харуулха файл үгы болоо</string>
+    <string name="screen_media_details_no_more_media_to_show">Харуулха медиа үгы болоо</string>
+    <string name="screen_media_details_title">Файлай мэдээн</string>
+    <string name="screen_media_details_uploaded_by">Ашаалһан хүн</string>
+    <string name="screen_media_details_uploaded_on">Ашаалһан үдэр</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="troubleshoot_notifications_test_unified_push_description">UnifiedPush дистрибьюторнууд бии гэжэ шалгагты.</string>
+    <string name="troubleshoot_notifications_test_unified_push_failure">Push-дистрибьютор олдобогүй.</string>
+    <plurals name="troubleshoot_notifications_test_unified_push_success">
+        <item quantity="other">%1$d дистрибьютор олдобо: %2$s.</item>
+    </plurals>
+    <string name="troubleshoot_notifications_test_unified_push_title">UnifiedPush шалгаха</string>
+</resources>

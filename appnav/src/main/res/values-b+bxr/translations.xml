@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="banner_migrate_to_native_sliding_sync_action">Гараад шэнэлхэ</string>
+    <string name="banner_migrate_to_native_sliding_sync_app_force_logout_title">%1$s хуушан протокол дэмжэхэеэ болёо. Аппликаци хэрэглэжэ үргэлжэлүүлхын тула гараад, дахин орогты.</string>
+    <string name="banner_migrate_to_native_sliding_sync_force_logout_title">Таны аккаунтай сервер хуушан протокол дэмжэхэеэ болёо. Аппликаци хэрэглэжэ үргэлжэлүүлхын тула гараад, дахин орогты.</string>
+</resources>

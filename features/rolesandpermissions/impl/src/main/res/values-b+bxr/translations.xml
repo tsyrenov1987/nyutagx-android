@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_room_change_permissions_administrators">Админ</string>
+    <string name="screen_room_change_permissions_ban_people">Хүнүүдые хориглохо</string>
+    <string name="screen_room_change_permissions_change_settings">Тохируулганууд һэлгэхэ</string>
+    <string name="screen_room_change_permissions_delete_messages">Бэшэгүүдые хаһаха</string>
+    <string name="screen_room_change_permissions_everyone">Гэшүүн</string>
+    <string name="screen_room_change_permissions_invite_people">Хүнүүдые уриха</string>
+    <string name="screen_room_change_permissions_live_location">Шууд байрлалаараа хубаалдаха</string>
+    <string name="screen_room_change_permissions_manage_space">Оршоноо хүтэлхэ</string>
+    <string name="screen_room_change_permissions_manage_space_rooms">Бүлэгүүдые хүтэлхэ</string>
+    <string name="screen_room_change_permissions_member_moderation">Гэшүүдые хүтэлхэ</string>
+    <string name="screen_room_change_permissions_messages_and_content">Бэшэгүүд болон контент</string>
+    <string name="screen_room_change_permissions_moderators">Модератор</string>
+    <string name="screen_room_change_permissions_remove_people">Хүнүүдые хаһаха</string>
+    <string name="screen_room_change_permissions_room_avatar">Аватар һэлгэхэ</string>
+    <string name="screen_room_change_permissions_room_details">Мэдээн заһаха</string>
+    <string name="screen_room_change_permissions_room_name">Нэрэ һэлгэхэ</string>
+    <string name="screen_room_change_permissions_room_topic">Сэдэб һэлгэхэ</string>
+    <string name="screen_room_change_permissions_send_messages">Бэшэг эльгээхэ</string>
+    <string name="screen_room_change_permissions_title">Зүбшөөлнүүд</string>
+    <string name="screen_room_change_role_administrators_title">Админуудые заһаха</string>
+    <string name="screen_room_change_role_confirm_add_admin_description">Энэ үйлэдэлые бусааха аргагүй. Хэрэглэгшэдэ тантай адли эрхэ үгэжэ байнат.</string>
+    <string name="screen_room_change_role_confirm_add_admin_title">Админ нэмэхэ гү?</string>
+    <string name="screen_room_change_role_confirm_change_owners_description">Энэ үйлэдэлые бусааха аргагүй. Эзэмдэлые шэлэгдэһэн хэрэглэгшэдтэ дамжуулжа байнат. Гарабал, энэ үүрэ мүнхэдөө болохо.</string>
+    <string name="screen_room_change_role_confirm_change_owners_title">Эзэмдэлэ дамжуулха гү?</string>
+    <string name="screen_room_change_role_confirm_demote_self_action">Эрхэ доошолуулха</string>
+    <string name="screen_room_change_role_confirm_demote_self_description">Та өөрынгөө эрхэ доошолуулжа байһан тула энэ хубилалтые бусааха аргагүй. Бүлэгтэ эгээл һүүлшын иимэ эрхэтэй хэрэглэгшэ һаа, эрхэнүүдээ бусаажа шадахагүйт.</string>
+    <string name="screen_room_change_role_confirm_demote_self_title">Өөрынгөө эрхэ доошолуулха гү?</string>
+    <string name="screen_room_change_role_invited_member_name">%1$s (Хүлеэлгэдэ)</string>
+    <string name="screen_room_change_role_invited_member_name_android">(Хүлеэлгэдэ)</string>
+    <string name="screen_room_change_role_moderators_admin_section_footer">Админууд автоматаар модераторой эрхэтэй байдаг</string>
+    <string name="screen_room_change_role_moderators_owner_section_footer">Эзэд автоматаар админай эрхэтэй байдаг.</string>
+    <string name="screen_room_change_role_moderators_title">Модераторнуудые заһаха</string>
+    <string name="screen_room_change_role_owners_title">Эзэдые шэлэхэ</string>
+    <string name="screen_room_change_role_section_administrators">Админууд</string>
+    <string name="screen_room_change_role_section_moderators">Модераторнууд</string>
+    <string name="screen_room_change_role_section_users">Гэшүүд</string>
+    <string name="screen_room_change_role_unsaved_changes_description">Хадагалагдаагүй хубилалтанууд бии.</string>
+    <string name="screen_room_change_role_unsaved_changes_title">Хубилалтануудые хадагалха гү?</string>
+    <string name="screen_room_member_list_banned_empty">Хориглогдоһон хэрэглэгшэ үгы.</string>
+    <plurals name="screen_room_member_list_banned_header_title">
+        <item quantity="other">%1$d хориглогдоһон</item>
+    </plurals>
+    <string name="screen_room_member_list_empty_search_subtitle">Бэшэһэнээ шалгагты, али ондоо үгөөр бэдэрэгты</string>
+    <string name="screen_room_member_list_empty_search_title">«%1$s» гэжэ юумэн олдобогүй</string>
+    <plurals name="screen_room_member_list_header_title">
+        <item quantity="other">%1$d хүн</item>
+    </plurals>
+    <string name="screen_room_member_list_manage_member_remove_confirmation_ban">Хэрэглэгшые хориглохо</string>
+    <string name="screen_room_member_list_manage_member_remove_confirmation_kick">Зөөхэн гэшүүнһээ хаһаха</string>
+    <string name="screen_room_member_list_manage_member_unban_action">Хориг болюулха</string>
+    <string name="screen_room_member_list_manage_member_unban_message">Тэдэ урилга абаа һаа, энэ бүлэгтэ дахин орожо шадаха.</string>
+    <string name="screen_room_member_list_manage_member_unban_title">Хэрэглэгшын хориг болюулха</string>
+    <string name="screen_room_member_list_mode_banned">Хориглогдоһон</string>
+    <string name="screen_room_member_list_mode_members">Гэшүүд</string>
+    <plurals name="screen_room_member_list_pending_header_title">
+        <item quantity="other">%1$d уригдаһан</item>
+    </plurals>
+    <string name="screen_room_member_list_pending_status">Хүлеэлгэдэ</string>
+    <string name="screen_room_member_list_role_administrator">Админ</string>
+    <string name="screen_room_member_list_role_moderator">Модератор</string>
+    <string name="screen_room_member_list_role_owner">Эзэн</string>
+    <string name="screen_room_member_list_room_members_header_title">Бүлэгэй гэшүүд</string>
+    <string name="screen_room_member_list_unbanning_user">%1$s-ай хориг болюулжа байна</string>
+    <string name="screen_room_roles_and_permissions_admins">Админууд</string>
+    <string name="screen_room_roles_and_permissions_admins_and_owners">Админууд болон эзэд</string>
+    <string name="screen_room_roles_and_permissions_change_my_role">Өөрынгөө үүргэ һэлгэхэ</string>
+    <string name="screen_room_roles_and_permissions_change_role_demote_to_member">Гэшүүн болгожо доошолуулха</string>
+    <string name="screen_room_roles_and_permissions_change_role_demote_to_moderator">Модератор болгожо доошолуулха</string>
+    <string name="screen_room_roles_and_permissions_member_moderation">Гэшүүдэй модераци</string>
+    <string name="screen_room_roles_and_permissions_messages_and_content">Бэшэгүүд болон контент</string>
+    <string name="screen_room_roles_and_permissions_moderators">Модераторнууд</string>
+    <string name="screen_room_roles_and_permissions_owners">Эзэд</string>
+    <string name="screen_room_roles_and_permissions_permissions_header">Зүбшөөлнүүд</string>
+    <string name="screen_room_roles_and_permissions_reset">Зүбшөөлнүүдые шэнэлхэ</string>
+    <string name="screen_room_roles_and_permissions_reset_confirm_description">Зүбшөөлнүүдые шэнэлбэл, мүнөөнэй тохируулганууд алдагдаха.</string>
+    <string name="screen_room_roles_and_permissions_reset_confirm_title">Зүбшөөлнүүдые шэнэлхэ гү?</string>
+    <string name="screen_room_roles_and_permissions_roles_header">Үүргэнүүд</string>
+    <string name="screen_room_roles_and_permissions_room_details">Бүлэгэй мэдээн</string>
+    <string name="screen_room_roles_and_permissions_space_details">Оршоной мэдээн</string>
+    <string name="screen_room_roles_and_permissions_title">Үүргэнүүд ба зүбшөөлнүүд</string>
+</resources>

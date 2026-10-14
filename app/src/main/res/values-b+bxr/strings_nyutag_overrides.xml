@@ -10,4 +10,28 @@
     <string name="search_no_results_title">Юумэн олдобогүй</string>
     <string name="search_no_results_subtitle">«%1$s» гэжэ юумэн олдобогүй. Ондоо үгэ оролдогты.</string>
     <string name="screen_search_recent_searches_section_title">Һүүлшын бэдэрэлгэнүүд</string>
+    <!-- Нютаг вместо Element, термины как в русском -->
+    <string name="screen_login_subtitle">Нютаг — нютагаархидта зориулһан хаалттай мессенджер.</string>
+    <string name="screen_onboarding_welcome_title">Гэртээ шэнги</string>
+    <string name="screen_onboarding_welcome_subtitle">%1$s — нютагаархидай өөрын мессенджер. Түргэн, хялбар, хамгаалалтай.</string>
+    <string name="screen_onboarding_welcome_message">%1$s — нютагаархидай өөрын мессенджер. Түргэн, хялбар, хамгаалалтай.</string>
+    <string name="screen_onboarding_sign_up">Намда урилга бии</string>
+    <string name="screen_login_error_invalid_user_id">Хэрэглэгшын нэрээ оруулагты, жэшээнь dorzho.</string>
+    <string name="common_invite_unknown_profile">Иимэ хэрэглэгшэ олдобогүй, урилга хүрэхэгүй байжа магад.</string>
+    <string name="screen_room_timeline_legacy_call">Дуудалга дэмжэгдэхэгүй. Хүндэ Нютагаа шэнэлхэ хэрэгтэй.</string>
+    <string name="screen_notification_settings_sound_element_default">Нютагай жэрэй дуун</string>
+    <string name="screen_notification_settings_sound_element_fade">Нютаг: аалиханаар</string>
+    <string name="screen_incoming_call_subtitle_android">Нютагта дуудалга ерэжэ байна</string>
+    <string name="call_invalid_audio_device_bluetooth_devices_disabled">Android-ай энэ хубилбарта Нютагай дуудалганууд Bluetooth-гарнитура дэмжэдэггүй. Ондоо түхеэрэлгэ шэлэгты.</string>
+    <string name="screen_start_chat_join_room_by_address_supporting_text">жэшээнь, #room-name:nyutag.chat</string>
+    <string name="common_account_settings">Аккаунтай тохируулганууд</string>
+    <string name="common_app_settings">Аппликациин тохируулганууд</string>
+    <string name="common_media_upload_quality">Медиа эльгээхэ шанар</string>
+    <string name="common_moderation_and_safety">Модераци ба аюулгүй байдал</string>
+    <string name="common_favourite">Тэмдэглэһэн</string>
+    <string name="common_favourited">Тэмдэглэһэн</string>
+    <string name="screen_roomlist_filter_favourites">Тэмдэглэһэн</string>
+    <string name="screen_roomlist_filter_favourites_empty_state_title">Тэмдэглэһэн чат үшөө үгы</string>
+    <string name="screen_roomlist_filter_favourites_empty_state_subtitle">Чатые тэрэнэй тохируулгануудта тэмдэглэжэ болохот.\nМүнөөдөө бусад чатнуудые харахын тула шүүлтүүрөө болюулагты.</string>
+    <string name="screen_room_timeline_beginning_of_room">«%1$s» чатай эхин.</string>
 </resources>

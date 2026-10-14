@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="dialog_permission_camera">Аппликаци камера хэрэглэхын тула системын тохируулгануудта зүбшөөл үгэгты.</string>
+    <string name="dialog_permission_generic">Системын тохируулгануудта зүбшөөл үгэгты.</string>
+    <string name="dialog_permission_microphone">Аппликаци микрофон хэрэглэхын тула системын тохируулгануудта зүбшөөл үгэгты.</string>
+    <string name="dialog_permission_notification">Аппликаци мэдээсэлнүүдые харуулхын тула системын тохируулгануудта зүбшөөл үгэгты.</string>
+</resources>

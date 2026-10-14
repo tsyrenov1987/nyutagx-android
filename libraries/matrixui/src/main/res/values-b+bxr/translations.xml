@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_bottom_sheet_create_dm_confirmation_button_title">Урилга эльгээхэ</string>
+    <string name="screen_bottom_sheet_create_dm_message">%1$s-тай чат эхилхэ гү?</string>
+    <string name="screen_bottom_sheet_create_dm_title">Урилга эльгээхэ гү?</string>
+    <string name="screen_bottom_sheet_create_dm_unknown_user_content">Энэ хүнтэй Танда чат үшөө үгы. Саашаа ябахынгаа урда тэрэниие урихые баталагты.</string>
+    <string name="screen_bottom_sheet_create_dm_unknown_user_title">Энэ шэнэ контакттай чат эхилхэ гү?</string>
+</resources>

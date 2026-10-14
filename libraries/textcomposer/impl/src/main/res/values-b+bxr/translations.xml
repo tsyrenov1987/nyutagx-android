@@ -2,4 +2,32 @@
 <!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
 <resources>
     <string name="rich_text_editor_composer_placeholder">Мэдээсэл…</string>
+    <string name="rich_text_editor_a11y_add_attachment">Хабсарга нэмэхэ</string>
+    <string name="rich_text_editor_bullet_list">Тэмдэгтэй жагсаалта носоохо/унтарааха</string>
+    <string name="rich_text_editor_close_formatting_options">Текстын хэлбэржүүлэлгые болюулжа хааха</string>
+    <string name="rich_text_editor_code_block">Кодой блок носоохо/унтарааха</string>
+    <string name="rich_text_editor_composer_caption_placeholder">Гарса нэмэхэ</string>
+    <string name="rich_text_editor_composer_encrypted_placeholder">Шифрлэгдэһэн бэшэг…</string>
+    <string name="rich_text_editor_composer_unencrypted_placeholder">Шифрлэгдээгүй бэшэг…</string>
+    <string name="rich_text_editor_create_link">Холбоос байгуулха</string>
+    <string name="rich_text_editor_edit_link">Холбоос заһаха</string>
+    <string name="rich_text_editor_format_action">%1$s, байдал: %2$s</string>
+    <string name="rich_text_editor_format_bold">Зуран үзэгөөр</string>
+    <string name="rich_text_editor_format_italic">Хэлтэйгээр</string>
+    <string name="rich_text_editor_format_state_disabled">унтарһан</string>
+    <string name="rich_text_editor_format_state_off">унтарһан</string>
+    <string name="rich_text_editor_format_state_on">носоһон</string>
+    <string name="rich_text_editor_format_strikethrough">Дундуурынь зураха</string>
+    <string name="rich_text_editor_format_underline">Доогуурнь зураха</string>
+    <string name="rich_text_editor_full_screen_toggle">Бүтэн дэлгэсэй горим носоохо/унтарааха</string>
+    <string name="rich_text_editor_indent">Догол мүр</string>
+    <string name="rich_text_editor_inline_code">Мүр соохи кодой хэлбэри</string>
+    <string name="rich_text_editor_link">Холбоос табиха</string>
+    <string name="rich_text_editor_numbered_list">Тоотой жагсаалта носоохо/унтарааха</string>
+    <string name="rich_text_editor_open_compose_options">Бэшэлгын боломжонуудые нээхэ</string>
+    <string name="rich_text_editor_quote">Ишэлэл носоохо/унтарааха</string>
+    <string name="rich_text_editor_remove_link">Холбоос хаһаха</string>
+    <string name="rich_text_editor_unindent">Догол мүр хаһаха</string>
+    <string name="rich_text_editor_url_placeholder">Холбоос</string>
+    <string name="screen_room_voice_message_tooltip">Бэшэжэ абахын тула дараад байлгагты</string>
 </resources>

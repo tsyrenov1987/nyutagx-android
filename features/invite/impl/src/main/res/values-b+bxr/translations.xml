@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_decline_and_block_block_user_option_description">Энэ хэрэглэгшэһээ бэшэг али бүлэгэй урилга харахагүйт</string>
+    <string name="screen_decline_and_block_block_user_option_title">Хэрэглэгшые блоклохо</string>
+    <string name="screen_decline_and_block_report_user_option_description">Энэ бүлэг тухай аккаунтайнгаа сервертэ гомдол мэдүүлхэ.</string>
+    <string name="screen_decline_and_block_report_user_reason_placeholder">Гомдолой шалтагаан бэшэгты…</string>
+    <string name="screen_decline_and_block_title">Арсажа, блоклохо</string>
+    <string name="screen_join_room_decline_and_block_alert_confirmation">Тиимэ, арсажа, блоклохо</string>
+    <string name="screen_join_room_decline_and_block_alert_message">Бүлэгэй урилгаһаа арсахадаа итгэлтэй гүт? %1$s Тантай холбоо барижа, Таниие бүлэгүүдтэ урижа шадахаа болихо.</string>
+    <string name="screen_join_room_decline_and_block_alert_title">Урилгаһаа арсажа, блоклохо</string>
+    <string name="screen_join_room_decline_and_block_button_title">Арсажа, блоклохо</string>
+</resources>

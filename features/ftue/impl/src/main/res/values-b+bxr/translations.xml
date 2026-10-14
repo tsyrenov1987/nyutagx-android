@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_identity_confirmation_cannot_confirm">Баталжа шадахагүй гүт?</string>
+    <string name="screen_identity_confirmation_create_new_recovery_key">Шэнэ сэргээхэ түлхюур байгуулха</string>
+    <string name="screen_identity_confirmation_use_another_device">Ондоо түхеэрэлгэ хэрэглэхэ</string>
+    <string name="screen_identity_confirmation_use_recovery_key">Сэргээхэ түлхюур хэрэглэхэ</string>
+    <string name="screen_notification_optin_subtitle">Тохируулгануудаа һүүлдэ һэлгэжэ болохот.</string>
+    <string name="screen_notification_optin_title">Мэдээсэлнүүдые зүбшөөгөөд, нэгэшье бэшэг алдахагүй</string>
+</resources>

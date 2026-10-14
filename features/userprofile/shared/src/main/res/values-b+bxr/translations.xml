@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_dm_details_block_alert_action">Блоклохо</string>
+    <string name="screen_dm_details_block_alert_description">Блоклогдоһон хэрэглэгшэд танда бэшэг эльгээжэ шадахагүй, тэдэнэй бүхы бэшэгүүд нюугдаха. Хэзээшье блок болюулжа болохот.</string>
+    <string name="screen_dm_details_block_user">Хэрэглэгшые блоклохо</string>
+    <string name="screen_dm_details_unblock_alert_action">Блок болюулха</string>
+    <string name="screen_dm_details_unblock_alert_description">Тэдэнэй бүхы бэшэгүүдые дахин хаража шадахат.</string>
+    <string name="screen_dm_details_unblock_user">Хэрэглэгшын блок болюулха</string>
+    <string name="screen_room_member_details_block_alert_action">Блоклохо</string>
+    <string name="screen_room_member_details_block_alert_description">Блоклогдоһон хэрэглэгшэд танда бэшэг эльгээжэ шадахагүй, тэдэнэй бүхы бэшэгүүд нюугдаха. Хэзээшье блок болюулжа болохот.</string>
+    <string name="screen_room_member_details_block_user">Хэрэглэгшые блоклохо</string>
+    <string name="screen_room_member_details_title">Профиль</string>
+    <string name="screen_room_member_details_unblock_alert_action">Блок болюулха</string>
+    <string name="screen_room_member_details_unblock_alert_description">Тэдэнэй бүхы бэшэгүүдые дахин хаража шадахат.</string>
+    <string name="screen_room_member_details_unblock_user">Хэрэглэгшын блок болюулха</string>
+    <string name="screen_room_member_details_verify_button_subtitle">Энэ хэрэглэгшые баталхын тула веб-аппликаци хэрэглэгты.</string>
+    <string name="screen_room_member_details_verify_button_title">%1$s баталха</string>
+</resources>

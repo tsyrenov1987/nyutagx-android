@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <plurals name="a11y_polls_percent_of_total">
+        <item quantity="other">Бүхы һаналһаа %1$d хуби</item>
+    </plurals>
+    <string name="a11y_polls_will_remove_selection">Урдахи шэлэлтэ хаһагдаха</string>
+    <string name="a11y_polls_winning_answer">Энэ илаһан харюу</string>
+</resources>

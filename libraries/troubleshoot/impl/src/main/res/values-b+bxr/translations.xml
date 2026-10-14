@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_push_history_title">Push-мэдээсэлнүүдэй түүхэ</string>
+    <string name="troubleshoot_notifications_screen_action">Туршалганууд эхилүүлхэ</string>
+    <string name="troubleshoot_notifications_screen_action_again">Туршалгануудые дахин эхилүүлхэ</string>
+    <string name="troubleshoot_notifications_screen_failure">Зарим туршалганууд бүтэбэгүй. Дэлгэрэнгыень шалгагты.</string>
+    <string name="troubleshoot_notifications_screen_notice">Мэдээсэлнүүд хүлеэгдэһэн шэнги ажаллахагүй болгожо болохо тохируулгын асуудалнуудые олохын тула туршалгануудые эхилүүлэгты.</string>
+    <string name="troubleshoot_notifications_screen_quick_fix_action">Заһахые оролдохо</string>
+    <string name="troubleshoot_notifications_screen_success">Бүхы туршалганууд амжалтатай үнгэрбэ.</string>
+    <string name="troubleshoot_notifications_screen_title">Мэдээсэлэй асуудал заһаха</string>
+    <string name="troubleshoot_notifications_screen_waiting">Зарим туршалганууд таны анхарал шаардана. Дэлгэрэнгыень шалгагты.</string>
+</resources>

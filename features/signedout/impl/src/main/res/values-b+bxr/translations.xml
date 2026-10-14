@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="screen_signed_out_reason_1">Та ондоо сеанс дээрэ нюуса үгөө һэлгэбэт</string>
+    <string name="screen_signed_out_reason_2">Та ондоо сеансһаа энэ сеансые хаһабат</string>
+    <string name="screen_signed_out_reason_3">Таны серверэй админ хандалгыетнай хүсэнгүй болгобо</string>
+    <string name="screen_signed_out_subtitle">Доодо шалтагаануудай нэгэнһээ боложо гаргагдаа байжа магадт. %s хэрэглэжэ үргэлжэлүүлхын тула дахин орогты.</string>
+    <string name="screen_signed_out_title">Та гаргагдабат</string>
+</resources>
