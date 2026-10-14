@@ -55,6 +55,7 @@ class SpaceViewTest : RobolectricTest() {
         }
     }
 
+    @Config(qualifiers = "h1024dp")
     @Test
     fun `clicking on a room name invokes the expected callback`() = runAndroidComposeUiTest {
         val aSpaceRoom = aSpaceRoom(roomId = A_ROOM_ID, displayName = A_ROOM_NAME)
@@ -72,6 +73,7 @@ class SpaceViewTest : RobolectricTest() {
         }
     }
 
+    @Config(qualifiers = "h1024dp")
     @Test
     fun `clicking on Join room emits the expected Event`() = runAndroidComposeUiTest {
         val aSpaceRoom = aSpaceRoom(roomId = A_ROOM_ID, state = null)

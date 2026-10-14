@@ -23,4 +23,11 @@
     <string name="nyutag_presence_date">был(а) %1$s</string>
     <string name="nyutag_presence_recently">был(а) недавно</string>
     <string name="nyutag_message_read">Прочитано</string>
+    <string name="nyutag_community_invite">Пригласить</string>
+    <string name="nyutag_community_members">Участники</string>
+    <string name="nyutag_community_leave">Выйти</string>
+    <string name="nyutag_community_groups">Группы</string>
+    <string name="nyutag_community_empty_title">Здесь пока нет групп</string>
+    <string name="nyutag_community_empty_subtitle">Скоро их добавит админ. А пока позовите друзей.</string>
+    <string name="nyutag_community_invite_text">Вступайте в сообщество «%1$s» в Нютаге: %2$s</string>
 </resources>

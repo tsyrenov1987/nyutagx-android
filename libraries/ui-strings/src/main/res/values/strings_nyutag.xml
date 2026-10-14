@@ -23,4 +23,11 @@
     <string name="nyutag_presence_date">last seen %1$s</string>
     <string name="nyutag_presence_recently">last seen recently</string>
     <string name="nyutag_message_read">Read</string>
+    <string name="nyutag_community_invite">Invite</string>
+    <string name="nyutag_community_members">Members</string>
+    <string name="nyutag_community_leave">Leave</string>
+    <string name="nyutag_community_groups">Groups</string>
+    <string name="nyutag_community_empty_title">No groups yet</string>
+    <string name="nyutag_community_empty_subtitle">The admin will add them soon. Meanwhile, invite friends.</string>
+    <string name="nyutag_community_invite_text">Join the community «%1$s» in Nyutag: %2$s</string>
 </resources>

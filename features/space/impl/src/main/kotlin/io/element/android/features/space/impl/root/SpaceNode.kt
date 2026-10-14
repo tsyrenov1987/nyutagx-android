@@ -60,7 +60,8 @@ class SpaceNode(
                     context.startSharePlainTextIntent(
                         activityResultLauncher = null,
                         chooserTitle = context.getString(CommonStrings.common_share_space),
-                        text = permalink,
+                        // Нютаг: приглашение текстом с названием сообщества, как на iOS.
+                        text = context.getString(CommonStrings.nyutag_community_invite_text, room.info().name ?: permalink, permalink),
                         noActivityFoundMessage = context.getString(R.string.error_no_compatible_app_found)
                     )
                 }

@@ -178,6 +178,10 @@ fun SpaceView(
                     },
                     onCreateRoomClick = onCreateRoomClick,
                     onAddRoomClick = onAddRoomClick,
+                    onInviteClick = onShareSpace,
+                    onViewMembersClick = onViewMembersClick,
+                    onSettingsClick = onSettingsClick,
+                    onLeaveSpaceClick = onLeaveSpaceClick,
                 )
                 JoinFailuresEffect(
                     hasAnyFailure = state.hasAnyJoinFailures,
@@ -252,6 +256,10 @@ private fun SpaceViewContent(
     onTopicClick: (String) -> Unit,
     onCreateRoomClick: () -> Unit,
     onAddRoomClick: () -> Unit,
+    onInviteClick: () -> Unit,
+    onViewMembersClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onLeaveSpaceClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -266,16 +274,27 @@ private fun SpaceViewContent(
                 exit = fadeOut() + shrinkVertically()
             ) {
                 Column {
-                    SpaceHeaderView(
-                        avatarData = spaceInfo.getAvatarData(AvatarSize.SpaceHeader),
-                        alias = spaceInfo.canonicalAlias,
-                        name = spaceInfo.name,
-                        topic = spaceInfo.topic,
-                        topicMaxLines = 2,
-                        visibility = SpaceRoomVisibility.fromJoinRule(spaceInfo.joinRule),
-                        heroes = spaceInfo.heroes,
-                        numberOfMembers = spaceInfo.joinedMembersCount.toInt(),
-                        onTopicClick = onTopicClick
+                    Box {
+                        NyutagCommunityCover()
+                        SpaceHeaderView(
+                            avatarData = spaceInfo.getAvatarData(AvatarSize.SpaceHeader),
+                            alias = spaceInfo.canonicalAlias,
+                            name = spaceInfo.name,
+                            topic = spaceInfo.topic,
+                            topicMaxLines = 2,
+                            visibility = SpaceRoomVisibility.fromJoinRule(spaceInfo.joinRule),
+                            heroes = spaceInfo.heroes,
+                            numberOfMembers = spaceInfo.joinedMembersCount.toInt(),
+                            onTopicClick = onTopicClick
+                        )
+                    }
+                    HorizontalDivider()
+                    NyutagCommunityActions(
+                        canAccessSettings = state.canAccessSpaceSettings,
+                        onInviteClick = onInviteClick,
+                        onViewMembersClick = onViewMembersClick,
+                        onSettingsClick = onSettingsClick,
+                        onLeaveSpaceClick = onLeaveSpaceClick,
                     )
                     HorizontalDivider()
                 }
@@ -289,7 +308,16 @@ private fun SpaceViewContent(
                     onAddRoomClick = onAddRoomClick,
                 )
             }
+        } else if (state.children.isEmpty() && !state.hasMoreToLoad && !state.isManageMode) {
+            item {
+                NyutagCommunityMemberEmptyState()
+            }
         } else {
+            if (state.children.isNotEmpty() && !state.isManageMode) {
+                item(key = "nyutag_groups_header") {
+                    NyutagCommunitySectionHeader(count = state.children.size)
+                }
+            }
             itemsIndexed(
                 items = state.children,
                 key = { _, spaceRoom -> spaceRoom.roomId }
