@@ -57,6 +57,7 @@ import io.element.android.libraries.push.impl.db.PushRequest
 import io.element.android.libraries.push.impl.notifications.model.InviteNotifiableEvent
 import io.element.android.libraries.push.impl.notifications.model.NotifiableMessageEvent
 import io.element.android.libraries.push.impl.notifications.model.ResolvedPushEvent
+import io.element.android.libraries.matrix.api.nyutag.NyutagUnansweredChats
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.toolbox.api.strings.StringProvider
@@ -97,6 +98,7 @@ class DefaultNotifiableEventResolver(
     private val fallbackNotificationFactory: FallbackNotificationFactory,
     private val featureFlagService: FeatureFlagService,
     private val sessionStore: SessionStore,
+    private val unansweredChats: NyutagUnansweredChats,
 ) : NotifiableEventResolver {
     override suspend fun resolveEvents(
         sessionId: SessionId,
@@ -208,6 +210,26 @@ class DefaultNotifiableEventResolver(
             }
             is NotificationContent.Invite -> {
                 val senderDisambiguatedDisplayName = getDisambiguatedDisplayName(content.senderId)
+                // Нютаг: личный чат принимаем сразу, без «Принять/Отклонить» — как сообщение со звуком.
+                if (isDirect && !isSpace && client.joinRoom(roomId).isSuccess) {
+                    unansweredChats.add(userId, roomId)
+                    return@runCatchingExceptions ResolvedPushEvent.Event(
+                        buildNotifiableMessageEvent(
+                            sessionId = userId,
+                            senderId = content.senderId,
+                            roomId = roomId,
+                            eventId = eventId,
+                            noisy = isNoisy,
+                            timestamp = this.timestamp,
+                            senderDisambiguatedDisplayName = senderDisambiguatedDisplayName,
+                            body = stringProvider.getString(R.string.nyutag_notification_dm_new_message),
+                            roomName = roomDisplayName,
+                            roomIsDm = true,
+                            roomAvatarPath = roomAvatarUrl,
+                            senderAvatarPath = senderAvatarUrl,
+                        )
+                    )
+                }
                 val inviteNotifiableEvent = InviteNotifiableEvent(
                     sessionId = userId,
                     roomId = roomId,

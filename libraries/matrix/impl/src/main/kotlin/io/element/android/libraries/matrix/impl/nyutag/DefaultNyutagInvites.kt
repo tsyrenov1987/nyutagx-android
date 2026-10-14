@@ -127,6 +127,14 @@ class DefaultNyutagInvites(
         }
     }
 
+    override suspend fun isInContacts(sessionId: SessionId, userId: String, phones: List<String>): Result<Boolean> = call {
+        val body = JSONObject().put("user_id", userId).put("phones", JSONArray(phones)).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/contact-check", jsonBody = body, bearer = token(sessionId))
+        val json = response.json()
+        if (response.status != 200 || !json.has("in_contacts")) throw response.toException()
+        json.getBoolean("in_contacts")
+    }
+
     override suspend fun hasPhone(sessionId: SessionId): Result<Boolean> = call {
         val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/me", bearer = token(sessionId))
         if (response.status != 200) throw response.toException()

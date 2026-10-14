@@ -60,6 +60,10 @@ data class MessagesState(
     val dmUserStatus: DisplayedStatus?,
     /** Нютаг: присутствие собеседника в личном чате. */
     val dmPresence: NyutagPresence? = null,
+    /** Нютаг: надпись «Вне контактов» в личном чате. */
+    val showNotInContacts: Boolean = false,
+    /** Нютаг: разрешения на контакты нет — в надписи кнопка «Сверить с контактами». */
+    val canCheckContacts: Boolean = false,
     val roomMemberModerationState: RoomMemberModerationState,
     /** Type of "shared history" icon to show in the top bar. */
     val topBarSharedHistoryIcon: SharedHistoryIcon,

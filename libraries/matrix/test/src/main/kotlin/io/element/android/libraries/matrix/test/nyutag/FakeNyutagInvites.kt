@@ -47,6 +47,9 @@ class FakeNyutagInvites(
     override suspend fun resolveLogin(identifier: String, password: String) = resolveResult
     override suspend fun createInvite(sessionId: SessionId) = inviteResult
     override suspend fun lookupPhones(sessionId: SessionId, phones: List<String>) = lookupResult.also { lookedUpPhones += phones }
+
+    var inContactsResult: Result<Boolean> = Result.success(false)
+    override suspend fun isInContacts(sessionId: SessionId, userId: String, phones: List<String>) = inContactsResult
     override suspend fun hasPhone(sessionId: SessionId) = hasPhoneResult
     override suspend fun setPhone(sessionId: SessionId, phone: String) = setPhoneResult
 }

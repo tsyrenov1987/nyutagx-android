@@ -15,6 +15,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -77,8 +78,11 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.toThreadId
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
+import io.element.android.libraries.matrix.api.nyutag.NyutagAddressBook
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.api.nyutag.NyutagPresence
 import io.element.android.libraries.matrix.api.nyutag.NyutagPresenceService
+import io.element.android.libraries.matrix.api.nyutag.NyutagUnansweredChats
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.RoomInfo
@@ -139,6 +143,9 @@ class MessagesPresenter(
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
     private val nyutagPresence: NyutagPresenceService,
+    private val unansweredChats: NyutagUnansweredChats,
+    private val nyutagInvites: NyutagInvites,
+    private val addressBook: NyutagAddressBook,
 ) : Presenter<MessagesState> {
     @AssistedFactory
     interface Factory {
@@ -177,6 +184,21 @@ class MessagesPresenter(
         val composerState = composerPresenter.present()
         val voiceMessageComposerState = voiceMessageComposerPresenter.present()
         val timelineState = timelinePresenter.present()
+        // Нютаг: «Вне контактов» — незнакомый написал первым, мы ещё не ответили и его номера нет в записной книжке.
+        var isUnanswered by remember { mutableStateOf(room.roomId in unansweredChats.all(room.sessionId)) }
+        val hasOwnMessage = timelineState.timelineItems.any { it is TimelineItem.Event && it.isMine }
+        LaunchedEffect(isUnanswered, hasOwnMessage) {
+            if (isUnanswered && hasOwnMessage) {
+                unansweredChats.remove(room.sessionId, room.roomId)
+                isUnanswered = false
+            }
+        }
+        var contactsCheckRun by remember { mutableIntStateOf(0) }
+        val isInAddressBook by produceState<Boolean?>(initialValue = null, isUnanswered, dmUserId, contactsCheckRun) {
+            value = null
+            if (!isUnanswered || dmUserId == null || !addressBook.canRead()) return@produceState
+            value = nyutagInvites.isInContacts(room.sessionId, dmUserId.value, addressBook.phones()).getOrNull()
+        }
         val timelineProtectionState = timelineProtectionPresenter.present()
         val identityChangeState = identityChangeStatePresenter.present()
         val actionListState = actionListPresenter.present()
@@ -262,6 +284,7 @@ class MessagesPresenter(
 
         fun handleEvent(event: MessagesEvent) {
             when (event) {
+                MessagesEvent.NyutagContactsPermissionGranted -> contactsCheckRun++
                 is MessagesEvent.HandleAction -> {
                     localCoroutineScope.handleTimelineAction(
                         action = event.action,
@@ -355,6 +378,8 @@ class MessagesPresenter(
             dmUserVerificationState = dmUserVerificationState,
             dmUserStatus = roomInfo.dmUserStatus(),
             dmPresence = dmPresence,
+            showNotInContacts = isUnanswered && dmUserId != null && isInAddressBook != true,
+            canCheckContacts = !addressBook.canRead(),
             roomMemberModerationState = roomMemberModerationState,
             topBarSharedHistoryIcon = topBarSharedHistoryIcon,
             successorRoom = roomInfo.successorRoom,

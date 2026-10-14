@@ -610,6 +610,12 @@ private fun MessagesViewContent(
                             onViewAllClick = onViewAllPinnedMessagesClick,
                         )
                     }
+                    if (state.showNotInContacts) {
+                        NyutagNotInContactsBanner(
+                            canCheckContacts = state.canCheckContacts,
+                            onContactsPermissionGranted = { state.eventSink(MessagesEvent.NyutagContactsPermissionGranted) },
+                        )
+                    }
                     if (state.showLiveLocationShareBanner) {
                         LiveLocationSharingBanner(
                             onClick = { state.eventSink(MessagesEvent.ShowLiveLocationShare) },

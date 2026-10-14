@@ -63,6 +63,7 @@ import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.core.toThreadId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
 import io.element.android.libraries.matrix.api.media.MediaSource
+import io.element.android.libraries.matrix.api.nyutag.NyutagAddressBook
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.MessageEventType
 import io.element.android.libraries.matrix.api.room.RoomMembersState
@@ -88,9 +89,12 @@ import io.element.android.libraries.matrix.test.A_THREAD_ID
 import io.element.android.libraries.matrix.test.A_TRANSACTION_ID
 import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_ID_2
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.core.FakeSendHandle
 import io.element.android.libraries.matrix.test.core.aBuildMeta
 import io.element.android.libraries.matrix.test.encryption.FakeEncryptionService
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagInvites
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagUnansweredChats
 import io.element.android.libraries.matrix.test.permalink.FakePermalinkParser
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
@@ -117,6 +121,8 @@ import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import io.element.android.tests.testutils.testWithLifecycleOwner
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -127,8 +133,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 class MessagesPresenterTest {
     @get:Rule
@@ -151,6 +155,55 @@ class MessagesPresenterTest {
             assertThat(initialState.showLiveLocationShareBanner).isFalse()
         }
     }
+
+    @Test
+    fun `present - Nyutag shows not in contacts for an unanswered DM`() = runTest {
+        val unansweredChats = FakeNyutagUnansweredChats().apply { add(A_SESSION_ID, A_ROOM_ID) }
+        val presenter = createMessagesPresenter(joinedRoom = aNyutagDmRoom(), unansweredChats = unansweredChats)
+        presenter.testWithLifecycleOwner {
+            val state = consumeItemsUntilTimeout().last()
+            assertThat(state.showNotInContacts).isTrue()
+            assertThat(state.canCheckContacts).isTrue()
+        }
+    }
+
+    @Test
+    fun `present - Nyutag hides not in contacts when the sender is in the address book`() = runTest {
+        val unansweredChats = FakeNyutagUnansweredChats().apply { add(A_SESSION_ID, A_ROOM_ID) }
+        val presenter = createMessagesPresenter(
+            joinedRoom = aNyutagDmRoom(),
+            unansweredChats = unansweredChats,
+            nyutagInvites = FakeNyutagInvites().apply { inContactsResult = Result.success(true) },
+            addressBook = object : NyutagAddressBook {
+                override fun canRead() = true
+                override suspend fun phones() = listOf("+79000000000")
+            },
+        )
+        presenter.testWithLifecycleOwner {
+            val state = consumeItemsUntilTimeout().last()
+            assertThat(state.showNotInContacts).isFalse()
+            assertThat(state.canCheckContacts).isFalse()
+        }
+    }
+
+    @Test
+    fun `present - Nyutag hides not in contacts for an answered DM`() = runTest {
+        val presenter = createMessagesPresenter(joinedRoom = aNyutagDmRoom())
+        presenter.testWithLifecycleOwner {
+            val state = consumeItemsUntilTimeout().last()
+            assertThat(state.showNotInContacts).isFalse()
+        }
+    }
+
+    private fun aNyutagDmRoom() = FakeJoinedRoom(
+        baseRoom = FakeBaseRoom(
+            roomPermissions = FakeRoomPermissions(canSendMessage = { true }),
+        ).apply {
+            givenRoomInfo(aRoomInfo(id = A_ROOM_ID, name = "", isDm = true, heroes = listOf(MatrixUser(A_USER_ID_2))))
+        },
+        liveTimeline = FakeTimeline(),
+        typingNoticeResult = { Result.success(Unit) },
+    )
 
     @Test
     fun `present - exposes live location sharing banner visibility for current room`() = runTest {
@@ -1539,6 +1592,12 @@ class MessagesPresenterTest {
         addRecentEmoji: AddRecentEmoji = AddRecentEmoji { _ -> lambdaError() },
         markAsFullyRead: MarkAsFullyRead = FakeMarkAsFullyRead(),
         liveLocationShareManager: FakeActiveLiveLocationShareManager = FakeActiveLiveLocationShareManager(),
+        unansweredChats: FakeNyutagUnansweredChats = FakeNyutagUnansweredChats(),
+        nyutagInvites: FakeNyutagInvites = FakeNyutagInvites(),
+        addressBook: NyutagAddressBook = object : NyutagAddressBook {
+            override fun canRead() = false
+            override suspend fun phones() = emptyList<String>()
+        },
     ): MessagesPresenter {
         return MessagesPresenter(
             navigator = navigator,
@@ -1574,6 +1633,9 @@ class MessagesPresenterTest {
             addRecentEmoji = addRecentEmoji,
             markAsFullyRead = markAsFullyRead,
             nyutagPresence = { _, _ -> Result.failure(IllegalStateException("No presence in tests")) },
+            unansweredChats = unansweredChats,
+            nyutagInvites = nyutagInvites,
+            addressBook = addressBook,
             liveLocationShareManager = liveLocationShareManager,
             sessionCoroutineScope = backgroundScope,
         )

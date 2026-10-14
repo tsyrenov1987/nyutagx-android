@@ -48,6 +48,9 @@ interface NyutagInvites {
     suspend fun lookupPhones(sessionId: SessionId, phones: List<String>): Result<Map<String, String>>
 
     /** Указан ли у участника [sessionId] свой номер телефона (по нему его находят друзья). */
+    /** Есть ли номер [userId] среди [phones] (записная книжка). Сервер отвечает только да/нет. */
+    suspend fun isInContacts(sessionId: SessionId, userId: String, phones: List<String>): Result<Boolean>
+
     suspend fun hasPhone(sessionId: SessionId): Result<Boolean>
 
     /** Указывает или меняет свой номер телефона. */

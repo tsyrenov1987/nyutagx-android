@@ -39,6 +39,17 @@ import org.junit.Test
 
 class OnboardingViewTest : RobolectricTestParameter() {
     @Test
+    fun `Nyutag - without a chosen language the language choice is shown first`() = runAndroidComposeUiTest<ComponentActivity> {
+        setOnboardingView(
+            state = anOnBoardingState(canCreateAccount = true),
+            languageChosen = false,
+        )
+        onNodeWithText(activity!!.getString(R.string.nyutag_start_sign_up)).assertDoesNotExist()
+        onNodeWithText("English").performClick()
+        onNodeWithText(activity!!.getString(R.string.nyutag_start_sign_up)).assertExists()
+    }
+
+    @Test
     fun `when can create account - clicking on create account calls the expected callback`() = runAndroidComposeUiTest {
         val eventSink = EventsRecorder<OnBoardingEvent>(expectEvents = false)
         ensureCalledOnce { callback ->
@@ -50,7 +61,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 ),
                 onCreateAccount = callback,
             )
-            clickOn(R.string.nyutag_start_have_invite)
+            clickOn(R.string.nyutag_start_sign_up)
             // Developer settings should not be shown
             val developerSettingsText = activity!!.getString(CommonStrings.common_developer_options)
             onNodeWithContentDescription(developerSettingsText).assertDoesNotExist()
@@ -246,6 +257,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
         onOAuthDetails: (OAuthDetails) -> Unit = EnsureNeverCalledWithParam(),
         onNeedLoginPassword: () -> Unit = EnsureNeverCalled(),
         onLearnMoreClick: () -> Unit = EnsureNeverCalled(),
+        languageChosen: Boolean = true,
     ) {
         setContent {
             OnBoardingView(
@@ -259,6 +271,7 @@ class OnboardingViewTest : RobolectricTestParameter() {
                 onOAuthDetails = onOAuthDetails,
                 onNeedLoginPassword = onNeedLoginPassword,
                 onLearnMoreClick = onLearnMoreClick,
+                languageChosen = languageChosen,
             )
         }
     }

@@ -74,6 +74,7 @@ fun OnBoardingView(
     onLearnMoreClick: () -> Unit,
     onReportProblem: () -> Unit,
     modifier: Modifier = Modifier,
+    languageChosen: Boolean = NyutagLanguageOption.isChosen(),
 ) {
     val loginView = @Composable {
         LoginModeView(
@@ -106,7 +107,7 @@ fun OnBoardingView(
     }
 
     // Нютаг: при первом запуске сначала выбор языка; выбор пересоздаёт экран уже на новом языке.
-    var isLanguageChosen by remember { mutableStateOf(NyutagLanguageOption.isChosen()) }
+    var isLanguageChosen by remember { mutableStateOf(languageChosen) }
     if (!state.isAddingAccount && !isLanguageChosen) {
         NyutagLanguageChoice(
             modifier = modifier,

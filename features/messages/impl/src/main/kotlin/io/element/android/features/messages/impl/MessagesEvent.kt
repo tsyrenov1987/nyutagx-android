@@ -14,6 +14,8 @@ import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransa
 import io.element.android.libraries.matrix.api.user.MatrixUser
 
 sealed interface MessagesEvent {
+    /** Нютаг: дали доступ к контактам — заново сверяем собеседника с записной книжкой. */
+    data object NyutagContactsPermissionGranted : MessagesEvent
     data class HandleAction(val action: TimelineItemAction, val event: TimelineItem.Event) : MessagesEvent
     data class ToggleReaction(val emoji: String, val eventOrTransactionId: EventOrTransactionId) : MessagesEvent
     data class InviteDialogDismissed(val action: InviteDialogAction) : MessagesEvent

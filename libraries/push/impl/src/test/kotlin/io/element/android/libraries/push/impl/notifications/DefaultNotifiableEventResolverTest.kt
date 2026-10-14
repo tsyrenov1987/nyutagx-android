@@ -44,7 +44,9 @@ import io.element.android.libraries.matrix.test.A_SPACE_NAME
 import io.element.android.libraries.matrix.test.A_TIMESTAMP
 import io.element.android.libraries.matrix.test.A_USER_ID_2
 import io.element.android.libraries.matrix.test.A_USER_NAME_2
+import io.element.android.libraries.matrix.api.room.RoomInfo
 import io.element.android.libraries.matrix.test.FakeMatrixClient
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagUnansweredChats
 import io.element.android.libraries.matrix.test.FakeMatrixClientProvider
 import io.element.android.libraries.matrix.test.notification.FakeNotificationService
 import io.element.android.libraries.matrix.test.notification.aNotificationData
@@ -548,7 +550,8 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
                         isDirect = true,
                     ))
                 )
-            )
+            ),
+            joinRoomResult = Result.failure(IllegalStateException("join failed")),
         )
         val request = aPushRequest(A_SESSION_ID, A_ROOM_ID, AN_EVENT_ID, "firebase")
         val result = sut.resolveEvents(A_SESSION_ID, listOf(request))
@@ -574,6 +577,31 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
     }
 
     @Test
+    fun `resolve invite direct - Nyutag joins and shows a message`() = runTest {
+        val unansweredChats = FakeNyutagUnansweredChats()
+        val sut = createDefaultNotifiableEventResolver(
+            notificationResult = Result.success(
+                mapOf(
+                    AN_EVENT_ID to Result.success(aNotificationData(
+                        content = NotificationContent.Invite(
+                            senderId = A_USER_ID_2,
+                        ),
+                        isDirect = true,
+                    ))
+                )
+            ),
+            unansweredChats = unansweredChats,
+        )
+        val request = aPushRequest(A_SESSION_ID, A_ROOM_ID, AN_EVENT_ID, "firebase")
+        val result = sut.resolveEvents(A_SESSION_ID, listOf(request))
+        val event = (result.getEvent(request)?.getOrThrow() as ResolvedPushEvent.Event).notifiableEvent as NotifiableMessageEvent
+        assertThat(event.body).isEqualTo("New message")
+        assertThat(event.roomIsDm).isTrue()
+        assertThat(event.senderId).isEqualTo(A_USER_ID_2)
+        assertThat(unansweredChats.all(A_SESSION_ID)).containsExactly(A_ROOM_ID)
+    }
+
+    @Test
     fun `resolve invite direct, no display name`() = runTest {
         val sut = createDefaultNotifiableEventResolver(
             notificationResult = Result.success(
@@ -586,7 +614,8 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
                         senderDisplayName = null,
                     ))
                 )
-            )
+            ),
+            joinRoomResult = Result.failure(IllegalStateException("join failed")),
         )
         val request = aPushRequest(A_SESSION_ID, A_ROOM_ID, AN_EVENT_ID, "firebase")
         val result = sut.resolveEvents(A_SESSION_ID, listOf(request))
@@ -1060,6 +1089,8 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
         notificationResult: Result<Map<EventId, Result<NotificationData>>> = Result.success(emptyMap()),
         callNotificationEventResolver: FakeCallNotificationEventResolver = FakeCallNotificationEventResolver(),
         sessionStore: SessionStore = InMemorySessionStore(),
+        joinRoomResult: Result<RoomInfo?> = Result.success(null),
+        unansweredChats: FakeNyutagUnansweredChats = FakeNyutagUnansweredChats(),
     ): DefaultNotifiableEventResolver {
         val context = RuntimeEnvironment.getApplication() as Context
         notificationService?.givenGetNotificationsResult(notificationResult)
@@ -1067,7 +1098,9 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
             if (notificationService == null) {
                 Result.failure(IllegalStateException("Client not found"))
             } else {
-                Result.success(FakeMatrixClient(notificationService = notificationService))
+                Result.success(FakeMatrixClient(notificationService = notificationService).apply {
+                    joinRoomLambda = { joinRoomResult }
+                })
             }
         })
         val notificationMediaRepoFactory = NotificationMediaRepo.Factory {
@@ -1085,6 +1118,7 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
             ),
             featureFlagService = FakeFeatureFlagService(),
             sessionStore = sessionStore,
+            unansweredChats = unansweredChats,
         )
     }
 }

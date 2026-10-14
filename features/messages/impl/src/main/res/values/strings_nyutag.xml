@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nyutag_not_in_contacts">This person is not in your contacts</string>
+    <string name="nyutag_not_in_contacts_check">Check contacts</string>
+</resources>
