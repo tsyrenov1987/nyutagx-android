@@ -45,6 +45,7 @@
     <string name="nyutag_login_identifier_hint">Нэрэ, утаһан али e-mail</string>
     <string name="nyutag_start_sign_in">Орохо</string>
     <string name="nyutag_start_have_invite">Намда урилга бии</string>
+    <string name="nyutag_start_sign_up">Бүртхүүлхэ</string>
     <string name="nyutag_signup_step">%2$d алхамһаа %1$d-дэхи</string>
     <string name="nyutag_signup_code_title">Урилгын кодоо оруулагты</string>
     <string name="nyutag_signup_paste">Оруулха</string>

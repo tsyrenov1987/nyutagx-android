@@ -297,7 +297,7 @@ private fun OnBoardingButtons(
         }
         if (state.canCreateAccount) {
             OutlinedButton(
-                text = stringResource(id = R.string.nyutag_start_have_invite),
+                text = stringResource(id = R.string.nyutag_start_sign_up),
                 onClick = onCreateAccount,
                 modifier = Modifier
                     .fillMaxWidth()

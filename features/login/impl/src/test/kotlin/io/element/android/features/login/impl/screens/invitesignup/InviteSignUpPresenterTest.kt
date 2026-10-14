@@ -49,6 +49,23 @@ class InviteSignUpPresenterTest {
     }
 
     @Test
+    fun `present - without required invite the code step is skipped unless the code came from a link`() = runTest {
+        val config = NyutagSignUpConfig(requireInvite = false, requireContact = false, emailAvailable = false, phoneAvailable = false)
+        createPresenter(invites = FakeNyutagInvites(config = Result.success(config))).test {
+            val state = awaitState { it.steps.size == 2 }
+            assertThat(state.steps).containsExactly(SignUpStep.Name, SignUpStep.Password).inOrder()
+            assertThat(state.step).isEqualTo(SignUpStep.Name)
+            cancelAndIgnoreRemainingEvents()
+        }
+        createPresenter(invites = FakeNyutagInvites(config = Result.success(config)), initialCode = code).test {
+            val state = awaitState { it.isCodeValid }
+            assertThat(state.steps.first()).isEqualTo(SignUpStep.Code)
+            assertThat(state.step).isEqualTo(SignUpStep.Code)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - full code is checked automatically and shows the inviter`() = runTest {
         createPresenter().test {
             awaitItem().eventSink(InviteSignUpEvent.SetCode(code))

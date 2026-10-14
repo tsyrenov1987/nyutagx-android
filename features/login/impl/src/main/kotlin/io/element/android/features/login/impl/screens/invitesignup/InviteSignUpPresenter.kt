@@ -65,12 +65,15 @@ class InviteSignUpPresenter(
         var error by remember { mutableStateOf<Throwable?>(null) }
         var job by remember { mutableStateOf<Job?>(null) }
 
-        val steps = config.value.steps()
+        val steps = config.value.steps(initialCode)
 
         suspend fun loadConfig() {
             if (config.value != null) return
             invites.signUpConfig().onSuccess {
                 config.value = it
+                // Без обязательного приглашения шага с кодом нет — начинаем с первого оставшегося.
+                val current = it.steps(initialCode)
+                if (step !in current) step = current.first()
                 if (it.phoneAvailable || it.emailAvailable) {
                     form = form.copy(medium = if (it.phoneAvailable) NyutagContactMedium.Phone else NyutagContactMedium.Email)
                 }
@@ -101,7 +104,7 @@ class InviteSignUpPresenter(
         )
 
         fun advance() {
-            val current = config.value.steps()
+            val current = config.value.steps(initialCode)
             val index = current.indexOf(step)
             if (index + 1 < current.size) {
                 error = null
@@ -127,7 +130,7 @@ class InviteSignUpPresenter(
                 return
             }
             // Шаги могли измениться после загрузки настроек.
-            val current = config.value.steps()
+            val current = config.value.steps(initialCode)
             step = current[current.indexOf(SignUpStep.Code) + 1]
             error = null
         }
@@ -214,7 +217,7 @@ class InviteSignUpPresenter(
             launchBusy {
                 if (registeredUserId == null) {
                     val sid = verification?.sid?.takeIf { isContactVerified }
-                    val phone = checkedPhone?.takeIf { SignUpStep.Phone in config.value.steps() }
+                    val phone = checkedPhone?.takeIf { SignUpStep.Phone in config.value.steps(initialCode) }
                     Timber.i("Nyutag: sign-up started, contact=${sid != null}, phone=${phone != null}")
                     invites.register(form.code, username, password, sid, phone).fold(
                         onSuccess = { registeredUserId = it },
@@ -312,7 +315,7 @@ class InviteSignUpPresenter(
                 }
                 InviteSignUpEvent.SkipContact -> if (step == SignUpStep.Contact && state().canSkipContact) advance()
                 InviteSignUpEvent.Back -> {
-                    val current = config.value.steps()
+                    val current = config.value.steps(initialCode)
                     val index = current.indexOf(step)
                     if (index > 0) {
                         job?.cancel()
@@ -341,8 +344,9 @@ class InviteSignUpPresenter(
     }
 }
 
-private fun NyutagSignUpConfig?.steps(): List<SignUpStep> = listOfNotNull(
-    SignUpStep.Code,
+/** Код спрашиваем, только если сервер требует приглашение или код пришёл по ссылке (чтобы запомнить, кто пригласил). */
+private fun NyutagSignUpConfig?.steps(initialCode: String): List<SignUpStep> = listOfNotNull(
+    SignUpStep.Code.takeIf { this == null || requireInvite || initialCode.isNotBlank() },
     SignUpStep.Contact.takeIf { this != null && (phoneAvailable || emailAvailable) },
     // Телефон без SMS — свой шаг: номер вводится без кода, по нему человека находят друзья.
     SignUpStep.Phone.takeIf { this != null && requirePhone && phoneUnverified },

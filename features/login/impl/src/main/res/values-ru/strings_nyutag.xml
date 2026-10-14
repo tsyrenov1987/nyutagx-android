@@ -44,6 +44,7 @@
     <string name="nyutag_login_identifier_hint">Имя, телефон или e-mail</string>
     <string name="nyutag_start_sign_in">Войти</string>
     <string name="nyutag_start_have_invite">У меня есть приглашение</string>
+    <string name="nyutag_start_sign_up">Зарегистрироваться</string>
     <string name="nyutag_signup_step">Шаг %1$d из %2$d</string>
     <string name="nyutag_signup_code_title">Введите код приглашения</string>
     <string name="nyutag_signup_paste">Вставить</string>
