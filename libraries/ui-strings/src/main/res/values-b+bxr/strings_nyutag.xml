@@ -32,4 +32,8 @@
     <string name="nyutag_community_invite_text">Нютаг соо «%1$s» оршондо оро: %2$s</string>
     <string name="nyutag_saved_messages">Хадагалһан</string>
     <string name="nyutag_saved_messages_topic">Өөртөө тэмдэглэл, холбоос, файлнууд</string>
+    <string name="nyutag_room_search">Хөөрэлдөөнөөр бэдэрхэ</string>
+    <string name="nyutag_room_search_hint">Бэшэг бэдэрхэ</string>
+    <string name="nyutag_room_search_empty">Юуншье олдобогүй</string>
+    <string name="nyutag_room_search_note">Энэ утаһан дээрэ бэдэрэлгэ эхилхэһээ урда ерэһэн бэшэгүүд олдохогүй байжа магад.</string>
 </resources>

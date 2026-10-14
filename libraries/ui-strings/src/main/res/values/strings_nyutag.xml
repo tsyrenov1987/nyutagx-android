@@ -32,4 +32,8 @@
     <string name="nyutag_community_invite_text">Join the community «%1$s» in Nyutag: %2$s</string>
     <string name="nyutag_saved_messages">Saved messages</string>
     <string name="nyutag_saved_messages_topic">Notes, links and files for yourself</string>
+    <string name="nyutag_room_search">Search in chat</string>
+    <string name="nyutag_room_search_hint">Search messages</string>
+    <string name="nyutag_room_search_empty">Nothing found</string>
+    <string name="nyutag_room_search_note">Messages that arrived before search was turned on for this device may not be found.</string>
 </resources>

@@ -163,7 +163,7 @@ class RoomDetailsViewTest : RobolectricTest() {
         }
     }
 
-    @Config(qualifiers = "h1024dp")
+    @Config(qualifiers = "h1100dp")
     @Test
     fun `click on security and privacy invokes expected callback`() = runAndroidComposeUiTest {
         ensureCalledOnce { callback ->

@@ -8,6 +8,7 @@
 
 package io.element.android.features.roomcall.impl
 
+import app.cash.turbine.Event
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.call.api.CurrentCall
 import io.element.android.features.call.api.CurrentCallService
@@ -46,6 +47,25 @@ class RoomCallStatePresenterTest {
                     isDM = false
                 )
             )
+        }
+    }
+
+    @Test
+    fun `present - a room with only me has no call button`() = runTest {
+        val room = FakeJoinedRoom(
+            baseRoom = FakeBaseRoom(
+                initialRoomInfo = aRoomInfo(isDm = false, activeMembersCount = 1, joinedMembersCount = 1),
+                roomPermissions = roomPermissions(true),
+            )
+        )
+        val presenter = createRoomCallStatePresenter(joinedRoom = room)
+        presenter.test {
+            testScheduler.advanceUntilIdle()
+            val states = cancelAndConsumeRemainingEvents()
+                .filterIsInstance<Event.Item<RoomCallState>>()
+                .map { it.value }
+            assertThat(states).isNotEmpty()
+            assertThat(states.all { it == RoomCallState.Unavailable }).isTrue()
         }
     }
 

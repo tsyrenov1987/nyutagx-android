@@ -9,6 +9,7 @@ package io.element.android.features.startchat.impl
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.enterprise.test.FakeSessionEnterpriseService
 import io.element.android.libraries.matrix.api.createroom.CreateRoomParameters
+import io.element.android.libraries.matrix.test.AN_AVATAR_URL
 import io.element.android.libraries.matrix.test.A_ROOM_ID
 import io.element.android.libraries.matrix.test.A_ROOM_ID_2
 import io.element.android.libraries.matrix.test.FakeMatrixClient
@@ -50,6 +51,7 @@ class NyutagSavedMessagesTest {
         assertThat(params?.name).isEqualTo("Saved")
         assertThat(params?.invite).isEmpty()
         assertThat(params?.isEncrypted).isTrue()
+        assertThat(params?.avatar).isEqualTo(AN_AVATAR_URL)
         setAccountData.assertions().isCalledOnce().with(
             value(NYUTAG_SAVED_MESSAGES_TYPE),
             value("{\"room_id\":\"${A_ROOM_ID_2.value}\"}"),

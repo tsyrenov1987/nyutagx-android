@@ -39,6 +39,7 @@ import io.element.android.features.roomdetails.impl.invite.RoomInviteMembersNode
 import io.element.android.features.roomdetails.impl.members.RoomMemberListNode
 import io.element.android.features.roomdetails.impl.members.details.RoomMemberDetailsNode
 import io.element.android.features.roomdetails.impl.notificationsettings.RoomNotificationSettingsNode
+import io.element.android.features.roomdetails.impl.nyutagsearch.NyutagRoomSearchNode
 import io.element.android.features.roomdetailsedit.api.RoomDetailsEditEntryPoint
 import io.element.android.features.securityandprivacy.api.SecurityAndPrivacyEntryPoint
 import io.element.android.features.userprofile.shared.UserProfileNodeHelper
@@ -130,6 +131,9 @@ class RoomDetailsFlowNode(
         data object MediaGallery : NavTarget
 
         @Parcelize
+        data object NyutagSearch : NavTarget
+
+        @Parcelize
         data object AdminSettings : NavTarget
 
         @Parcelize
@@ -206,6 +210,10 @@ class RoomDetailsFlowNode(
 
                     override fun navigateToMediaGallery() {
                         backstack.push(NavTarget.MediaGallery)
+                    }
+
+                    override fun navigateToNyutagSearch() {
+                        backstack.push(NavTarget.NyutagSearch)
                     }
 
                     override fun navigateToAdminSettings() {
@@ -351,6 +359,18 @@ class RoomDetailsFlowNode(
             }
             is NavTarget.PollHistory -> {
                 pollHistoryEntryPoint.createNode(this, buildContext)
+            }
+            is NavTarget.NyutagSearch -> {
+                val searchCallback = object : NyutagRoomSearchNode.Callback {
+                    override fun viewInTimeline(eventId: EventId) {
+                        val permalinkData = PermalinkData.RoomLink(
+                            roomIdOrAlias = room.roomId.toRoomIdOrAlias(),
+                            eventId = eventId,
+                        )
+                        callback.handlePermalinkClick(permalinkData, pushToBackstack = false)
+                    }
+                }
+                createNode<NyutagRoomSearchNode>(buildContext, listOf(searchCallback))
             }
             is NavTarget.MediaGallery -> {
                 val callback = object : MediaGalleryEntryPoint.Callback {

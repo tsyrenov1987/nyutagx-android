@@ -8,6 +8,7 @@ package io.element.android.features.startchat.impl
 
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.features.enterprise.api.SessionEnterpriseService
+import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -21,6 +22,8 @@ fun interface NyutagSavedMessages {
 }
 
 const val NYUTAG_SAVED_MESSAGES_TYPE = "chat.nyutag.saved_messages"
+
+private const val AVATAR_RESOURCE = "/nyutag/saved_avatar.png"
 
 private val ROOM_ID_REGEX = Regex("\"room_id\"\\s*:\\s*\"([^\"]+)\"")
 
@@ -36,9 +39,13 @@ class DefaultNyutagSavedMessages(
         if (stored != null && matrixClient.getJoinedRoomIds().getOrNull()?.contains(stored) == true) {
             return Result.success(stored)
         }
+        // Аватар-закладка ставится при создании — так комната узнаётся и на iOS, и в списке чатов.
+        val avatar = javaClass.getResourceAsStream(AVATAR_RESOURCE)?.use { it.readBytes() }
+            ?.let { matrixClient.uploadMedia(MimeTypes.Png, it).getOrNull() }
         return matrixClient.createRoom(
             CreateRoomParameters(
                 name = name,
+                avatar = avatar,
                 topic = topic,
                 isEncrypted = !sessionEnterpriseService.isEncryptionDisabledByHomeserver(),
                 visibility = RoomVisibility.Private,

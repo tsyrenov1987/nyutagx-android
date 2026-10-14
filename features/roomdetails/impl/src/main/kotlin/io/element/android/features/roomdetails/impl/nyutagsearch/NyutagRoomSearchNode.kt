@@ -1,0 +1,43 @@
+/*
+ * Нютаг (форк Element X Android) — поиск сообщений внутри одного чата.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+package io.element.android.features.roomdetails.impl.nyutagsearch
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.bumble.appyx.core.modality.BuildContext
+import com.bumble.appyx.core.node.Node
+import com.bumble.appyx.core.plugin.Plugin
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedInject
+import io.element.android.annotations.ContributesNode
+import io.element.android.libraries.architecture.callback
+import io.element.android.libraries.di.RoomScope
+import io.element.android.libraries.matrix.api.core.EventId
+
+@ContributesNode(RoomScope::class)
+@AssistedInject
+class NyutagRoomSearchNode(
+    @Assisted buildContext: BuildContext,
+    @Assisted plugins: List<Plugin>,
+    private val presenter: NyutagRoomSearchPresenter,
+) : Node(buildContext = buildContext, plugins = plugins) {
+    interface Callback : Plugin {
+        fun viewInTimeline(eventId: EventId)
+    }
+
+    private val callback: Callback = callback()
+
+    @Composable
+    override fun View(modifier: Modifier) {
+        NyutagRoomSearchView(
+            state = presenter.present(),
+            onBackClick = this::navigateUp,
+            onResultClick = callback::viewInTimeline,
+            modifier = modifier,
+        )
+    }
+}

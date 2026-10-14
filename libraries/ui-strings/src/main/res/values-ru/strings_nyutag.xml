@@ -32,4 +32,8 @@
     <string name="nyutag_community_invite_text">Вступайте в сообщество «%1$s» в Нютаге: %2$s</string>
     <string name="nyutag_saved_messages">Избранное</string>
     <string name="nyutag_saved_messages_topic">Заметки, ссылки и файлы для себя</string>
+    <string name="nyutag_room_search">Поиск по чату</string>
+    <string name="nyutag_room_search_hint">Найти сообщение</string>
+    <string name="nyutag_room_search_empty">Ничего не найдено</string>
+    <string name="nyutag_room_search_note">Сообщения, пришедшие до включения поиска на этом устройстве, могут не находиться.</string>
 </resources>

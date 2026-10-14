@@ -124,6 +124,7 @@ fun RoomDetailsView(
     onProfileClick: (UserId) -> Unit,
     onReportRoomClick: () -> Unit,
     modifier: Modifier = Modifier,
+    openNyutagSearch: () -> Unit = {},
     leaveRoomView: @Composable () -> Unit,
 ) {
     val snackbarHostState = rememberSnackbarHostState(snackbarMessage = state.snackbarMessage)
@@ -241,6 +242,9 @@ fun RoomDetailsView(
             }
             // Room content
             PreferenceCategory {
+                NyutagSearchItem(
+                    onClick = openNyutagSearch
+                )
                 MediaGalleryItem(
                     onClick = openMediaGallery
                 )
@@ -812,6 +816,17 @@ private fun PollsItem(
         content = { Text(stringResource(R.string.screen_polls_history_title)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
         onClick = openPollHistory,
+    )
+}
+
+@Composable
+private fun NyutagSearchItem(
+    onClick: () -> Unit,
+) {
+    ListItem(
+        content = { Text(stringResource(CommonStrings.nyutag_room_search)) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Search())),
+        onClick = onClick,
     )
 }
 

@@ -60,6 +60,8 @@ class RoomCallStatePresenter(
                         isUserLocallyInTheCall = isUserLocallyInTheCall,
                         isAudioCall = roomInfo.activeCallIntentConsensus.isAudio(),
                     )
+                    // Нютаг: в комнате, где вы один (например «Избранное»), звонить некому — кнопку не показываем.
+                    !roomInfo.isDm && roomInfo.activeMembersCount <= 1 -> RoomCallState.Unavailable
                     else -> {
                         val isEmptyDm = roomInfo.isDm && roomInfo.activeMembersCount <= 1
                         RoomCallState.StandBy(
