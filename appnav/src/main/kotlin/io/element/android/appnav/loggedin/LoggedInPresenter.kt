@@ -36,6 +36,7 @@ import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.roomlist.RoomListService
 import io.element.android.libraries.matrix.api.sync.SlidingSyncVersion
 import io.element.android.libraries.matrix.api.sync.SyncService
+import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.api.verification.SessionVerificationService
 import io.element.android.libraries.matrix.api.verification.SessionVerifiedStatus
 import io.element.android.libraries.permissions.api.PermissionsEvent
@@ -46,11 +47,13 @@ import io.element.android.libraries.push.api.PushService
 import io.element.android.libraries.push.api.PusherRegistrationFailure
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
 
 private val pusherTag = LoggerTag("Pusher", LoggerTag.PushLoggerTag)
 
@@ -133,6 +136,7 @@ class LoggedInPresenter(
             // Keep automatic call status (m.call) in sync with homeserver support.
             val enabled = matrixClient.isUserStatusSupported().getOrDefault(false)
             matrixClient.enableAutomaticCallStatus(enabled)
+            if (enabled) clearStaleCallStatus()
         }
 
         val networkConnectivity by networkMonitor.connectivity.collectAsState()
@@ -204,6 +208,22 @@ class LoggedInPresenter(
     private suspend fun MatrixClient.needsForcedNativeSlidingSyncMigration(): Result<Boolean> = runCatchingExceptions {
         val currentSlidingSyncVersion = currentSlidingSyncVersion().getOrThrow()
         currentSlidingSyncVersion == SlidingSyncVersion.Proxy
+    }
+
+    /**
+     * Нютаг: у Tuwunel нет отложенных событий (MSC4140), поэтому если приложение закрыли посреди звонка,
+     * `m.call` в профиле остаётся навсегда и все видят «В звонке 🎧». Отметку, поставленную до запуска
+     * и старше часа, снимаем. Свой статус пользователя важнее звонка, поэтому трогаем только «чистый» звонок.
+     */
+    private suspend fun clearStaleCallStatus() {
+        val launchSeconds = System.currentTimeMillis() / 1000
+        delay(20.seconds) // профиль приходит с первым /sync
+        val status = matrixClient.userProfile.value.displayedStatus as? DisplayedStatus.InCall ?: return
+        val joinedSeconds = status.callJoinedTs ?: 0L
+        if (joinedSeconds < launchSeconds && launchSeconds - joinedSeconds > 3600) {
+            Timber.i("Clearing a stale call status joined at $joinedSeconds")
+            matrixClient.clearUserStatus()
+        }
     }
 
     private fun reportCryptoStatusToAnalytics(verificationState: SessionVerifiedStatus, recoveryState: RecoveryState) {

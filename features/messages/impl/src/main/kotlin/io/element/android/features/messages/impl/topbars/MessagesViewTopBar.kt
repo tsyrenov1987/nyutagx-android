@@ -8,6 +8,7 @@
 
 package io.element.android.features.messages.impl.topbars
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,10 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
@@ -50,8 +53,10 @@ import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.preview.ROOM_NAME
 import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
+import io.element.android.libraries.matrix.api.nyutag.NyutagPresence
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.components.DisplayNameWithStatus
 import io.element.android.libraries.matrix.ui.components.aMatrixUserList
@@ -60,6 +65,8 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import java.util.Calendar
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +81,7 @@ internal fun MessagesViewTopBar(
     onRoomDetailsClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    dmPresence: NyutagPresence? = null,
     menuActions: @Composable RowScope.() -> Unit,
 ) {
     TopAppBar(
@@ -99,6 +107,7 @@ internal fun MessagesViewTopBar(
                     isTombstoned = isTombstoned,
                     heroes = heroes,
                     dmUserStatus = dmUserStatus,
+                    dmPresence = dmPresence,
                     modifier = titleModifier
                 )
 
@@ -153,6 +162,7 @@ private fun RoomAvatarAndNameRow(
     heroes: ImmutableList<AvatarData>,
     isTombstoned: Boolean,
     dmUserStatus: DisplayedStatus?,
+    dmPresence: NyutagPresence?,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -166,16 +176,50 @@ private fun RoomAvatarAndNameRow(
                 isTombstoned = isTombstoned,
             ),
         )
-        DisplayNameWithStatus(
-            name = roomName ?: stringResource(CommonStrings.common_no_room_name),
-            status = dmUserStatus,
-            modifier = Modifier.padding(start = 8.dp),
-            style = ElementTheme.typography.fontBodyLgMedium,
-            nameColor = ElementTheme.colors.textPrimary,
-            nameFontStyle = FontStyle.Italic.takeIf { roomName == null },
-        )
+        Column(modifier = Modifier.padding(start = 8.dp)) {
+            DisplayNameWithStatus(
+                name = roomName ?: stringResource(CommonStrings.common_no_room_name),
+                status = dmUserStatus,
+                style = ElementTheme.typography.fontBodyLgMedium,
+                nameColor = ElementTheme.colors.textPrimary,
+                nameFontStyle = FontStyle.Italic.takeIf { roomName == null },
+            )
+            if (dmPresence != null) {
+                Text(
+                    text = dmPresence.subtitle(),
+                    style = ElementTheme.typography.fontBodyXsRegular,
+                    color = ElementTheme.colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
+
+/** Нютаг: «в сети», «был(а) 5 мин. назад», «был(а) в 14:05», «был(а) вчера в 09:30», «был(а) 03.10.26» — как в Telegram. */
+@Composable
+private fun NyutagPresence.subtitle(): String {
+    if (isOnline) return stringResource(CommonStrings.nyutag_presence_online)
+    val lastActive = lastActiveTimestamp ?: return stringResource(CommonStrings.nyutag_presence_recently)
+    val context = LocalContext.current
+    val now = System.currentTimeMillis()
+    val seconds = ((now - lastActive) / 1000).coerceAtLeast(0)
+    if (seconds < 60) return stringResource(CommonStrings.nyutag_presence_just_now)
+    if (seconds < 3600) return stringResource(CommonStrings.nyutag_presence_minutes_ago, (seconds / 60).toInt())
+    val time = DateFormat.getTimeFormat(context).format(Date(lastActive))
+    val day = Calendar.getInstance().apply { timeInMillis = lastActive }
+    val today = Calendar.getInstance().apply { timeInMillis = now }
+    val yesterday = Calendar.getInstance().apply { timeInMillis = now; add(Calendar.DAY_OF_YEAR, -1) }
+    return when {
+        day.isSameDay(today) -> stringResource(CommonStrings.nyutag_presence_today_at, time)
+        day.isSameDay(yesterday) -> stringResource(CommonStrings.nyutag_presence_yesterday_at, time)
+        else -> stringResource(CommonStrings.nyutag_presence_date, DateFormat.getDateFormat(context).format(Date(lastActive)))
+    }
+}
+
+private fun Calendar.isSameDay(other: Calendar) =
+    get(Calendar.YEAR) == other.get(Calendar.YEAR) && get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)
 
 @PreviewsDayNight
 @Composable

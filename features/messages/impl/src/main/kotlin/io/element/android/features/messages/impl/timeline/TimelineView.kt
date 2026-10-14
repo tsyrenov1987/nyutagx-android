@@ -82,6 +82,8 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.messages.impl.crypto.sendfailure.resolve.ResolveVerifiedUserSendFailureView
 import io.element.android.features.messages.impl.timeline.components.FloatingDateBadgeOverlay
+import io.element.android.features.messages.impl.timeline.components.LocalNyutagIsDm
+import io.element.android.features.messages.impl.timeline.components.LocalNyutagReadOutgoingIds
 import io.element.android.features.messages.impl.timeline.components.TimelineItemRow
 import io.element.android.features.messages.impl.timeline.components.toText
 import io.element.android.features.messages.impl.timeline.di.LocalTimelineItemPresenterFactories
@@ -196,7 +198,11 @@ fun TimelineView(
                 currentUserId = state.timelineRoomInfo.currentUserId,
             )
         }
-        CompositionLocalProvider(LocalTimelineEventRendererConfig provides composeLocalTimelineEventRendererConfig) {
+        CompositionLocalProvider(
+            LocalTimelineEventRendererConfig provides composeLocalTimelineEventRendererConfig,
+            LocalNyutagReadOutgoingIds provides state.nyutagReadOutgoingIds,
+            LocalNyutagIsDm provides state.timelineRoomInfo.isDm,
+        ) {
             Box(modifier) {
                 LazyColumn(
                     modifier = Modifier

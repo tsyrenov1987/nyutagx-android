@@ -46,6 +46,23 @@ data class TimelineState(
     val hasAnyEvent = lastTimelineEvent != null
     val focusedEventId = focusRequestState.eventId()
 
+    /**
+     * Нютаг: свои сообщения, которые кто-то другой уже прочитал (✓✓ как в Telegram). Квитанция Matrix стоит только
+     * на последнем прочитанном событии, поэтому прочитанными считаются все свои сообщения до него (список — от новых к старым).
+     */
+    val nyutagReadOutgoingIds: Set<UniqueId> by lazy {
+        val currentUserId = timelineRoomInfo.currentUserId.value
+        val events = timelineItems.flatMap { item ->
+            when (item) {
+                is TimelineItem.Event -> listOf(item)
+                is TimelineItem.GroupedEvents -> item.events
+                else -> emptyList()
+            }
+        }
+        val firstRead = events.indexOfFirst { event -> event.readReceiptState.receipts.any { it.avatarData.id != currentUserId } }
+        if (firstRead < 0) emptySet() else events.drop(firstRead).filter { it.isMine }.mapTo(HashSet()) { it.id }
+    }
+
     fun isLastOutgoingMessage(uniqueId: UniqueId): Boolean {
         return isLive && lastTimelineEvent != null && lastTimelineEvent.isMine && lastTimelineEvent.id == uniqueId
     }

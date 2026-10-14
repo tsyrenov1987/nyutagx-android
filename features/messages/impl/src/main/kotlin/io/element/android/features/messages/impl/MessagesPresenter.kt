@@ -77,6 +77,8 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.toThreadId
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
+import io.element.android.libraries.matrix.api.nyutag.NyutagPresence
+import io.element.android.libraries.matrix.api.nyutag.NyutagPresenceService
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.RoomInfo
@@ -96,12 +98,14 @@ import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.seconds
 
 @AssistedInject
 class MessagesPresenter(
@@ -134,6 +138,7 @@ class MessagesPresenter(
     private val markAsFullyRead: MarkAsFullyRead,
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
+    private val nyutagPresence: NyutagPresenceService,
 ) : Presenter<MessagesState> {
     @AssistedFactory
     interface Factory {
@@ -159,6 +164,16 @@ class MessagesPresenter(
         val coroutineScope = rememberCoroutineScope()
         val roomInfo by room.roomInfoFlow.collectAsState()
         val localCoroutineScope = rememberCoroutineScope()
+        // Нютаг: «в сети» / «был(а) …» собеседника в личном чате, пока экран открыт.
+        val dmUserId = roomInfo.heroes.firstOrNull()?.userId?.takeIf { roomInfo.isDm }
+        val dmPresence by produceState<NyutagPresence?>(initialValue = null, dmUserId) {
+            value = null
+            if (dmUserId == null) return@produceState
+            while (true) {
+                value = nyutagPresence.presence(room.sessionId, dmUserId).getOrNull()
+                delay(NYUTAG_PRESENCE_REFRESH)
+            }
+        }
         val composerState = composerPresenter.present()
         val voiceMessageComposerState = voiceMessageComposerPresenter.present()
         val timelineState = timelinePresenter.present()
@@ -339,6 +354,7 @@ class MessagesPresenter(
             pinnedMessagesBannerState = pinnedMessagesBannerState,
             dmUserVerificationState = dmUserVerificationState,
             dmUserStatus = roomInfo.dmUserStatus(),
+            dmPresence = dmPresence,
             roomMemberModerationState = roomMemberModerationState,
             topBarSharedHistoryIcon = topBarSharedHistoryIcon,
             successorRoom = roomInfo.successorRoom,
@@ -664,3 +680,5 @@ class MessagesPresenter(
         }
     }
 }
+
+private val NYUTAG_PRESENCE_REFRESH = 30.seconds

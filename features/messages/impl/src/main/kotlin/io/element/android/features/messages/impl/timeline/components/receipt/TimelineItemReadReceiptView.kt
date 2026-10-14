@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.element.android.appconfig.TimelineConfig
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.compound.tokens.generated.CompoundIcons
+import io.element.android.features.messages.impl.timeline.components.LocalNyutagIsDm
 import io.element.android.features.messages.impl.timeline.model.ReadReceiptData
 import io.element.android.libraries.designsystem.components.avatar.Avatar
 import io.element.android.libraries.designsystem.components.avatar.AvatarSize
@@ -43,9 +43,7 @@ import io.element.android.libraries.designsystem.components.avatar.AvatarType
 import io.element.android.libraries.designsystem.components.avatar.getBestName
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.matrix.api.timeline.item.event.LocalEventSendState
 import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.ui.strings.CommonPlurals
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -57,41 +55,15 @@ fun TimelineItemReadReceiptView(
     onReadReceiptsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Нютаг: «отправляется / отправлено / прочитано» показывают отметки в пузыре (NyutagDeliveryMarks),
+    // а в личном чате не нужны и аватарки прочитавших.
+    if (LocalNyutagIsDm.current) return
     if (state.receipts.isNotEmpty()) {
         ReadReceiptsRow(modifier = modifier) {
             ReadReceiptsAvatars(
                 receipts = state.receipts,
                 onClick = onReadReceiptsClick,
             )
-        }
-    } else {
-        when (state.sendState) {
-            is LocalEventSendState.Sending -> {
-                ReadReceiptsRow(modifier) {
-                    Icon(
-                        modifier = Modifier.padding(2.dp),
-                        imageVector = CompoundIcons.Circle(),
-                        contentDescription = stringResource(id = CommonStrings.common_sending),
-                        tint = ElementTheme.colors.iconSecondary
-                    )
-                }
-            }
-            is LocalEventSendState.Failed -> {
-                // Error? The timestamp is already displayed in red
-            }
-            null,
-            is LocalEventSendState.Sent -> {
-                if (state.isLastOutgoingMessage) {
-                    ReadReceiptsRow(modifier = modifier) {
-                        Icon(
-                            modifier = Modifier.padding(2.dp),
-                            imageVector = CompoundIcons.CheckCircle(),
-                            contentDescription = stringResource(id = CommonStrings.common_sent),
-                            tint = ElementTheme.colors.iconSecondary
-                        )
-                    }
-                }
-            }
         }
     }
 }

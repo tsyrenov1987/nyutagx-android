@@ -15,4 +15,12 @@
     <string name="nyutag_source_code">Исходный код</string>
     <string name="nyutag_language_title">Язык</string>
     <string name="nyutag_language_system">Как в системе</string>
+    <string name="nyutag_presence_online">в сети</string>
+    <string name="nyutag_presence_just_now">был(а) только что</string>
+    <string name="nyutag_presence_minutes_ago">был(а) %1$d мин. назад</string>
+    <string name="nyutag_presence_today_at">был(а) в %1$s</string>
+    <string name="nyutag_presence_yesterday_at">был(а) вчера в %1$s</string>
+    <string name="nyutag_presence_date">был(а) %1$s</string>
+    <string name="nyutag_presence_recently">был(а) недавно</string>
+    <string name="nyutag_message_read">Прочитано</string>
 </resources>

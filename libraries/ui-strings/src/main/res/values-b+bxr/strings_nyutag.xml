@@ -15,4 +15,12 @@
     <string name="nyutag_source_code">Эхэ код</string>
     <string name="nyutag_language_title">Хэлэн</string>
     <string name="nyutag_language_system">Системын хэлэн</string>
+    <string name="nyutag_presence_online">онлайн</string>
+    <string name="nyutag_presence_just_now">дөнгөж һая байгаа</string>
+    <string name="nyutag_presence_minutes_ago">%1$d мин. урда байгаа</string>
+    <string name="nyutag_presence_today_at">%1$s сагта байгаа</string>
+    <string name="nyutag_presence_yesterday_at">үсэгэлдэр %1$s сагта байгаа</string>
+    <string name="nyutag_presence_date">%1$s байгаа</string>
+    <string name="nyutag_presence_recently">һаяхан байгаа</string>
+    <string name="nyutag_message_read">Уншагдаһан</string>
 </resources>

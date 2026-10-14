@@ -107,6 +107,9 @@ fun TimelineEventTimestampView(
             style = ElementTheme.typography.fontBodyXsRegular,
             color = tint,
         )
+        if (event.isMine && !hasError && !isMessageRedacted) {
+            NyutagDeliveryMarks(event)
+        }
         if (hasError) {
             Spacer(modifier = Modifier.width(2.dp))
             Icon(

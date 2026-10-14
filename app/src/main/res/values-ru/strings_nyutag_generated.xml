@@ -189,9 +189,9 @@
     <string name="screen_room_single_knock_request_title">"%1$s хочет присоединиться к этой группе"</string>
     <string name="screen_room_timeline_no_permission_to_post">"Вы не можете писать сообщения в этой группе"</string>
     <plurals name="screen_room_timeline_state_changes">
-        <item quantity="one">"%1$d изменение в группе"</item>
-        <item quantity="few">"%1$d изменения в группе"</item>
-        <item quantity="many">"%1$d изменений в группе"</item>
+        <item quantity="one">"%1$d изменение в чате"</item>
+        <item quantity="few">"%1$d изменения в чате"</item>
+        <item quantity="many">"%1$d изменений в чате"</item>
     </plurals>
     <string name="screen_room_timeline_tombstoned_room_action">"Перейти в новую группу"</string>
     <string name="screen_room_timeline_tombstoned_room_message">"Эта группа была заменена и больше не активна"</string>

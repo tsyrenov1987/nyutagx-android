@@ -1573,6 +1573,7 @@ class MessagesPresenterTest {
             featureFlagService = featureFlagService,
             addRecentEmoji = addRecentEmoji,
             markAsFullyRead = markAsFullyRead,
+            nyutagPresence = { _, _ -> Result.failure(IllegalStateException("No presence in tests")) },
             liveLocationShareManager = liveLocationShareManager,
             sessionCoroutineScope = backgroundScope,
         )
