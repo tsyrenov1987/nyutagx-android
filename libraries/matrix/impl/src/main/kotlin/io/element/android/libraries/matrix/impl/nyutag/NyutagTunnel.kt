@@ -17,10 +17,18 @@ import java.net.ServerSocket
 import java.security.cert.CertificateFactory
 
 object NyutagTunnel {
-    /** Путь: kilvaterd de3:8080 — ключ Нютага (свой, не ключ флота Farvater). */
-    private const val CATALOGUE =
-        "kilvater://REDACTED-OLD-NYUTAG-KEY@188.245.11.63:8080" +
-            "?sni=kv.assetnorth.org&fp=chrome&path=%2Fconnect#de3-kilvater-8080"
+    /**
+     * Путь до входа (строка `kilvater://<ключ>@host:port?…`) — ключ Нютага, не ключ флота Farvater.
+     * В репозитории его нет: файл [CATALOGUE_ASSET] лежит в `.gitignore`, рядом — `catalogue.txt.example`.
+     * Без файла туннель не поднимется и приложение не подключится.
+     */
+    private const val CATALOGUE_ASSET = "nyutag/catalogue.txt"
+
+    private fun catalogue(context: Context): String? = try {
+        context.assets.open(CATALOGUE_ASSET).bufferedReader().use { it.readText() }.trim().ifEmpty { null }
+    } catch (e: java.io.IOException) {
+        null
+    }
 
     /** Ядро за входом; TLS сквозной, сертификат выпущен [CA_PEM]. */
     const val SERVER_NAME = "nyutag.chat"
@@ -66,10 +74,15 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
     @Synchronized
     fun proxyUrl(context: Context): String? {
         if (!Mobile.running()) {
+            val catalogue = catalogue(context)
+            if (catalogue == null) {
+                Timber.e("Nyutag tunnel: asset %s is missing — see catalogue.txt.example", CATALOGUE_ASSET)
+                return null
+            }
             try {
                 Mobile.setMemoryFile(context.filesDir.resolve("nyutag-core-memory.json").path)
                 val p = ServerSocket(0).use { it.localPort }
-                Mobile.start(CATALOGUE, p.toLong(), network(context))
+                Mobile.start(catalogue, p.toLong(), network(context))
                 port = p
             } catch (e: Exception) {
                 Timber.e(e, "Nyutag tunnel failed to start")

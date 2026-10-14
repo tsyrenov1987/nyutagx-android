@@ -112,3 +112,6 @@ lint/tmp/
 .DS_Store
 
 checkouts/**
+
+# Нютаг: путь кильватера с ключом клиента — только локально (см. catalogue.txt.example)
+libraries/matrix/impl/src/main/assets/nyutag/catalogue.txt
