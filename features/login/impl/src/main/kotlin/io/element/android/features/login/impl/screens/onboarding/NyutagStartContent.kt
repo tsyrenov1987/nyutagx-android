@@ -8,11 +8,13 @@ package io.element.android.features.login.impl.screens.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -46,6 +48,7 @@ import io.element.android.libraries.designsystem.nyutag.NyutagLanguageOption
 import io.element.android.libraries.designsystem.theme.components.DropdownMenu
 import io.element.android.libraries.designsystem.theme.components.DropdownMenuItem
 import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Surface
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -160,5 +163,46 @@ internal fun NyutagLanguageChip(modifier: Modifier = Modifier) {
                 )
             }
         }
+    }
+}
+
+/** Первый экран при первом запуске — выбор языка. Подписи сразу на трёх языках, чтобы их понял любой. */
+@Composable
+internal fun NyutagLanguageChoice(
+    onSelect: (NyutagLanguageOption) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.weight(1f))
+        Icon(
+            imageVector = CompoundIcons.Public(),
+            contentDescription = null,
+            tint = ElementTheme.colors.iconAccentPrimary,
+            modifier = Modifier.size(56.dp),
+        )
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = "Хэлэн · Язык · Language",
+            color = ElementTheme.colors.textPrimary,
+            style = ElementTheme.typography.fontHeadingMdBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.height(40.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            listOf(NyutagLanguageOption.Buryat, NyutagLanguageOption.Russian, NyutagLanguageOption.English).forEach { option ->
+                OutlinedButton(
+                    text = option.getText(),
+                    onClick = { onSelect(option) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        Spacer(Modifier.weight(2f))
     }
 }

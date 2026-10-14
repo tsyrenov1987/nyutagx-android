@@ -19,7 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.BiasAlignment
@@ -41,6 +43,7 @@ import io.element.android.libraries.designsystem.atomic.molecules.ButtonColumnMo
 import io.element.android.libraries.designsystem.atomic.pages.FlowStepPage
 import io.element.android.libraries.designsystem.atomic.pages.OnBoardingPage
 import io.element.android.libraries.designsystem.components.BigIcon
+import io.element.android.libraries.designsystem.nyutag.NyutagLanguageOption
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Button
@@ -102,7 +105,17 @@ fun OnBoardingView(
         )
     }
 
-    if (state.isAddingAccount) {
+    // Нютаг: при первом запуске сначала выбор языка; выбор пересоздаёт экран уже на новом языке.
+    var isLanguageChosen by remember { mutableStateOf(NyutagLanguageOption.isChosen()) }
+    if (!state.isAddingAccount && !isLanguageChosen) {
+        NyutagLanguageChoice(
+            modifier = modifier,
+            onSelect = { option ->
+                NyutagLanguageOption.select(option)
+                isLanguageChosen = true
+            },
+        )
+    } else if (state.isAddingAccount) {
         AddOtherAccountScaffold(
             modifier = modifier,
             loginView = loginView,

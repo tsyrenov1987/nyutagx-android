@@ -41,6 +41,9 @@ enum class NyutagLanguageOption(val tags: String) : DropdownOption {
             return entries.firstOrNull { it.tags.isNotEmpty() && first.startsWith(it.tags.substringBefore(',')) } ?: System
         }
 
+        /** Язык выбран в приложении (на первом экране или в настройках); «Как в системе» считается невыбранным. */
+        fun isChosen(): Boolean = !AppCompatDelegate.getApplicationLocales().isEmpty
+
         fun select(option: NyutagLanguageOption) {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(option.tags))
         }
