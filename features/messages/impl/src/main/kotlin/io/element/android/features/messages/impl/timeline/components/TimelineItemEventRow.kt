@@ -44,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
@@ -205,6 +207,13 @@ fun TimelineItemEventRow(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val interactionSource = remember { MutableInteractionSource() }
+    // Нютаг: тактильный отклик на реакцию (тап по реакции и двойной тап ❤️) — как на iOS.
+    val hapticFeedback = LocalHapticFeedback.current
+
+    fun onReactionClick(emoji: String) {
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+        onReactionClick(emoji, event)
+    }
 
     val onContentClick = if (event.mustBeProtected()) {
         // In this case, let the content handle the click
@@ -245,6 +254,10 @@ fun TimelineItemEventRow(
             val offset = state.offset.floatValue
             val swipeThresholdPx = 40.dp.toPx()
             val thresholdCrossed = abs(offset) > swipeThresholdPx
+            // Нютаг: один щелчок в момент, когда свайп «ответить» дошёл до порога.
+            LaunchedEffect(thresholdCrossed) {
+                if (thresholdCrossed) hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+            }
             SwipeSensitivity(3f) {
                 Box(Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.matchParentSize()) {
@@ -260,7 +273,7 @@ fun TimelineItemEventRow(
                         onLongClick = onLongClick,
                         inReplyToClick = ::inReplyToClick,
                         onUserDataClick = ::onUserDataClick,
-                        onReactionClick = { emoji -> onReactionClick(emoji, event) },
+                        onReactionClick = ::onReactionClick,
                         onReactionLongClick = { emoji -> onReactionLongClick(emoji, event) },
                         onMoreReactionsClick = { onMoreReactionsClick(event) },
                         modifier = Modifier
@@ -294,7 +307,7 @@ fun TimelineItemEventRow(
                 onLongClick = onLongClick,
                 inReplyToClick = ::inReplyToClick,
                 onUserDataClick = ::onUserDataClick,
-                onReactionClick = { emoji -> onReactionClick(emoji, event) },
+                onReactionClick = ::onReactionClick,
                 onReactionLongClick = { emoji -> onReactionLongClick(emoji, event) },
                 onMoreReactionsClick = { onMoreReactionsClick(event) },
                 eventSink = eventSink,
