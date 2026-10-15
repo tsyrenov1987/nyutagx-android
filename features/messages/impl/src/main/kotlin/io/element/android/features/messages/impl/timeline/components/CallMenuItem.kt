@@ -9,20 +9,11 @@
 package io.element.android.features.messages.impl.timeline.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.dp
-import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.roomcall.api.RoomCallState
 import io.element.android.features.roomcall.api.RoomCallStatePreviewParam
@@ -30,7 +21,6 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
-import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.ui.strings.CommonStrings
 
 @Composable
@@ -97,35 +87,23 @@ private fun OnGoingCallMenuItem(
     onJoinCallClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Нютаг: без пилюли «Присоединиться» — идущий звонок выглядит как обычная кнопка звонка.
     if (!roomCallState.isUserLocallyInTheCall) {
-        Button(
+        IconButton(
             onClick = onJoinCallClick,
-            colors = ButtonDefaults.buttonColors(
-                contentColor = ElementTheme.colors.bgCanvasDefault,
-                containerColor = ElementTheme.colors.iconAccentTertiary
-            ),
-            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-            modifier = modifier.heightIn(min = 36.dp),
             enabled = roomCallState.canJoinCall,
+            modifier = modifier,
         ) {
             Icon(
-                modifier = Modifier.size(20.dp),
                 imageVector = if (roomCallState.isAudioCall) {
                     CompoundIcons.VoiceCallSolid()
                 } else {
                     CompoundIcons.VideoCallSolid()
                 },
-                contentDescription = null
+                contentDescription = stringResource(CommonStrings.a11y_join_call),
             )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = stringResource(CommonStrings.action_join),
-                style = ElementTheme.typography.fontBodyMdMedium
-            )
-            Spacer(Modifier.width(8.dp))
         }
     } else {
-        // Else user is already in the call, hide the button.
         Box(modifier)
     }
 }

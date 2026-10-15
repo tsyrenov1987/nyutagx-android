@@ -107,6 +107,13 @@ object NyutagIcePolicy {
 
     private val DOCUMENT_START_SCRIPT = """
         (function () {
+          // Нютаг: экран Element Call «Режим трубки / Вернуться в режим динамика» лишний — динамик и трубка переключаются кнопкой внизу.
+          var hideHandsetOverlay = function () {
+            var style = document.createElement('style');
+            style.textContent = '._overlay_kh5c3_1 { display: none !important; }';
+            (document.head || document.documentElement).appendChild(style);
+          };
+          if (document.head) { hideHandsetOverlay(); } else { document.addEventListener('DOMContentLoaded', hideHandsetOverlay); }
           if (window.__nyutagIce) return;
           window.__nyutagIce = true;
           var Orig = window.RTCPeerConnection;

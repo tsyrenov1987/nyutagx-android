@@ -55,6 +55,7 @@ class DefaultNyutagCallPushRules(
         val RULES = listOf(
             "nyutag.rtc_notification" to "org.matrix.msc4075.rtc.notification",
             "nyutag.call_notify" to "org.matrix.msc4075.call.notify",
+            "nyutag.ring" to DefaultNyutagCallStart.RING_EVENT_TYPE,
         )
     }
 }

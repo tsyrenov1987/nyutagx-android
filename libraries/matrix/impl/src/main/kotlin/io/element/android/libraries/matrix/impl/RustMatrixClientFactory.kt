@@ -173,7 +173,9 @@ class RustMatrixClientFactory(
                 strategy = if (featureFlagService.isFeatureEnabled(FeatureFlags.OnlySignedDeviceIsolationMode)) {
                     CollectStrategy.IDENTITY_BASED_STRATEGY
                 } else {
-                    CollectStrategy.ERROR_ON_VERIFIED_USER_PROBLEM
+                    // Нютаг: виджет звонка шлёт rtc.notification без диалога «неподписанные устройства» —
+                    // с ERROR_ON_VERIFIED_USER_PROBLEM вызов тихо не доходит. Раздаём ключи всем устройствам.
+                    CollectStrategy.ALL_DEVICES
                 }
             )
             .decryptionSettings(

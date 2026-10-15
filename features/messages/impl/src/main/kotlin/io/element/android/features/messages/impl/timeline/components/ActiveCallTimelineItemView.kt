@@ -59,8 +59,6 @@ import io.element.android.libraries.designsystem.preview.USER_NAME_CAROL
 import io.element.android.libraries.designsystem.preview.USER_NAME_CHARLIE
 import io.element.android.libraries.designsystem.preview.USER_NAME_DAVID
 import io.element.android.libraries.designsystem.preview.USER_NAME_JOHN_DOE
-import io.element.android.libraries.designsystem.theme.components.Button
-import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.utils.CommonDrawables
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
@@ -126,13 +124,7 @@ internal fun ActiveCallTimelineItemView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(top = 12.dp, bottom = 12.dp)
             ) {
-                if (!state.isJoined) {
-                    Button(
-                        text = stringResource(CommonStrings.action_join),
-                        size = ButtonSize.Small,
-                        onClick = { onJoinCallClick(state.callIntent == CallIntent.AUDIO) }
-                    )
-                }
+                // Нютаг: кнопки «Присоединиться» нет — звонок принимают с экрана входящего или кнопкой звонка в шапке.
                 if (state.callStartTsMillis != null) {
                     CallDurationText(
                         state.callStartTsMillis,

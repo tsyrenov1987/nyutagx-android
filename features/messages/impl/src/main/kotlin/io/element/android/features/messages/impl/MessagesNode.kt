@@ -63,6 +63,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.ThreadId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
+import io.element.android.libraries.matrix.api.nyutag.NyutagCallStart
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.permalink.PermalinkParser
 import io.element.android.libraries.matrix.api.room.JoinedRoom
@@ -84,6 +85,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 @ContributesNode(RoomScope::class)
 @AssistedInject
@@ -106,6 +108,7 @@ class MessagesNode(
     private val eventContentValidationCache: EventContentValidationCache,
     private val emojiPickerRenderer: EmojiPickerRenderer,
     private val dispatchers: CoroutineDispatchers,
+    private val nyutagCallStart: NyutagCallStart,
 ) : Node(buildContext, plugins = plugins), MessagesNavigator {
     data class Inputs(
         val focusedEventId: EventId?,
@@ -330,7 +333,13 @@ class MessagesNode(
                 onSendLocationClick = callback::navigateToSendLocation,
                 onCreatePollClick = callback::navigateToCreatePoll,
                 onJoinCallClick = { isAudioCall ->
-                    callback.navigateToRoomCall(room.roomId, isAudioCall)
+                    // Нютаг: до старта виджета снять свои зависшие участия и подать сигнал «звоню» (не дольше 4 с).
+                    sessionCoroutineScope.launch(dispatchers.main) {
+                        withTimeoutOrNull(NYUTAG_CALL_START_TIMEOUT_MS) {
+                            nyutagCallStart.beforeStart(room.sessionId, room.roomId, isAudioCall)
+                        }
+                        callback.navigateToRoomCall(room.roomId, isAudioCall)
+                    }
                 },
                 onViewAllPinnedMessagesClick = callback::navigateToPinnedMessagesList,
                 modifier = modifier,
@@ -377,5 +386,9 @@ class MessagesNode(
                 }
             }
         }
+    }
+
+    private companion object {
+        const val NYUTAG_CALL_START_TIMEOUT_MS = 4_000L
     }
 }
