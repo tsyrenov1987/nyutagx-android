@@ -13,12 +13,12 @@ object BuildTimeConfig {
     const val APPLICATION_NAME = "Нютаг"
     val METADATA_HOST_REVERSED: String? = null
     val OAUTH_CLIENT_URL_PATH: String? = "apps/android"
-    val URL_WEBSITE: String? = null
+    val URL_WEBSITE: String? = "https://nyutag.chat"
     val URL_LOGO: String? = null
     val URL_COPYRIGHT: String? = null
-    val URL_ACCEPTABLE_USE: String? = null
-    val URL_PRIVACY: String? = null
-    val URL_POLICY: String? = null
+    val URL_ACCEPTABLE_USE: String? = "https://nyutag.chat/terms/"
+    val URL_PRIVACY: String? = "https://nyutag.chat/privacy/"
+    val URL_POLICY: String? = "https://nyutag.chat/privacy/"
     val SERVICES_MAPTILER_BASE_URL: String? = null
     val SERVICES_MAPTILER_APIKEY: String? = null
     val SERVICES_MAPTILER_LIGHT_MAPID: String? = null

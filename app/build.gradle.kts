@@ -87,6 +87,17 @@ android {
             storeFile = file("./signature/debug.keystore")
             storePassword = "android"
         }
+        // Нютаг: ключ загрузки для магазинов — путь и пароли только из окружения (в репозитории их нет).
+        // Без переменных release подписывается debug-ключом, как и раньше, чтобы локальные сборки не ломались.
+        val nyutagUploadKeystore = System.getenv("NYUTAG_UPLOAD_KEYSTORE")?.takeIf { file(it).exists() }
+        if (nyutagUploadKeystore != null) {
+            register("nyutagUpload") {
+                storeFile = file(nyutagUploadKeystore)
+                storePassword = System.getenv("NYUTAG_UPLOAD_STORE_PASSWORD")
+                keyAlias = System.getenv("NYUTAG_UPLOAD_KEY_ALIAS") ?: "nyutag-upload"
+                keyPassword = System.getenv("NYUTAG_UPLOAD_KEY_PASSWORD") ?: System.getenv("NYUTAG_UPLOAD_STORE_PASSWORD")
+            }
+        }
         register("nightly") {
             keyAlias = System.getenv("ELEMENT_ANDROID_NIGHTLY_KEYID")
                 ?: project.property("signing.element.nightly.keyId") as? String?
@@ -122,7 +133,7 @@ android {
                 "login_redirect_scheme",
                 oAuthRedirectSchemeBase,
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("nyutagUpload") ?: signingConfigs.getByName("debug")
 
             optimization {
                 enable = true
