@@ -38,6 +38,7 @@ import io.element.android.features.call.impl.pip.PictureInPictureEvent
 import io.element.android.features.call.impl.pip.PictureInPictureState
 import io.element.android.features.call.impl.pip.aPictureInPictureState
 import io.element.android.features.call.impl.utils.InvalidAudioDeviceReason
+import io.element.android.features.call.impl.utils.NyutagIcePolicy
 import io.element.android.features.call.impl.utils.WebViewAudioManager
 import io.element.android.features.call.impl.utils.WebViewPipController
 import io.element.android.features.call.impl.utils.WebViewWidgetMessageInterceptor
@@ -111,6 +112,7 @@ internal fun CallScreenView(
             onCreateWebView = { webView ->
                 callWebView = webView
                 webView.addBackHandler(onBackPressed = ::handleBack)
+                NyutagIcePolicy.install(webView)
                 val interceptor = WebViewWidgetMessageInterceptor(
                     webView = webView,
                     onUrlLoaded = { url ->

@@ -30,8 +30,10 @@ class DefaultCallWebViewRouter(
     override suspend fun routeThroughTunnel() {
         val endpoint = nyutagWebProxy.start()
         check(WebViewFeature.isFeatureSupported(WebViewFeature.PROXY_OVERRIDE)) { "WebView without PROXY_OVERRIDE: call would bypass the tunnel" }
+        NyutagIcePolicy.refresh() // замер UDP до SFU идёт, пока грузится Element Call
         val config = ProxyConfig.Builder()
             .addProxyRule("127.0.0.1:${endpoint.port}")
+            .addBypassRule(NyutagIcePolicy.RU_TURN_BYPASS) // TURN на российской стороне — напрямую, не через туннель
             .build()
         withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { cont ->
