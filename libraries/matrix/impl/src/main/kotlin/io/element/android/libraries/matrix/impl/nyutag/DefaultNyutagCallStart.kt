@@ -48,7 +48,13 @@ class DefaultNyutagCallStart(
                     val alive = event.optLong("origin_server_ts", now) + content.optLong("expires", 0) > now
                     if (event.optString("sender") == sessionId.value) {
                         val key = URLEncoder.encode(event.optString("state_key"), "UTF-8")
-                        val cleared = NyutagHttp.request(context, "PUT", "/_matrix/client/v3/rooms/$room/state/$CALL_MEMBER_TYPE/$key", jsonBody = "{}", bearer = token)
+                        val cleared = NyutagHttp.request(
+                            context,
+                            "PUT",
+                            "/_matrix/client/v3/rooms/$room/state/$CALL_MEMBER_TYPE/$key",
+                            jsonBody = "{}",
+                            bearer = token,
+                        )
                         Timber.i("Nyutag call: cleared own stale membership → HTTP ${cleared.status}")
                     } else if (alive) {
                         othersInCall = true
