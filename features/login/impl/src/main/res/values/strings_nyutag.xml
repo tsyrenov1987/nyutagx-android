@@ -64,4 +64,7 @@
     <string name="nyutag_signup_phone_subtitle">Friends will find you in Nyutag by this number. Nobody will see the number itself.</string>
     <string name="nyutag_signup_error_email_required">Confirm your email with the code from the letter.</string>
     <string name="nyutag_signup_error_phone_required">Enter your phone number.</string>
+    <string name="nyutag_signup_form_subtitle">Fill in a few fields and you are in.</string>
+    <string name="nyutag_signup_verify_subtitle">We sent a code to %1$s. Enter it here.</string>
+    <string name="nyutag_signup_optional">(optional)</string>
 </resources>

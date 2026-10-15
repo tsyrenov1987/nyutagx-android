@@ -86,7 +86,7 @@
     <string name="common_report_a_problem">Асуудал тухай мэдүүлхэ</string>
     <string name="common_room">Бүлэг</string>
     <string name="common_room_name">Бүлэгэй нэрэ</string>
-    <string name="common_screen_lock">Дэлгэсэй суурга</string>
+    <string name="common_screen_lock">Дэлгэсэй түгжээ</string>
     <string name="common_search_for_someone">Хүн бэдэрхэ</string>
     <string name="common_search_results">Бэдэрэлгын дүн</string>
     <string name="common_security">Аюулгүй байдал</string>
@@ -145,7 +145,7 @@
     <string name="a11y_page_n">%1$d-дэхи хуудаһан</string>
     <string name="a11y_pause">Түр зогсоохо</string>
     <string name="a11y_paused_voice_message">Дуун бэшэг, үргэлжэлхэ саг: %1$s, мүнөөнэй байрлал: %2$s</string>
-    <string name="a11y_photo_preview">Фото урдаһаа харах</string>
+    <string name="a11y_photo_preview">Фото урдаһаа хараха</string>
     <string name="a11y_pin_field">PIN-кодой талбари</string>
     <string name="a11y_pinned_location">Бэхилэгдэһэн байрлал</string>
     <string name="a11y_play">Тоглуулха</string>
@@ -182,21 +182,21 @@
     <string name="a11y_tombstoned_room">Хаагдаһан бүлэг</string>
     <string name="a11y_user_avatar">Хэрэглэгшын аватар</string>
     <string name="a11y_user_menu">Хэрэглэгшын меню</string>
-    <string name="a11y_video_preview">Видео урдаһаа харах</string>
-    <string name="a11y_view_avatar">Аватар харах</string>
-    <string name="a11y_view_details">Дэлгэрэнгы харах</string>
+    <string name="a11y_video_preview">Видео урдаһаа хараха</string>
+    <string name="a11y_view_avatar">Аватар хараха</string>
+    <string name="a11y_view_details">Дэлгэрэнгы хараха</string>
     <string name="a11y_voice_message">Дуун бэшэг, үргэлжэлхэ саг: %1$s</string>
     <string name="a11y_voice_message_record">Дуун бэшэг бэшэжэ абаха.</string>
     <string name="a11y_voice_message_stop_recording">Бэшэжэ абахаа зогсоохо</string>
     <string name="a11y_your_avatar">Таны аватар</string>
-    <string name="action_add_caption">Гарса нэмэхэ</string>
+    <string name="action_add_caption">Тайлбари нэмэхэ</string>
     <string name="action_add_existing_rooms">Байһан бүлэгүүдые нэмэхэ</string>
     <string name="action_add_to_timeline">Хөөрэлдөөндэ нэмэхэ</string>
     <string name="action_call">Дуудаха</string>
     <string name="action_cancel_for_now">Мүнөөдөө болюулха</string>
     <string name="action_choose_file">Файл шэлэхэ</string>
     <string name="action_confirm_password">Нюуса үгэ баталха</string>
-    <string name="action_copy_caption">Гарса хуулаха</string>
+    <string name="action_copy_caption">Тайлбари хуулаха</string>
     <string name="action_copy_link">Холбоос хуулаха</string>
     <string name="action_copy_link_to_message">Бэшэгэй холбоос хуулаха</string>
     <string name="action_copy_text">Текст хуулаха</string>
@@ -211,11 +211,11 @@
     <string name="action_delete_poll">Һанал асуулга усадхаха</string>
     <string name="action_discard">Хаяха</string>
     <string name="action_download">Ашаалжа абаха</string>
-    <string name="action_edit_caption">Гарса заһаха</string>
+    <string name="action_edit_caption">Тайлбари заһаха</string>
     <string name="action_edit_poll">Һанал асуулга заһаха</string>
     <string name="action_end_poll">Һанал асуулга дүүргэхэ</string>
     <string name="action_enter_pin">PIN оруулагты</string>
-    <string name="action_explore_public_spaces">Нээлттэй оршонуудые харах</string>
+    <string name="action_explore_public_spaces">Нээлттэй оршонуудые хараха</string>
     <string name="action_finish">Дүүргэхэ</string>
     <string name="action_go_to_roles_and_permissions">Үүргэнүүд ба зүбшөөлнүүд руу орохо</string>
     <string name="action_go_to_settings">Тохируулганууд руу орохо</string>
@@ -233,7 +233,7 @@
     <string name="action_quote">Ишэлхэ</string>
     <string name="action_react">Реакци табиха</string>
     <string name="action_reject">Арсаха</string>
-    <string name="action_remove_caption">Гарса хаһаха</string>
+    <string name="action_remove_caption">Тайлбари хаһаха</string>
     <string name="action_remove_message">Бэшэг хаһаха</string>
     <string name="action_reply_in_thread">Һудалда харюусаха</string>
     <string name="action_report">Гомдол мэдүүлхэ</string>
@@ -258,7 +258,7 @@
     <string name="action_translate">Оршуулха</string>
     <string name="action_video_call">Видео дуудалга</string>
     <string name="action_view">Харах</string>
-    <string name="action_view_in_timeline">Хөөрэлдөөн соо харах</string>
+    <string name="action_view_in_timeline">Хөөрэлдөөн соо хараха</string>
     <string name="action_voice_call">Дуун дуудалга</string>
     <string name="action_yes_try_again">Тиимэ, дахин оролдохо</string>
     <string name="banner_migrate_to_native_sliding_sync_description">Таны сервер мүнөө шэнэ, түргэн протокол дэмжэнэ. Мүнөө шэнэлхын тула гараад, дахин орогты. Мүнөө иигэбэл, хуушан протокол һүүлдэ хаһагдахада албадан гаргагдахагүйт.</string>
@@ -267,7 +267,7 @@
     <string name="common_account_settings">Аккаунтай тохируулганууд</string>
     <string name="common_add_account">Аккаунт нэмэхэ</string>
     <string name="common_add_another_account">Аккаунт нэмэхэ</string>
-    <string name="common_adding_caption">Гарса нэмэжэ байна</string>
+    <string name="common_adding_caption">Тайлбари нэмэжэ байна</string>
     <string name="common_an_image">зураг</string>
     <string name="common_analytics">Аналитика</string>
     <string name="common_android_shortcuts_remove_reason_left_room">Та бүлэгһээ гарабат</string>
@@ -296,7 +296,7 @@
     <string name="common_downloading">Ашаалжа абажа байна</string>
     <string name="common_edited_suffix">(заһагдаһан)</string>
     <string name="common_editing">Заһажа байна</string>
-    <string name="common_editing_caption">Гарса заһажа байна</string>
+    <string name="common_editing_caption">Тайлбари заһажа байна</string>
     <string name="common_emote">* %1$s %2$s</string>
     <string name="common_empty_file">Хооһон файл</string>
     <string name="common_encryption_enabled">Шифрлэлгэ носоогдоо</string>
@@ -306,7 +306,7 @@
     <string name="common_failed">Бүтэбэгүй</string>
     <string name="common_favourite">Дуратай</string>
     <string name="common_favourited">Дуратай руу нэмэгдэбэ</string>
-    <string name="common_fetching_notifications_title_android">Мэдээсэлнүүдые синхрончилжо байна…</string>
+    <string name="common_fetching_notifications_title_android">Мэдээсэлнүүдые синхронизаци хэжэ байна…</string>
     <string name="common_file_deleted">Файл усадхагдаба</string>
     <string name="common_file_saved">Файл хадагалагдаба</string>
     <string name="common_file_saved_on_disk_android">Файл «Ашаалһан» папкада хадагалагдаба</string>
@@ -342,7 +342,7 @@
     <string name="common_message_layout">Бэшэгэй харагдаса</string>
     <string name="common_message_removed">Бэшэг хаһагдаба</string>
     <string name="common_moderation_and_safety">Модераци ба аюулгүй байдал</string>
-    <string name="common_modern">Орчин үеын</string>
+    <string name="common_modern">Мүнөө үеын</string>
     <string name="common_mute">Дуугүй болгохо</string>
     <string name="common_name_and_id">%1$s (%2$s)</string>
     <string name="common_no_room_name">Бүлэгэй нэрэ үгы</string>
@@ -414,11 +414,11 @@
     </plurals>
     <string name="common_sticker">Наалта</string>
     <string name="common_success">Амжалтатай</string>
-    <string name="common_suggested">Зүбшөөгдэһэн</string>
-    <string name="common_suggestions">Һанал болголгонууд</string>
+    <string name="common_suggested">Дурадхагдаһан</string>
+    <string name="common_suggestions">Дурадхалнууд</string>
     <string name="common_switch_account">Аккаунт һэлгэхэ</string>
     <string name="common_switch_accounts">Аккаунт һэлгэхэ</string>
-    <string name="common_syncing">Синхрончилжо байна</string>
+    <string name="common_syncing">Синхронизаци хэжэ байна</string>
     <string name="common_text">Текст</string>
     <string name="common_third_party_notices">Гуравдахи талын мэдэгдэлнүүд</string>
     <string name="common_thread">Һудал</string>
@@ -455,7 +455,7 @@
     <string name="content_scanner_not_found">Ашаалжа абаха боломжогүй.</string>
     <string name="content_scanner_not_found_title">Юумэн буруу болобо</string>
     <string name="content_scanner_scanning">Шалгажа байна…</string>
-    <string name="content_scanner_unsafe_message">Урдаһаа харах болон ашаалжа абаха унтараагдаа.</string>
+    <string name="content_scanner_unsafe_message">Урдаһаа хараха болон ашаалжа абаха унтараагдаа.</string>
     <string name="content_scanner_unsafe_title">Файл аюулгүй бэшэ</string>
     <string name="crypto_event_key_forwarded_known_profile_dialog_content">Та бүлэгтэ үгы байхада эльгээгдэһэн тула, %1$s (%2$s) энэ бэшэгээр хубаалдаба.</string>
     <string name="crypto_event_key_forwarded_unknown_profile_dialog_content">Та бүлэгтэ үгы байхада эльгээгдэһэн тула, %1$s энэ бэшэгээр хубаалдаба.</string>
@@ -483,7 +483,7 @@
     <string name="dialog_unsaved_changes_description_android">Хубилалтанууд хадагалагдаагүй. Гэдэргээ бусахадаа итгэлтэй гүт?</string>
     <string name="dialog_unsaved_changes_title">Хубилалтануудые хадагалха гү?</string>
     <string name="dialog_video_quality_selector_subtitle_file_size">Файлай эгээл томо хэмжээн: %1$s</string>
-    <string name="dialog_video_quality_selector_subtitle_no_file_size">Ашаалха видеогоо шанар шэлэгты.</string>
+    <string name="dialog_video_quality_selector_subtitle_no_file_size">Ашаалха видеогойнгоо шанар шэлэгты.</string>
     <string name="dialog_video_quality_selector_title">Ашаалха видеогой шанар шэлэгты</string>
     <string name="error_account_already_logged_in">Та энэ түхеэрэлгэ дээрэ %1$s болоод орохо болонхойт.</string>
     <string name="error_account_creation_not_possible">Matrix Authentication Service болон аккаунт байгуулалга дэмжэхын тула таны аккаунтай серверые шэнэлхэ хэрэгтэй.</string>
@@ -502,9 +502,9 @@
     <string name="error_room_address_already_exists">Иимэ бүлэгэй хаяг бии. Хаягаа али бүлэгэй нэрые һэлгэгты</string>
     <string name="error_room_address_invalid_symbols">Зарим тэмдэгүүд зүбшөөгдөөгүй. Зөөхэн үзэгүүд, тоонууд болон эдэ тэмдэгүүд дэмжэгдэнэ ! $ &amp; ‘ ( ) * + / ; = ? @ [ ] - . _</string>
     <string name="error_some_messages_have_not_been_sent">Зарим бэшэгүүд эльгээгдээгүй</string>
-    <string name="error_unknown">Уучлаарай, алдуу гараба</string>
+    <string name="error_unknown">Хүлисэгты, алдуу гараба</string>
     <string name="invite_friends_rich_title">🔐️ %1$s дээрэ намтай нэгэдэгты</string>
-    <string name="invite_friends_text">Сайн, %1$s дээрэ намтай хөөрэлдэгты: %2$s</string>
+    <string name="invite_friends_text">Мэндэ! %1$s дээрэ намтай хөөрэлдэгты: %2$s</string>
     <string name="live_location_sharing_foreground_service_channel_title_android">Шууд байрлалаараа хубаалдаха</string>
     <string name="live_location_sharing_foreground_service_message_android">Байрлалаараа хубаалдажа байна</string>
     <string name="live_location_sharing_foreground_service_title_android">%1$s шууд байрлал</string>
@@ -553,7 +553,7 @@
     <string name="screen_room_pinned_banner_indicator">%2$s-һаа %1$s</string>
     <string name="screen_room_pinned_banner_indicator_description">%1$s бэхилэгдэһэн бэшэг</string>
     <string name="screen_room_pinned_banner_loading_description">Бэшэг ашаалжа байна…</string>
-    <string name="screen_room_pinned_banner_view_all_button_title">Бүгэдые харах</string>
+    <string name="screen_room_pinned_banner_view_all_button_title">Бүгэдые хараха</string>
     <plurals name="screen_room_selection_count">
         <item quantity="other">%1$d бэшэг шэлэгдэбэ</item>
     </plurals>

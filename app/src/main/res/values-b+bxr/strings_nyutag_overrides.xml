@@ -3,10 +3,10 @@
 <resources>
     <!-- Поиск по сообщениям -->
     <string name="start_searching_title">Бэдэржэ эхилэгты…</string>
-    <string name="start_searching_subtitle">Чат, зурбас бэдэрэгты</string>
-    <string name="search_section_chats">Чадууд</string>
-    <string name="search_section_messages">Зурбаснууд</string>
-    <string name="search_from_your_messages_header">Таны зурбаснуудһаа</string>
+    <string name="start_searching_subtitle">Чат, бэшэг бэдэрэгты</string>
+    <string name="search_section_chats">Чатнууд</string>
+    <string name="search_section_messages">Бэшэгүүд</string>
+    <string name="search_from_your_messages_header">Таны бэшэгүүдһээ</string>
     <string name="search_no_results_title">Юумэн олдобогүй</string>
     <string name="search_no_results_subtitle">«%1$s» гэжэ юумэн олдобогүй. Ондоо үгэ оролдогты.</string>
     <string name="screen_search_recent_searches_section_title">Һүүлшын бэдэрэлгэнүүд</string>
@@ -27,7 +27,7 @@
     <string name="common_account_settings">Аккаунтай тохируулганууд</string>
     <string name="common_app_settings">Аппликациин тохируулганууд</string>
     <string name="common_media_upload_quality">Медиа эльгээхэ шанар</string>
-    <string name="common_moderation_and_safety">Модераци ба аюулгүй байдал</string>
+    <string name="common_moderation_and_safety">Нюуса байдал</string>
     <string name="common_favourite">Тэмдэглэһэн</string>
     <string name="common_favourited">Тэмдэглэһэн</string>
     <string name="screen_roomlist_filter_favourites">Тэмдэглэһэн</string>

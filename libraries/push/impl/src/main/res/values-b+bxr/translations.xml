@@ -12,7 +12,7 @@
     <plurals name="notification_compat_summary_title">
         <item quantity="other">%d мэдээсэл</item>
     </plurals>
-    <string name="notification_error_unified_push_unregistered_android">UnifiedPush мэдээсэлэй дистрибьютор бүртхэгдэбэгүй, тиимэһээ мэдээсэл абахаа болихот. Аппликациин мэдээсэлэй тохируулганууд болон push-дистрибьюторай байдал шалгагты.</string>
+    <string name="notification_error_unified_push_unregistered_android">UnifiedPush мэдээсэлэй дистрибьютор бүридхэгдэбэгүй, тиимэһээ мэдээсэл абахаа болихот. Аппликациин мэдээсэлэй тохируулганууд болон push-дистрибьюторай байдал шалгагты.</string>
     <string name="notification_fallback_content">Танда шэнэ бэшэгүүд бии.</string>
     <plurals name="notification_fallback_n_content">
         <item quantity="other">Танда %d шэнэ бэшэг бии.</item>
@@ -63,7 +63,7 @@
     <string name="push_distributor_firebase_android">Google сервисүүд</string>
     <string name="push_no_valid_google_play_services_apk_android">Хүсэнтэй Google Play сервисүүд олдобогүй. Мэдээсэлнүүд зүб ажаллахагүй байжа магад.</string>
     <string name="troubleshoot_notifications_test_blocked_users_description">Блоклогдоһон хэрэглэгшэдые шалгажа байна</string>
-    <string name="troubleshoot_notifications_test_blocked_users_quick_fix">Блоклогдоһон хэрэглэгшэдые харах</string>
+    <string name="troubleshoot_notifications_test_blocked_users_quick_fix">Блоклогдоһон хэрэглэгшэдые хараха</string>
     <string name="troubleshoot_notifications_test_blocked_users_result_none">Блоклогдоһон хэрэглэгшэ үгы.</string>
     <plurals name="troubleshoot_notifications_test_blocked_users_result_some">
         <item quantity="other">Та %1$d хэрэглэгшэ блоклобот. Эдэ хэрэглэгшэдһээ мэдээсэл абахагүйт.</item>

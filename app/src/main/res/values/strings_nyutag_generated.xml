@@ -17,13 +17,16 @@
     <string name="action_signout_anyway">Sign out anyway</string>
     <string name="banner_set_up_recovery_content">Without it, you can\'t restore your chats if you lose all your devices.</string>
     <string name="banner_set_up_recovery_title">Save your recovery key</string>
+    <string name="common_advanced_settings">More</string>
     <string name="common_android_shortcuts_remove_reason_left_room">"You left the group"</string>
     <string name="common_creating_room">"Creating group…"</string>
     <string name="common_creating_space">"Creating community…"</string>
     <string name="common_current_user_left_room">"Left group"</string>
     <string name="common_current_user_left_space">"Left community"</string>
+    <string name="common_encryption">Recovery key</string>
     <string name="common_leaving_room">"Leaving group"</string>
     <string name="common_leaving_space">"Leaving community"</string>
+    <string name="common_moderation_and_safety">Privacy</string>
     <string name="common_no_room_name">"No group name"</string>
     <string name="common_no_space_name">"No community name"</string>
     <string name="common_people">Members</string>
@@ -68,10 +71,16 @@
         <item quantity="other">"%d groups"</item>
     </plurals>
     <string name="screen_advanced_settings_hide_invite_avatars_toggle_title">"Hide avatars in group invite requests"</string>
+    <string name="screen_advanced_settings_share_presence">Share presence</string>
+    <string name="screen_advanced_settings_share_presence_description">People see when you are typing and have read a message, and you see the same about them.</string>
     <string name="screen_advanced_settings_show_media_timeline_private_rooms">"Show in private groups"</string>
+    <string name="screen_advanced_settings_show_media_timeline_title">Show photos and videos in chats</string>
     <string name="screen_bottom_sheet_manage_room_member_ban_member_from_space_confirmation_description">"They won’t be able to join this community again if invited, but they’ll still keep their memberships of any groups or subspaces."</string>
     <string name="screen_bottom_sheet_manage_room_member_kick_member_confirmation_description">"They will be able to join this group again if invited."</string>
     <string name="screen_bottom_sheet_manage_room_member_kick_member_from_space_confirmation_description">"They will be able to join this community again if invited, and they’ll still keep their memberships of any groups or subspaces."</string>
+    <string name="screen_chat_backup_recovery_action_change_description">Without a recovery key you cannot get your chats back if you lose all your devices.</string>
+    <string name="screen_chat_backup_recovery_action_confirm_description">Enter your recovery key to see your chat history on this device.</string>
+    <string name="screen_chat_backup_recovery_action_setup_description">Without a recovery key you cannot get your chats back if you lose all your devices.</string>
     <string name="screen_create_room_action_create_room">"New group"</string>
     <string name="screen_create_room_add_people_title">Invite people</string>
     <string name="screen_create_room_error_creating_room">"An error occurred when creating the group"</string>
@@ -132,6 +141,8 @@ You can change this anytime in group settings."</string>
     <string name="screen_media_browser_delete_confirmation_subtitle">"This file will be removed from the group and members won’t have access to it."</string>
     <string name="screen_media_browser_files_empty_state_subtitle">"Documents, audio files, and voice messages uploaded to this group will be shown here."</string>
     <string name="screen_media_browser_media_empty_state_subtitle">"Images and videos uploaded to this group will be shown here."</string>
+    <string name="screen_moderation_and_safety_other_users_heading">Other people</string>
+    <string name="screen_moderation_and_safety_share_presence_heading">Presence</string>
     <string name="screen_notification_settings_room_mention_label">"Mentions of @group"</string>
     <string name="screen_report_room_leave_failed_alert_message">"Your report was submitted successfully, but we encountered an issue while trying to leave the group. Please try again."</string>
     <string name="screen_report_room_leave_failed_alert_title">"Unable to Leave Group"</string>

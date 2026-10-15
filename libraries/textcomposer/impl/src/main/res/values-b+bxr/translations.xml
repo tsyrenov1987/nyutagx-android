@@ -6,14 +6,14 @@
     <string name="rich_text_editor_bullet_list">Тэмдэгтэй жагсаалта носоохо/унтарааха</string>
     <string name="rich_text_editor_close_formatting_options">Текстын хэлбэржүүлэлгые болюулжа хааха</string>
     <string name="rich_text_editor_code_block">Кодой блок носоохо/унтарааха</string>
-    <string name="rich_text_editor_composer_caption_placeholder">Гарса нэмэхэ</string>
+    <string name="rich_text_editor_composer_caption_placeholder">Тайлбари нэмэхэ</string>
     <string name="rich_text_editor_composer_encrypted_placeholder">Шифрлэгдэһэн бэшэг…</string>
     <string name="rich_text_editor_composer_unencrypted_placeholder">Шифрлэгдээгүй бэшэг…</string>
     <string name="rich_text_editor_create_link">Холбоос байгуулха</string>
     <string name="rich_text_editor_edit_link">Холбоос заһаха</string>
     <string name="rich_text_editor_format_action">%1$s, байдал: %2$s</string>
-    <string name="rich_text_editor_format_bold">Зуран үзэгөөр</string>
-    <string name="rich_text_editor_format_italic">Хэлтэйгээр</string>
+    <string name="rich_text_editor_format_bold">Бүдүүн үзэгөөр</string>
+    <string name="rich_text_editor_format_italic">Хэлтэгы үзэгөөр</string>
     <string name="rich_text_editor_format_state_disabled">унтарһан</string>
     <string name="rich_text_editor_format_state_off">унтарһан</string>
     <string name="rich_text_editor_format_state_on">носоһон</string>

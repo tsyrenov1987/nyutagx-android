@@ -8,30 +8,21 @@
 
 package io.element.android.features.securebackup.impl.root
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.progressSemantics
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.dp
-import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.securebackup.impl.R
-import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferencePage
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
-import io.element.android.libraries.designsystem.text.buildAnnotatedStringWithStyledPart
-import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
-import io.element.android.libraries.designsystem.theme.components.HorizontalDivider
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
-import io.element.android.libraries.matrix.api.encryption.BackupState
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.ui.strings.CommonStrings
 
@@ -54,83 +45,7 @@ fun SecureBackupRootView(
         title = stringResource(id = CommonStrings.common_encryption),
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
-        ListItem(
-            content = {
-                Text(
-                    text = stringResource(id = R.string.screen_chat_backup_key_backup_title),
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = buildAnnotatedStringWithStyledPart(
-                        fullTextRes = R.string.screen_chat_backup_key_backup_description,
-                        coloredTextRes = CommonStrings.action_learn_more,
-                        color = ElementTheme.colors.textPrimary,
-                        underline = false,
-                        bold = true,
-                    ),
-                )
-            },
-            onClick = onLearnMoreClick,
-        )
-
-        // Disable / Enable key storage
-        ListItem(
-            content = {
-                Text(
-                    text = stringResource(id = R.string.screen_chat_backup_key_storage_toggle_title),
-                )
-            },
-            trailingContent = when (state.backupState) {
-                BackupState.WAITING_FOR_SYNC,
-                BackupState.DISABLING -> ListItemContent.Custom { LoadingView() }
-                BackupState.UNKNOWN -> {
-                    when (state.doesBackupExistOnServer) {
-                        is AsyncData.Success -> {
-                            ListItemContent.Switch(checked = state.doesBackupExistOnServer.data)
-                        }
-                        is AsyncData.Loading,
-                        AsyncData.Uninitialized -> ListItemContent.Custom { LoadingView() }
-                        is AsyncData.Failure -> ListItemContent.Custom {
-                            Text(
-                                text = stringResource(id = CommonStrings.action_retry)
-                            )
-                        }
-                    }
-                }
-                BackupState.CREATING,
-                BackupState.ENABLING,
-                BackupState.RESUMING,
-                BackupState.ENABLED,
-                BackupState.DOWNLOADING -> ListItemContent.Switch(checked = true)
-            },
-            onClick = {
-                when (state.backupState) {
-                    BackupState.WAITING_FOR_SYNC,
-                    BackupState.DISABLING -> Unit
-                    BackupState.UNKNOWN -> {
-                        when (state.doesBackupExistOnServer) {
-                            is AsyncData.Success -> {
-                                if (state.doesBackupExistOnServer.data) {
-                                    onDisableClick()
-                                } else {
-                                    state.eventSink.invoke(SecureBackupRootEvent.EnableKeyStorage)
-                                }
-                            }
-                            is AsyncData.Loading,
-                            AsyncData.Uninitialized -> Unit
-                            is AsyncData.Failure -> state.eventSink.invoke(SecureBackupRootEvent.RetryKeyBackupState)
-                        }
-                    }
-                    BackupState.CREATING,
-                    BackupState.ENABLING,
-                    BackupState.RESUMING,
-                    BackupState.ENABLED,
-                    BackupState.DOWNLOADING -> onDisableClick()
-                }
-            },
-        )
-        HorizontalDivider()
+        // Нютаг: описание и переключатель «Хранилище ключей» убраны — человеку нужен только ключ восстановления.
         // Setup recovery
         when (state.recoveryState) {
             RecoveryState.UNKNOWN,
@@ -221,16 +136,6 @@ fun SecureBackupRootView(
             onSubmit = { state.eventSink.invoke(SecureBackupRootEvent.DismissDialog) },
         )
     }
-}
-
-@Composable
-private fun LoadingView() {
-    CircularProgressIndicator(
-        modifier = Modifier
-            .progressSemantics()
-            .size(24.dp),
-        strokeWidth = 2.dp
-    )
 }
 
 @PreviewsDayNight

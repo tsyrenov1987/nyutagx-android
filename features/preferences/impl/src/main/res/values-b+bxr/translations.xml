@@ -24,7 +24,7 @@
     </plurals>
     <string name="screen_advanced_settings_media_compression_description">Фото болон видео түргэн ашаалжа, интернет-трафик хэмнэгты</string>
     <string name="screen_advanced_settings_media_compression_title">Медиагай шанар тааруулха</string>
-    <string name="screen_advanced_settings_moderation_and_safety_section_title">Модераци ба аюулгүй байдал</string>
+    <string name="screen_advanced_settings_moderation_and_safety_section_title">Нюуса байдал</string>
     <string name="screen_advanced_settings_optimise_image_upload_quality_description">Түргэн ашаалха, файлай хэмжээ багадхахын тула зурагуудые автоматаар тааруулха.</string>
     <string name="screen_advanced_settings_optimise_image_upload_quality_title">Ашаалха зурагай шанар тааруулха</string>
     <string name="screen_advanced_settings_optimise_video_upload_quality_description">%1$s. Һэлгэхын тула эндэ дарагты.</string>

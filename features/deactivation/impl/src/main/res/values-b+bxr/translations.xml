@@ -10,6 +10,6 @@
     <string name="screen_deactivate_account_list_item_1_bold_part">Үүрэ мүнхэдөө унтарааха</string>
     <string name="screen_deactivate_account_list_item_2">Таниие бүхы чатнуудһаа хаһаха.</string>
     <string name="screen_deactivate_account_list_item_3">Таны аккаунтай мэдээн манай танилтын серверһээ усадхагдаха.</string>
-    <string name="screen_deactivate_account_list_item_4">Бэшэгүүдээ усадхахаар шиидэбэл, бүртхэлтэй хэрэглэгшэдтэ харагдаһаар байха, харин шэнэ али бүртхэлгүй хэрэглэгшэдтэ харагдахагүй.</string>
+    <string name="screen_deactivate_account_list_item_4">Бэшэгүүдээ усадхахаар шиидэбэл, бүридхэлтэй хэрэглэгшэдтэ харагдаһаар байха, харин шэнэ али бүридхэлгүй хэрэглэгшэдтэ харагдахагүй.</string>
     <string name="screen_deactivate_account_title">Аккаунт усадхаха</string>
 </resources>

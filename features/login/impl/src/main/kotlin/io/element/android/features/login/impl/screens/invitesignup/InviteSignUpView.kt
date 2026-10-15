@@ -1,6 +1,6 @@
 /*
- * Нютаг — регистрация по приглашению по шагам, как на iOS (NyutagSignUpScreen.swift):
- * один вопрос на экран, прогресс сверху, кнопка «Продолжить» снизу, ошибка — под полем.
+ * Нютаг — регистрация: одна форма (имя, телефон, почта, пароль; код приглашения, если нужен) и, если сервер
+ * требует подтверждённую почту, второй экран с кодом из письма.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -16,7 +16,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,14 +34,11 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,7 +48,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
@@ -83,7 +78,6 @@ import io.element.android.libraries.designsystem.theme.components.CircularProgre
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.PasswordVisibilityToggle
 import io.element.android.libraries.designsystem.theme.components.Scaffold
-import io.element.android.libraries.designsystem.theme.components.SegmentedButton
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TextField
@@ -93,7 +87,6 @@ import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
 import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
 import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
 import io.element.android.libraries.ui.strings.CommonStrings
-import kotlinx.coroutines.launch
 
 @Composable
 fun InviteSignUpView(
@@ -101,7 +94,7 @@ fun InviteSignUpView(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    fun back() = if (state.stepNumber <= 1) onBackClick() else state.eventSink(InviteSignUpEvent.Back)
+    fun back() = if (state.step == SignUpStep.Form) onBackClick() else state.eventSink(InviteSignUpEvent.Back)
     BackHandler(onBack = ::back)
     val next = { state.eventSink(InviteSignUpEvent.Next) }
 
@@ -109,23 +102,8 @@ fun InviteSignUpView(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.nyutag_signup_step, state.stepNumber, state.steps.size),
-                        style = ElementTheme.typography.fontBodyLgMedium,
-                        color = ElementTheme.colors.textSecondary,
-                    )
-                },
+                title = {},
                 navigationIcon = { BackButton(onClick = ::back) },
-                actions = {
-                    if (state.step == SignUpStep.Contact && state.canSkipContact) {
-                        TextButton(
-                            text = stringResource(CommonStrings.action_skip),
-                            size = ButtonSize.Medium,
-                            onClick = { state.eventSink(InviteSignUpEvent.SkipContact) },
-                        )
-                    }
-                },
             )
         }
     ) { padding ->
@@ -136,7 +114,6 @@ fun InviteSignUpView(
                 .consumeWindowInsets(padding)
                 .imePadding(),
         ) {
-            StepProgress(count = state.steps.size, done = state.stepNumber)
             AnimatedContent(
                 targetState = state.step,
                 transitionSpec = {
@@ -153,13 +130,10 @@ fun InviteSignUpView(
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp),
                 ) {
-                    Spacer(Modifier.height(28.dp))
+                    Spacer(Modifier.height(8.dp))
                     when (step) {
-                        SignUpStep.Code -> CodeStep(state, onDone = next)
-                        SignUpStep.Contact -> ContactStep(state, onDone = next)
-                        SignUpStep.Phone -> PhoneStep(state, onDone = next)
-                        SignUpStep.Name -> NameStep(state, onDone = next)
-                        SignUpStep.Password -> PasswordStep(state, onDone = next)
+                        SignUpStep.Form -> FormStep(state, onDone = next)
+                        SignUpStep.Verify -> VerifyStep(state)
                     }
                     Spacer(Modifier.height(24.dp))
                 }
@@ -167,9 +141,8 @@ fun InviteSignUpView(
             Button(
                 text = stringResource(
                     when {
-                        state.step == SignUpStep.Password && state.isBusy -> R.string.nyutag_signup_creating
-                        state.step == SignUpStep.Password -> R.string.nyutag_invite_submit
-                        state.step == SignUpStep.Contact && state.verification == null -> R.string.nyutag_contact_send_code
+                        state.isBusy -> R.string.nyutag_signup_creating
+                        state.step == SignUpStep.Form -> R.string.nyutag_invite_submit
                         else -> CommonStrings.action_continue
                     }
                 ),
@@ -184,27 +157,6 @@ fun InviteSignUpView(
     }
 }
 
-/** Полоска шагов под шапкой: пройденные — синие, впереди — серые. */
-@Composable
-private fun StepProgress(count: Int, done: Int) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        repeat(count) { index ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(4.dp)
-                    .clip(CircleShape)
-                    .background(if (index < done) ElementTheme.colors.bgActionPrimaryRest else ElementTheme.colors.bgSubtleSecondary),
-            )
-        }
-    }
-}
-
 @Composable
 private fun StepHeader(icon: ImageVector, title: String, subtitle: String) {
     Column(
@@ -213,21 +165,21 @@ private fun StepHeader(icon: ImageVector, title: String, subtitle: String) {
     ) {
         Box(
             modifier = Modifier
-                .size(84.dp)
+                .size(72.dp)
                 .clip(CircleShape)
                 .background(ElementTheme.colors.bgAccentSubtle),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = ElementTheme.colors.iconAccentPrimary, modifier = Modifier.size(40.dp))
+            Icon(imageVector = icon, contentDescription = null, tint = ElementTheme.colors.iconAccentPrimary, modifier = Modifier.size(36.dp))
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
         Text(
             text = title,
             style = ElementTheme.typography.fontHeadingMdBold,
             color = ElementTheme.colors.textPrimary,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text = subtitle,
             style = ElementTheme.typography.fontBodyMdRegular,
@@ -235,10 +187,10 @@ private fun StepHeader(icon: ImageVector, title: String, subtitle: String) {
             textAlign = TextAlign.Center,
         )
     }
-    Spacer(Modifier.height(28.dp))
+    Spacer(Modifier.height(24.dp))
 }
 
-/** Поле получает фокус, как только шаг открылся: клавиатура уже под рукой. */
+/** Поле получает фокус, как только экран открылся: клавиатура уже под рукой. */
 @Composable
 private fun rememberAutoFocus(): FocusRequester {
     val focusRequester = remember { FocusRequester() }
@@ -247,35 +199,231 @@ private fun rememberAutoFocus(): FocusRequester {
 }
 
 @Composable
-private fun CodeStep(state: InviteSignUpState, onDone: () -> Unit) {
+private fun errorText(state: InviteSignUpState, field: SignUpField): String? = state.errorFor(field)?.let { stringResource(inviteErrorRes(it)) }
+
+private fun validity(errorText: String?) = if (errorText != null) TextFieldValidity.Invalid else TextFieldValidity.None
+
+// Форма
+
+@Composable
+private fun FormStep(state: InviteSignUpState, onDone: () -> Unit) {
     StepHeader(
-        icon = CompoundIcons.EmailSolid(),
-        title = stringResource(R.string.nyutag_signup_code_title),
-        subtitle = stringResource(R.string.nyutag_invite_signup_subtitle),
+        icon = CompoundIcons.UserProfileSolid(),
+        title = stringResource(R.string.nyutag_signup_title),
+        subtitle = stringResource(R.string.nyutag_signup_form_subtitle),
     )
-    // Своё значение с курсором в конце: дефис вставляется сам, и курсор не должен перескакивать через него.
+    val enabled = !state.isBusy
+    val nameFocus = remember { FocusRequester() }
+    val phoneFocus = remember { FocusRequester() }
+    val contactFocus = remember { FocusRequester() }
+    val passwordFocus = remember { FocusRequester() }
+    val usernameFocus = remember { FocusRequester() }
+    val afterName = when {
+        state.showsPhone -> phoneFocus
+        state.contactMedium != null -> contactFocus
+        else -> passwordFocus
+    }
+    val afterPhone = if (state.contactMedium != null) contactFocus else passwordFocus
+
+    if (state.showsCode) {
+        CodeField(state, enabled = enabled, onNext = { runCatching { nameFocus.requestFocus() } })
+        Spacer(Modifier.height(16.dp))
+    }
+
+    // Имя
+    val nameError = errorText(state, SignUpField.Name)
+    var displayName by textFieldState(stateValue = state.form.displayName)
+    TextField(
+        label = stringResource(R.string.nyutag_signup_name_label),
+        value = displayName,
+        enabled = enabled,
+        onValueChange = {
+            displayName = it.oneLine()
+            state.eventSink(InviteSignUpEvent.SetDisplayName(displayName))
+        },
+        supportingText = nameError ?: stringResource(R.string.nyutag_signup_name_subtitle),
+        validity = validity(nameError),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(onNext = { runCatching { (if (state.form.isEditingUsername) usernameFocus else afterName).requestFocus() } }),
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(nameFocus)
+            .bringIntoViewOnImeVisible()
+            .semantics { contentType = ContentType.PersonFullName },
+    )
+    if (!state.showsCode) {
+        LaunchedEffect(Unit) { runCatching { nameFocus.requestFocus() } }
+    }
+    Spacer(Modifier.height(4.dp))
+    UsernameLine(state, enabled = enabled, focusRequester = usernameFocus, onNext = { runCatching { afterName.requestFocus() } })
+    Spacer(Modifier.height(12.dp))
+
+    // Телефон
+    if (state.showsPhone) {
+        val phoneError = errorText(state, SignUpField.Phone)
+        var phone by textFieldState(stateValue = state.form.phone)
+        TextField(
+            label = stringResource(R.string.nyutag_contact_phone),
+            value = phone,
+            enabled = enabled,
+            placeholder = stringResource(R.string.nyutag_contact_phone_hint),
+            onValueChange = {
+                phone = it.oneLine()
+                state.eventSink(InviteSignUpEvent.SetPhone(phone))
+            },
+            supportingText = phoneError ?: stringResource(R.string.nyutag_signup_phone_subtitle),
+            validity = validity(phoneError),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { runCatching { afterPhone.requestFocus() } }),
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(phoneFocus)
+                .bringIntoViewOnImeVisible()
+                .semantics { contentType = ContentType.PhoneNumber },
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+
+    // Почта (или SMS-телефон), с кодом подтверждения на следующем экране
+    val medium = state.contactMedium
+    if (medium != null) {
+        val isPhone = medium == NyutagContactMedium.Phone
+        val contactError = errorText(state, SignUpField.Contact)
+        var contact by textFieldState(stateValue = state.form.contact)
+        val label = stringResource(if (isPhone) R.string.nyutag_contact_phone else R.string.nyutag_contact_email)
+        TextField(
+            label = if (state.isContactOptional) label + " " + stringResource(R.string.nyutag_signup_optional) else label,
+            value = contact,
+            enabled = enabled,
+            placeholder = stringResource(if (isPhone) R.string.nyutag_contact_phone_hint else R.string.nyutag_contact_email_hint),
+            onValueChange = {
+                contact = it.oneLine()
+                state.eventSink(InviteSignUpEvent.SetContact(contact))
+            },
+            supportingText = contactError ?: stringResource(R.string.nyutag_signup_contact_subtitle),
+            validity = validity(contactError),
+            keyboardOptions = KeyboardOptions(
+                autoCorrectEnabled = false,
+                keyboardType = if (isPhone) KeyboardType.Phone else KeyboardType.Email,
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(onNext = { runCatching { passwordFocus.requestFocus() } }),
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(contactFocus)
+                .bringIntoViewOnImeVisible()
+                .semantics { contentType = if (isPhone) ContentType.PhoneNumber else ContentType.EmailAddress },
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+
+    // Пароль — одно поле с «глазом», без повтора
+    var visible by remember { mutableStateOf(false) }
+    if (state.isBusy) visible = false
+    val passwordError = errorText(state, SignUpField.Password)
+    var password by textFieldState(stateValue = state.form.password)
+    TextField(
+        label = stringResource(R.string.nyutag_invite_password_label),
+        value = password,
+        enabled = enabled,
+        onValueChange = {
+            password = it.oneLine()
+            state.eventSink(InviteSignUpEvent.SetPassword(password))
+        },
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = { PasswordVisibilityToggle(visible = visible, onToggle = { visible = !visible }) },
+        supportingText = passwordError ?: stringResource(R.string.nyutag_signup_password_subtitle),
+        validity = validity(passwordError),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(passwordFocus)
+            .bringIntoViewOnImeVisible()
+            .semantics { contentType = ContentType.NewPassword },
+    )
+}
+
+/** Ник для входа: строкой под именем, по кнопке — отдельное поле. */
+@Composable
+private fun UsernameLine(state: InviteSignUpState, enabled: Boolean, focusRequester: FocusRequester, onNext: () -> Unit) {
+    val usernameError = errorText(state, SignUpField.Username)
+    if (state.form.isEditingUsername) {
+        var username by textFieldState(stateValue = state.form.username)
+        TextField(
+            label = stringResource(R.string.nyutag_invite_username_label),
+            value = username,
+            enabled = enabled,
+            placeholder = stringResource(R.string.nyutag_invite_username_hint),
+            leadingIcon = { Text("@", style = ElementTheme.typography.fontBodyLgRegular, color = ElementTheme.colors.textSecondary) },
+            onValueChange = {
+                username = it.oneLine().lowercase()
+                state.eventSink(InviteSignUpEvent.SetUsername(username))
+            },
+            supportingText = usernameError ?: stringResource(R.string.nyutag_invite_username_hint),
+            validity = validity(usernameError),
+            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { onNext() }),
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .bringIntoViewOnImeVisible()
+                .semantics { contentType = ContentType.NewUsername },
+        )
+        LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+    } else if (state.username.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.nyutag_signup_username_footer, "@" + state.username),
+                style = ElementTheme.typography.fontBodyMdRegular,
+                color = ElementTheme.colors.textSecondary,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            TextButton(
+                text = stringResource(R.string.nyutag_signup_username_edit),
+                size = ButtonSize.Small,
+                enabled = enabled,
+                onClick = { state.eventSink(InviteSignUpEvent.EditUsername) },
+            )
+        }
+    }
+}
+
+/** Код приглашения `XXXX-XXXX`: дефис вставляется сам, проверяется, как только введён целиком. */
+@Composable
+private fun CodeField(state: InviteSignUpState, enabled: Boolean, onNext: () -> Unit) {
+    Text(
+        text = stringResource(R.string.nyutag_invite_code_label),
+        style = ElementTheme.typography.fontBodyMdMedium,
+        color = ElementTheme.colors.textSecondary,
+        modifier = Modifier.padding(bottom = 6.dp),
+    )
+    // Своё значение с курсором в конце: курсор не должен перескакивать через вставленный дефис.
     var value by remember { mutableStateOf(TextFieldValue(state.form.code, TextRange(state.form.code.length))) }
     fun update(input: TextFieldValue) {
         val code = NyutagInviteCode.format(input.text)
         value = if (code == input.text) input else TextFieldValue(code, TextRange(code.length))
         state.eventSink(InviteSignUpEvent.SetCode(code))
     }
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
-    val focusRequester = rememberAutoFocus()
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(ElementTheme.colors.bgSubtleSecondary)
-            .padding(vertical = 18.dp),
+            .padding(vertical = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
         BasicTextField(
             value = value,
             onValueChange = ::update,
+            enabled = enabled,
             singleLine = true,
-            textStyle = ElementTheme.typography.fontHeadingLgBold.copy(
+            textStyle = ElementTheme.typography.fontHeadingMdBold.copy(
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 3.sp,
                 textAlign = TextAlign.Center,
@@ -288,13 +436,13 @@ private fun CodeStep(state: InviteSignUpState, onDone: () -> Unit) {
                 keyboardType = KeyboardType.Ascii,
                 imeAction = ImeAction.Next,
             ),
-            keyboardActions = KeyboardActions(onNext = { onDone() }),
+            keyboardActions = KeyboardActions(onNext = { onNext() }),
             decorationBox = { inner ->
                 Box(contentAlignment = Alignment.Center) {
                     if (value.text.isEmpty()) {
                         Text(
                             text = "XXXX-XXXX",
-                            style = ElementTheme.typography.fontHeadingLgBold.copy(fontFamily = FontFamily.Monospace, letterSpacing = 3.sp),
+                            style = ElementTheme.typography.fontHeadingMdBold.copy(fontFamily = FontFamily.Monospace, letterSpacing = 3.sp),
                             color = ElementTheme.colors.textDisabled,
                         )
                     }
@@ -304,7 +452,7 @@ private fun CodeStep(state: InviteSignUpState, onDone: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 48.dp)
-                .focusRequester(focusRequester)
+                .focusRequester(rememberAutoFocus())
                 .bringIntoViewOnImeVisible(),
         )
         Box(
@@ -313,7 +461,7 @@ private fun CodeStep(state: InviteSignUpState, onDone: () -> Unit) {
                 .padding(end = 16.dp),
         ) {
             when {
-                state.isBusy -> CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                state.isBusy && !state.isCodeValid -> CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                 state.isCodeValid -> Icon(
                     imageVector = CompoundIcons.CheckCircleSolid(),
                     contentDescription = null,
@@ -323,111 +471,56 @@ private fun CodeStep(state: InviteSignUpState, onDone: () -> Unit) {
             }
         }
     }
-    Spacer(Modifier.height(12.dp))
-    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        when {
-            state.error != null -> ErrorText(state.error)
-            state.isCodeValid && state.inviter != null -> Text(
-                text = stringResource(R.string.nyutag_signup_invited_by, state.inviter),
-                style = ElementTheme.typography.fontBodyMdMedium,
-                color = ElementTheme.colors.textSuccessPrimary,
-                textAlign = TextAlign.Center,
-            )
-            value.text.isEmpty() -> TextButton(
-                text = stringResource(R.string.nyutag_signup_paste),
-                size = ButtonSize.Medium,
-                onClick = {
-                    scope.launch {
-                        val clip = clipboard.getClipEntry()?.clipData?.takeIf { it.itemCount > 0 }
-                        val text = clip?.getItemAt(0)?.text?.toString().orEmpty()
-                        if (text.isNotBlank()) update(TextFieldValue(text))
-                    }
-                },
-            )
-        }
+    val codeError = errorText(state, SignUpField.Code)
+    when {
+        codeError != null -> Text(
+            text = codeError,
+            style = ElementTheme.typography.fontBodySmRegular,
+            color = ElementTheme.colors.textCriticalPrimary,
+            modifier = Modifier.padding(top = 6.dp, start = 4.dp),
+        )
+        state.isCodeValid && state.inviter != null -> Text(
+            text = stringResource(R.string.nyutag_signup_invited_by, state.inviter),
+            style = ElementTheme.typography.fontBodySmMedium,
+            color = ElementTheme.colors.textSuccessPrimary,
+            modifier = Modifier.padding(top = 6.dp, start = 4.dp),
+        )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Код из письма
+
 @Composable
-private fun ContactStep(state: InviteSignUpState, onDone: () -> Unit) {
-    val isPhone = state.form.medium == NyutagContactMedium.Phone
+private fun VerifyStep(state: InviteSignUpState) {
+    val isPhone = state.contactMedium == NyutagContactMedium.Phone
     StepHeader(
-        icon = if (isPhone) CompoundIcons.Mobile() else CompoundIcons.Email(),
-        // Один способ (сейчас только почта) — заголовок называет его, а не «Телефон или e-mail».
-        title = stringResource(
-            when {
-                state.availableMedia.size > 1 -> R.string.nyutag_contact_title
-                isPhone -> R.string.nyutag_contact_phone
-                else -> R.string.nyutag_contact_email
-            }
-        ),
-        subtitle = stringResource(R.string.nyutag_signup_contact_subtitle),
+        icon = CompoundIcons.EmailSolid(),
+        title = stringResource(if (isPhone) R.string.nyutag_contact_code_sms else R.string.nyutag_contact_code_email),
+        subtitle = stringResource(R.string.nyutag_signup_verify_subtitle, state.form.contact.trim()),
     )
-    if (state.availableMedia.size > 1) {
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            state.availableMedia.forEachIndexed { index, medium ->
-                SegmentedButton(
-                    index = index,
-                    count = state.availableMedia.size,
-                    selected = state.form.medium == medium,
-                    onClick = { state.eventSink(InviteSignUpEvent.SetMedium(medium)) },
-                    text = stringResource(if (medium == NyutagContactMedium.Phone) R.string.nyutag_contact_phone else R.string.nyutag_contact_email),
-                    enabled = !state.isBusy,
-                )
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-    }
-    val codeSent = state.verification != null
-    var contact by textFieldState(stateValue = state.form.contact)
+    var code by textFieldState(stateValue = state.form.verifyCode)
+    val codeError = errorText(state, SignUpField.VerifyCode)
     TextField(
-        label = stringResource(if (isPhone) R.string.nyutag_contact_phone else R.string.nyutag_contact_email),
-        value = contact,
-        placeholder = stringResource(if (isPhone) R.string.nyutag_contact_phone_hint else R.string.nyutag_contact_email_hint),
+        value = code,
+        enabled = !state.isBusy,
+        placeholder = "000000",
         onValueChange = {
-            contact = it.oneLine()
-            state.eventSink(InviteSignUpEvent.SetContact(contact))
+            code = it.filter { c -> c.isDigit() }.take(InviteSignUpState.VERIFY_CODE_LENGTH)
+            state.eventSink(InviteSignUpEvent.SetVerifyCode(code))
         },
-        supportingText = state.error?.takeIf { !codeSent }?.let { stringResource(inviteErrorRes(it)) },
-        validity = if (state.error != null && !codeSent) TextFieldValidity.Invalid else TextFieldValidity.None,
-        keyboardOptions = KeyboardOptions(
-            autoCorrectEnabled = false,
-            keyboardType = if (isPhone) KeyboardType.Phone else KeyboardType.Email,
-            imeAction = ImeAction.Done,
-        ),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        supportingText = codeError,
+        validity = validity(codeError),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { state.eventSink(InviteSignUpEvent.Next) }),
         singleLine = true,
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(rememberAutoFocus())
             .bringIntoViewOnImeVisible()
-            .semantics { contentType = if (isPhone) ContentType.PhoneNumber else ContentType.EmailAddress },
+            .semantics { contentType = ContentType.SmsOtpCode },
     )
-    if (codeSent) {
-        Spacer(Modifier.height(16.dp))
-        var verifyCode by textFieldState(stateValue = state.form.verifyCode)
-        val codeFocus = remember { FocusRequester() }
-        LaunchedEffect(state.verification) { runCatching { codeFocus.requestFocus() } }
-        TextField(
-            label = stringResource(if (isPhone) R.string.nyutag_contact_code_sms else R.string.nyutag_contact_code_email),
-            value = verifyCode,
-            placeholder = "000000",
-            onValueChange = {
-                verifyCode = it.filter { ch -> ch.isDigit() }.take(InviteSignUpState.VERIFY_CODE_LENGTH)
-                state.eventSink(InviteSignUpEvent.SetVerifyCode(verifyCode))
-            },
-            supportingText = state.error?.let { stringResource(inviteErrorRes(it)) },
-            validity = if (state.error != null) TextFieldValidity.Invalid else TextFieldValidity.None,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onDone() }),
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(codeFocus)
-                .bringIntoViewOnImeVisible()
-                .semantics { contentType = ContentType.SmsOtpCode },
-        )
+    Spacer(Modifier.height(8.dp))
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         TextButton(
             text = if (state.resendInSeconds > 0) {
                 stringResource(R.string.nyutag_contact_resend_in, state.resendInSeconds)
@@ -439,172 +532,6 @@ private fun ContactStep(state: InviteSignUpState, onDone: () -> Unit) {
             onClick = { state.eventSink(InviteSignUpEvent.ResendCode) },
         )
     }
-}
-
-@Composable
-private fun PhoneStep(state: InviteSignUpState, onDone: () -> Unit) {
-    StepHeader(
-        icon = CompoundIcons.Mobile(),
-        title = stringResource(R.string.nyutag_contact_phone),
-        subtitle = stringResource(R.string.nyutag_signup_phone_subtitle),
-    )
-    var phone by textFieldState(stateValue = state.form.phone)
-    TextField(
-        label = stringResource(R.string.nyutag_contact_phone),
-        value = phone,
-        placeholder = stringResource(R.string.nyutag_contact_phone_hint),
-        onValueChange = {
-            phone = it.oneLine()
-            state.eventSink(InviteSignUpEvent.SetPhone(phone))
-        },
-        supportingText = state.error?.let { stringResource(inviteErrorRes(it)) },
-        validity = if (state.error != null) TextFieldValidity.Invalid else TextFieldValidity.None,
-        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(rememberAutoFocus())
-            .bringIntoViewOnImeVisible()
-            .semantics { contentType = ContentType.PhoneNumber },
-    )
-}
-
-@Composable
-private fun NameStep(state: InviteSignUpState, onDone: () -> Unit) {
-    StepHeader(
-        icon = CompoundIcons.UserProfileSolid(),
-        title = stringResource(R.string.nyutag_signup_name_title),
-        subtitle = stringResource(R.string.nyutag_signup_name_subtitle),
-    )
-    val editing = state.form.isEditingUsername
-    val errorText = state.error?.let { stringResource(inviteErrorRes(it)) }
-    var displayName by textFieldState(stateValue = state.form.displayName)
-    TextField(
-        label = stringResource(R.string.nyutag_signup_name_label),
-        value = displayName,
-        onValueChange = {
-            displayName = it.oneLine()
-            state.eventSink(InviteSignUpEvent.SetDisplayName(displayName))
-        },
-        supportingText = errorText?.takeIf { !editing },
-        validity = if (errorText != null && !editing) TextFieldValidity.Invalid else TextFieldValidity.None,
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Words,
-            imeAction = if (editing) ImeAction.Next else ImeAction.Done,
-        ),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(rememberAutoFocus())
-            .bringIntoViewOnImeVisible()
-            .semantics { contentType = ContentType.PersonFullName },
-    )
-    Spacer(Modifier.height(12.dp))
-    if (editing) {
-        var username by textFieldState(stateValue = state.form.username)
-        TextField(
-            label = stringResource(R.string.nyutag_invite_username_label),
-            value = username,
-            placeholder = stringResource(R.string.nyutag_invite_username_hint),
-            leadingIcon = { Text("@", style = ElementTheme.typography.fontBodyLgRegular, color = ElementTheme.colors.textSecondary) },
-            onValueChange = {
-                username = it.oneLine().lowercase()
-                state.eventSink(InviteSignUpEvent.SetUsername(username))
-            },
-            supportingText = errorText ?: stringResource(R.string.nyutag_invite_username_hint),
-            validity = if (errorText != null) TextFieldValidity.Invalid else TextFieldValidity.None,
-            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { onDone() }),
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .bringIntoViewOnImeVisible()
-                .semantics { contentType = ContentType.NewUsername },
-        )
-    } else if (state.username.isNotEmpty()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(R.string.nyutag_signup_username_footer, "@" + state.username),
-                style = ElementTheme.typography.fontBodyMdRegular,
-                color = ElementTheme.colors.textSecondary,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            TextButton(
-                text = stringResource(R.string.nyutag_signup_username_edit),
-                size = ButtonSize.Small,
-                onClick = { state.eventSink(InviteSignUpEvent.EditUsername) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun PasswordStep(state: InviteSignUpState, onDone: () -> Unit) {
-    StepHeader(
-        icon = CompoundIcons.LockSolid(),
-        title = stringResource(R.string.nyutag_signup_password_title),
-        subtitle = stringResource(R.string.nyutag_signup_password_subtitle),
-    )
-    var visible by remember { mutableStateOf(false) }
-    if (state.isBusy) visible = false
-    val transformation = if (visible) VisualTransformation.None else PasswordVisualTransformation()
-    val repeatFocus = remember { FocusRequester() }
-    var password by textFieldState(stateValue = state.form.password)
-    TextField(
-        label = stringResource(R.string.nyutag_invite_password_label),
-        value = password,
-        enabled = !state.isBusy,
-        onValueChange = {
-            password = it.oneLine()
-            state.eventSink(InviteSignUpEvent.SetPassword(password))
-        },
-        visualTransformation = transformation,
-        trailingIcon = { PasswordVisibilityToggle(visible = visible, onToggle = { visible = !visible }) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
-        keyboardActions = KeyboardActions(onNext = { runCatching { repeatFocus.requestFocus() } }),
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(rememberAutoFocus())
-            .bringIntoViewOnImeVisible()
-            .semantics { contentType = ContentType.NewPassword },
-    )
-    Spacer(Modifier.height(16.dp))
-    var passwordRepeat by textFieldState(stateValue = state.form.passwordRepeat)
-    val errorText = state.error?.let { stringResource(inviteErrorRes(it)) }
-        ?: stringResource(R.string.nyutag_signup_password_mismatch).takeIf { state.showsPasswordMismatch }
-    TextField(
-        label = stringResource(R.string.nyutag_signup_password_repeat),
-        value = passwordRepeat,
-        enabled = !state.isBusy,
-        onValueChange = {
-            passwordRepeat = it.oneLine()
-            state.eventSink(InviteSignUpEvent.SetPasswordRepeat(passwordRepeat))
-        },
-        visualTransformation = transformation,
-        supportingText = errorText,
-        validity = if (errorText != null) TextFieldValidity.Invalid else TextFieldValidity.None,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
-        singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(repeatFocus)
-            .bringIntoViewOnImeVisible()
-            .semantics { contentType = ContentType.NewPassword },
-    )
-}
-
-@Composable
-private fun ErrorText(error: Throwable) {
-    Text(
-        text = stringResource(inviteErrorRes(error)),
-        style = ElementTheme.typography.fontBodyMdRegular,
-        color = ElementTheme.colors.textCriticalPrimary,
-        textAlign = TextAlign.Center,
-    )
 }
 
 private fun String.oneLine(): String = filterNot { it == '\n' || it == '\r' }
@@ -636,51 +563,62 @@ private fun inviteErrorRes(error: Throwable): Int = when ((error as? NyutagInvit
 }
 
 internal class InviteSignUpStateProvider : PreviewParameterProvider<InviteSignUpState> {
-    private val allSteps = listOf(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Phone, SignUpStep.Name, SignUpStep.Password)
     private val code = "7KQ2-M9XA"
-    override val values = sequenceOf(
-        aState(SignUpStep.Code),
-        aState(SignUpStep.Code, InviteSignUpForm(code = code), isCodeValid = true, inviter = "@dorzho:nyutag.chat"),
-        aState(SignUpStep.Code, InviteSignUpForm(code = code), error = NyutagInviteException(NyutagInviteException.CODE_USED, "")),
-        aState(SignUpStep.Contact, InviteSignUpForm(code = code, contact = "+7 900 000-00-00")),
+
+    override val values: Sequence<InviteSignUpState> = sequenceOf(
+        aState(),
+        aState(InviteSignUpForm(displayName = "Доржо Цыренов", phone = "+7 900 000-00-00", contact = "dorzho@example.com", password = "12345678")),
         aState(
-            SignUpStep.Contact,
-            InviteSignUpForm(code = code, contact = "+7 900 000-00-00", verifyCode = "123"),
-            verification = NyutagVerification("sid", 60),
-            resendIn = 42,
+            InviteSignUpForm(code = code, displayName = "Доржо"),
+            showsCode = true,
+            isCodeValid = true,
+            inviter = "@dorzho:nyutag.chat",
         ),
-        aState(SignUpStep.Phone, InviteSignUpForm(code = code, phone = "+7 900 000-00-00")),
-        aState(SignUpStep.Name, InviteSignUpForm(code = code, displayName = "Доржо Цыренов")),
         aState(
-            SignUpStep.Name,
-            InviteSignUpForm(code = code, displayName = "Доржо", username = "dorzho", isEditingUsername = true),
+            InviteSignUpForm(code = code),
+            showsCode = true,
+            error = NyutagInviteException(NyutagInviteException.CODE_USED, ""),
+            errorField = SignUpField.Code,
+        ),
+        aState(
+            InviteSignUpForm(displayName = "Доржо", username = "dorzho", isEditingUsername = true),
             error = NyutagInviteException(NyutagInviteException.USER_IN_USE, ""),
+            errorField = SignUpField.Username,
         ),
-        aState(SignUpStep.Password, InviteSignUpForm(code = code, displayName = "Доржо", password = "12345678", passwordRepeat = "12345679")),
-        aState(SignUpStep.Password, InviteSignUpForm(code = code, displayName = "Доржо", password = "12345678", passwordRepeat = "12345678"), isBusy = true),
+        aState(
+            InviteSignUpForm(displayName = "Доржо", contact = "dorzho@example.com", password = "12345678"),
+            step = SignUpStep.Verify,
+            verification = NyutagVerification("sid", 60),
+            resendInSeconds = 42,
+        ),
+        aState(InviteSignUpForm(displayName = "Доржо", contact = "dorzho@example.com", password = "12345678"), isBusy = true),
     )
 
     private fun aState(
-        step: SignUpStep,
         form: InviteSignUpForm = InviteSignUpForm(),
+        step: SignUpStep = SignUpStep.Form,
+        showsCode: Boolean = false,
         isCodeValid: Boolean = false,
         inviter: String? = null,
         verification: NyutagVerification? = null,
-        resendIn: Int = 0,
+        resendInSeconds: Int = 0,
         isBusy: Boolean = false,
         error: Throwable? = null,
+        errorField: SignUpField? = null,
     ) = InviteSignUpState(
-        steps = allSteps,
         step = step,
         form = form,
+        showsCode = showsCode,
         isCodeValid = isCodeValid,
         inviter = inviter,
-        availableMedia = NyutagContactMedium.entries,
-        canSkipContact = false,
+        showsPhone = true,
+        contactMedium = NyutagContactMedium.Email,
+        isContactOptional = false,
         verification = verification,
-        resendInSeconds = resendIn,
+        resendInSeconds = resendInSeconds,
         isBusy = isBusy,
         error = error,
+        errorField = errorField,
         eventSink = {},
     )
 }

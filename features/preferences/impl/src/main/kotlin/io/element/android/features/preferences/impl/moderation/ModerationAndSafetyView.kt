@@ -64,7 +64,7 @@ fun ModerationAndSafetyView(
         }
     ) {
         PresenceSection(state)
-        InvitesSection(state)
+        // Нютаг: «Скрывать аватары в приглашениях» лишнее — InvitesSection не показываем.
         MediaSection(state)
         if (state.showBlockedUsersItem) {
             BlockedUsersSection(

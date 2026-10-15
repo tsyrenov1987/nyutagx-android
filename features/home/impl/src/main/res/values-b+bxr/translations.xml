@@ -39,7 +39,7 @@
     <string name="screen_invites_decline_direct_chat_title">Чатһаа арсаха</string>
     <string name="screen_invites_empty_list">Урилга үгы</string>
     <string name="screen_invites_invited_you">%1$s (%2$s) таниие уриба</string>
-    <string name="screen_migration_message">Энэ ганса удаа хэгдэдэг, хүлеэһэндэтнай баярлалаа.</string>
+    <string name="screen_migration_message">Энэ ганса удаа хэгдэдэг, хүлеэһэндэтнай һайн даа.</string>
     <string name="screen_migration_title">Таны аккаунт тохируулагдажа байна.</string>
     <string name="screen_roomlist_clear_filters">Шүүлтүүрнүүдые сэбэрлэхэ</string>
     <string name="screen_roomlist_filter_favourites_empty_state_subtitle">Чатые дуратай руугаа чатай тохируулгануудта нэмэжэ болохот.\nМүнөө ондоо чатнуудаа харахын тула шүүлтүүрнүүдые болюулжа болохот</string>

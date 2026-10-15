@@ -6,7 +6,7 @@
     <string name="screen_signout_confirmation_dialog_submit">Хаһаха</string>
     <string name="screen_signout_key_backup_disabled_subtitle">Энэ таны ганса түхеэрэлгэ. Хаһабал, дараагай удаа орохо үедөө цифровой танилтаа баталжа, шифрлэгдэһэн чатнуудаа сэргээхын тула сэргээхэ түлхюур хэрэгтэй болохо.</string>
     <string name="screen_signout_key_backup_disabled_title">Шифрлэгдэһэн чатнуудтаа хандалгаа алдахат</string>
-    <string name="screen_signout_key_backup_offline_subtitle">Таныень сүлжээнһээ гарахада түлхюурнүүд нөөсэлэгдэһээр байгаа. Энэ түхеэрэлгые хаһахынгаа урда түлхюурнүүд нөөсэлэгдэхын тула дахин холбогдогты.</string>
+    <string name="screen_signout_key_backup_offline_subtitle">Сүлжээнһээ гараһан үедэтнай түлхюурнүүд нөөсэлэгдэһээр байгаа. Энэ түхеэрэлгые хаһахынгаа урда түлхюурнүүд нөөсэлэгдэхын тула дахин холбогдогты.</string>
     <string name="screen_signout_key_backup_offline_title">Түлхюурнүүд үшөө нөөсэлэгдэжэ байна</string>
     <string name="screen_signout_key_backup_ongoing_subtitle">Энэ түхеэрэлгые хаһахынгаа урда дүүрэтэр хүлеэгты.</string>
     <string name="screen_signout_key_backup_ongoing_title">Түлхюурнүүд үшөө нөөсэлэгдэжэ байна</string>

@@ -1,5 +1,5 @@
 /*
- * Нютаг — регистрация по шагам.
+ * Нютаг — регистрация в одну форму.
  *
  * SPDX-License-Identifier: AGPL-3.0-only
  */
@@ -36,157 +36,59 @@ class InviteSignUpPresenterTest {
 
     private val code = "7KQ2-M9XA"
 
+    /** Как на сервере сейчас: без кода, почта с кодом из письма и телефон без SMS обязательны. */
+    private val production = NyutagSignUpConfig(
+        requireInvite = false,
+        requireContact = true,
+        emailAvailable = true,
+        phoneAvailable = false,
+        requireEmail = true,
+        requirePhone = true,
+        phoneUnverified = true,
+    )
+
     @Test
-    fun `present - without contact channels there are three steps`() = runTest {
-        createPresenter().test {
-            val state = awaitState { it.steps.size == 3 }
-            assertThat(state.steps).containsExactly(SignUpStep.Code, SignUpStep.Name, SignUpStep.Password).inOrder()
-            assertThat(state.step).isEqualTo(SignUpStep.Code)
-            assertThat(state.stepNumber).isEqualTo(1)
+    fun `present - the form shows only the fields the server asks for`() = runTest {
+        createPresenter(invites = FakeNyutagInvites(config = Result.success(production))).test {
+            val state = awaitState { it.contactMedium != null }
+            assertThat(state.step).isEqualTo(SignUpStep.Form)
+            assertThat(state.showsCode).isFalse()
+            assertThat(state.showsPhone).isTrue()
+            assertThat(state.contactMedium).isEqualTo(NyutagContactMedium.Email)
+            assertThat(state.isContactOptional).isFalse()
             assertThat(state.canContinue).isFalse()
             cancelAndIgnoreRemainingEvents()
         }
-    }
-
-    @Test
-    fun `present - without required invite the code step is skipped unless the code came from a link`() = runTest {
-        val config = NyutagSignUpConfig(requireInvite = false, requireContact = false, emailAvailable = false, phoneAvailable = false)
-        createPresenter(invites = FakeNyutagInvites(config = Result.success(config))).test {
-            val state = awaitState { it.steps.size == 2 }
-            assertThat(state.steps).containsExactly(SignUpStep.Name, SignUpStep.Password).inOrder()
-            assertThat(state.step).isEqualTo(SignUpStep.Name)
-            cancelAndIgnoreRemainingEvents()
-        }
-        createPresenter(invites = FakeNyutagInvites(config = Result.success(config)), initialCode = code).test {
-            val state = awaitState { it.isCodeValid }
-            assertThat(state.steps.first()).isEqualTo(SignUpStep.Code)
-            assertThat(state.step).isEqualTo(SignUpStep.Code)
+        val bare = NyutagSignUpConfig(requireInvite = false, requireContact = false, emailAvailable = false, phoneAvailable = false)
+        createPresenter(invites = FakeNyutagInvites(config = Result.success(bare))).test {
+            val state = awaitState { !it.showsCode }
+            assertThat(state.showsPhone).isFalse()
+            assertThat(state.contactMedium).isNull()
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `present - full code is checked automatically and shows the inviter`() = runTest {
+    fun `present - the code field appears when the server requires an invitation or the code came from a link`() = runTest {
         createPresenter().test {
-            awaitItem().eventSink(InviteSignUpEvent.SetCode(code))
-            val checked = awaitState { it.isCodeValid }
-            assertThat(checked.inviter).isEqualTo("@bob:nyutag.chat")
-            assertThat(checked.step).isEqualTo(SignUpStep.Code)
-            checked.eventSink(InviteSignUpEvent.Next)
-            assertThat(awaitState { it.step == SignUpStep.Name }.error).isNull()
+            val state = awaitState { it.showsCode }
+            assertThat(state.showsCode).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+        val bare = NyutagSignUpConfig(requireInvite = false, requireContact = false, emailAvailable = false, phoneAvailable = false)
+        createPresenter(invites = FakeNyutagInvites(config = Result.success(bare)), initialCode = code).test {
+            val state = awaitState { it.isCodeValid }
+            assertThat(state.showsCode).isTrue()
+            assertThat(state.form.code).isEqualTo(code)
+            assertThat(state.inviter).isEqualTo("@bob:nyutag.chat")
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `present - code accepts lowercase and look-alike Cyrillic letters`() = runTest {
+    fun `present - full code is checked automatically and accepts look-alike Cyrillic letters`() = runTest {
         createPresenter().test {
             awaitItem().eventSink(InviteSignUpEvent.SetCode("7кq2 м9ха"))
-            assertThat(awaitState { it.form.code.isNotEmpty() }.form.code).isEqualTo(code)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `present - unknown code shows an error and does not advance`() = runTest {
-        val invites = FakeNyutagInvites(checkInviteResult = Result.failure(NyutagInviteException(NyutagInviteException.UNKNOWN_CODE, "")))
-        createPresenter(invites = invites).test {
-            awaitItem().eventSink(InviteSignUpEvent.SetCode(code))
-            val failed = awaitState { it.error != null && !it.isBusy }
-            assertThat((failed.error as NyutagInviteException).errcode).isEqualTo(NyutagInviteException.UNKNOWN_CODE)
-            assertThat(failed.isCodeValid).isFalse()
-            failed.eventSink(InviteSignUpEvent.Next)
-            val again = awaitState { it.error != null && !it.isBusy }
-            assertThat(again.step).isEqualTo(SignUpStep.Code)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `present - contact step sends a code and checks it automatically`() = runTest {
-        val invites = FakeNyutagInvites(config = Result.success(NyutagSignUpConfig(true, true, emailAvailable = true, phoneAvailable = true)))
-        createPresenter(invites = invites).test {
-            awaitState { it.steps.size == 4 }.eventSink(InviteSignUpEvent.SetCode(code))
-            awaitState { it.isCodeValid }.eventSink(InviteSignUpEvent.Next)
-            val contact = awaitState { it.step == SignUpStep.Contact }
-            assertThat(contact.canSkipContact).isFalse()
-            assertThat(contact.availableMedia).hasSize(2)
-            contact.eventSink(InviteSignUpEvent.SetContact("+79000000000"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            val sent = awaitState { it.verification != null }
-            assertThat(sent.resendInSeconds).isEqualTo(60)
-            sent.eventSink(InviteSignUpEvent.SetVerifyCode("12-34-56"))
-            assertThat(awaitState { it.step == SignUpStep.Name }.form.verifyCode).isEqualTo("123456")
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `present - email and phone are both required, phone without SMS goes on its own step`() = runTest {
-        val config = NyutagSignUpConfig(
-            requireInvite = true,
-            requireContact = true,
-            emailAvailable = true,
-            phoneAvailable = false,
-            requireEmail = true,
-            requirePhone = true,
-            phoneUnverified = true,
-        )
-        val invites = FakeNyutagInvites(config = Result.success(config), checkPhoneResult = Result.success("+79001234567"))
-        createPresenter(invites = invites, appScope = this).test {
-            val first = awaitState { it.steps.size == 5 }
-            assertThat(first.steps).containsExactly(SignUpStep.Code, SignUpStep.Contact, SignUpStep.Phone, SignUpStep.Name, SignUpStep.Password).inOrder()
-            first.eventSink(InviteSignUpEvent.SetCode(code))
-            awaitState { it.isCodeValid }.eventSink(InviteSignUpEvent.Next)
-            val contact = awaitState { it.step == SignUpStep.Contact }
-            // Почта обязательна: пропустить нельзя, и телефона среди способов нет — у него свой шаг.
-            assertThat(contact.canSkipContact).isFalse()
-            assertThat(contact.availableMedia).containsExactly(NyutagContactMedium.Email)
-            contact.eventSink(InviteSignUpEvent.SetContact("dorzho@example.com"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            awaitState { it.verification != null }.eventSink(InviteSignUpEvent.SetVerifyCode("123456"))
-            val phone = awaitState { it.step == SignUpStep.Phone }
-            assertThat(phone.canContinue).isFalse()
-            phone.eventSink(InviteSignUpEvent.SetPhone("8 900 123"))
-            assertThat(awaitState { it.form.phone == "8 900 123" }.canContinue).isFalse()
-            phone.eventSink(InviteSignUpEvent.SetPhone("8 900 123-45-67"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            awaitState { it.step == SignUpStep.Name }.eventSink(InviteSignUpEvent.SetDisplayName("Доржо"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            val password = awaitState { it.step == SignUpStep.Password }
-            password.eventSink(InviteSignUpEvent.SetPassword("password1"))
-            password.eventSink(InviteSignUpEvent.SetPasswordRepeat("password1"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            awaitState { it.isBusy }
-            assertThat(awaitState { !it.isBusy }.error).isNull()
-            assertThat(invites.registeredSid).isEqualTo("sid")
-            assertThat(invites.registeredPhone).isEqualTo("+79001234567")
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `present - taken phone shows an error and stays on the phone step`() = runTest {
-        val config = NyutagSignUpConfig(true, false, false, false, requirePhone = true, phoneUnverified = true)
-        val invites = FakeNyutagInvites(
-            config = Result.success(config),
-            checkPhoneResult = Result.failure(NyutagInviteException(NyutagInviteException.CONTACT_IN_USE, "")),
-        )
-        createPresenter(invites = invites).test {
-            awaitState { it.steps.size == 4 }.eventSink(InviteSignUpEvent.SetCode(code))
-            awaitState { it.isCodeValid }.eventSink(InviteSignUpEvent.Next)
-            awaitState { it.step == SignUpStep.Phone }.eventSink(InviteSignUpEvent.SetPhone("+79001234567"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-            val failed = awaitState { it.error != null && !it.isBusy }
-            assertThat((failed.error as NyutagInviteException).errcode).isEqualTo(NyutagInviteException.CONTACT_IN_USE)
-            assertThat(failed.step).isEqualTo(SignUpStep.Phone)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `present - code from an invitation link is filled in and checked`() = runTest {
-        createPresenter(initialCode = "7kq2m9xa").test {
             val checked = awaitState { it.isCodeValid }
             assertThat(checked.form.code).isEqualTo(code)
             assertThat(checked.inviter).isEqualTo("@bob:nyutag.chat")
@@ -195,48 +97,132 @@ class InviteSignUpPresenterTest {
     }
 
     @Test
-    fun `present - username comes from the name and a taken one can be edited`() = runTest {
-        val invites = FakeNyutagInvites(checkUsernameResult = Result.failure(NyutagInviteException(NyutagInviteException.USER_IN_USE, "")))
+    fun `present - unknown code shows an error under the code field`() = runTest {
+        val invites = FakeNyutagInvites(checkInviteResult = Result.failure(NyutagInviteException(NyutagInviteException.UNKNOWN_CODE, "")))
         createPresenter(invites = invites).test {
-            val name = goToName()
-            name.eventSink(InviteSignUpEvent.SetDisplayName("Доржо Цыренов"))
-            val typed = awaitState { it.form.displayName.isNotEmpty() }
-            assertThat(typed.username).isEqualTo("dorzho.tsyrenov")
-            typed.eventSink(InviteSignUpEvent.Next)
-            val taken = awaitState { it.error != null && !it.isBusy }
-            assertThat(invites.checkedUsernames).containsExactly("dorzho.tsyrenov")
-            assertThat(taken.form.isEditingUsername).isTrue()
-            assertThat(taken.form.username).isEqualTo("dorzho.tsyrenov")
-            assertThat(taken.step).isEqualTo(SignUpStep.Name)
-            invites.checkUsernameResult = Result.success(Unit)
-            taken.eventSink(InviteSignUpEvent.SetUsername("Dorzho_88"))
-            awaitState { it.form.username == "Dorzho_88" }.eventSink(InviteSignUpEvent.Next)
-            awaitState { it.step == SignUpStep.Password }
-            assertThat(invites.checkedUsernames.last()).isEqualTo("dorzho_88")
+            awaitItem().eventSink(InviteSignUpEvent.SetCode(code))
+            val failed = awaitState { it.error != null && !it.isBusy }
+            assertThat((failed.error as NyutagInviteException).errcode).isEqualTo(NyutagInviteException.UNKNOWN_CODE)
+            assertThat(failed.errorField).isEqualTo(SignUpField.Code)
+            assertThat(failed.isCodeValid).isFalse()
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `present - passwords must match before the account is created`() = runTest {
+    fun `present - username comes from the name and a taken one can be edited`() = runTest {
+        val invites = FakeNyutagInvites(checkUsernameResult = Result.failure(NyutagInviteException(NyutagInviteException.USER_IN_USE, "")))
+        createPresenter(invites = invites).test {
+            val form = fillForm()
+            assertThat(form.username).isEqualTo("dorzho.tsyrenov")
+            form.eventSink(InviteSignUpEvent.Next)
+            val taken = awaitState { it.error != null && !it.isBusy }
+            assertThat(invites.checkedUsernames).containsExactly("dorzho.tsyrenov")
+            assertThat(taken.errorField).isEqualTo(SignUpField.Username)
+            assertThat(taken.form.isEditingUsername).isTrue()
+            assertThat(taken.form.username).isEqualTo("dorzho.tsyrenov")
+            assertThat(taken.step).isEqualTo(SignUpStep.Form)
+            invites.checkUsernameResult = Result.success(Unit)
+            taken.eventSink(InviteSignUpEvent.SetUsername("Dorzho_88"))
+            awaitState { it.form.username == "Dorzho_88" && it.canContinue }.eventSink(InviteSignUpEvent.Next)
+            awaitState { it.isBusy }
+            assertThat(awaitState { !it.isBusy }.error).isNull()
+            assertThat(invites.checkedUsernames.last()).isEqualTo("dorzho_88")
+            assertThat(invites.registeredUsername).isEqualTo("dorzho_88")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - email and phone are both required, the code from the email comes after the form`() = runTest {
+        val invites = FakeNyutagInvites(config = Result.success(production), checkPhoneResult = Result.success("+79001234567"))
+        createPresenter(invites = invites, appScope = this).test {
+            val state = awaitState { it.contactMedium != null }
+            state.eventSink(InviteSignUpEvent.SetDisplayName("Доржо"))
+            state.eventSink(InviteSignUpEvent.SetPhone("8 900 123"))
+            state.eventSink(InviteSignUpEvent.SetContact("dorzho@example.com"))
+            state.eventSink(InviteSignUpEvent.SetPassword("password1"))
+            // Телефон слишком короткий — кнопка не активна.
+            assertThat(awaitState { it.form.password == "password1" }.canContinue).isFalse()
+            state.eventSink(InviteSignUpEvent.SetPhone("8 900 123-45-67"))
+            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
+            val verify = awaitState { it.step == SignUpStep.Verify }
+            assertThat(verify.verification).isNotNull()
+            assertThat(verify.resendInSeconds).isEqualTo(60)
+            assertThat(verify.canContinue).isFalse()
+            assertThat(invites.registeredUsername).isNull()
+            // Код введён целиком — проверяется и регистрирует сам.
+            verify.eventSink(InviteSignUpEvent.SetVerifyCode("12-34-56"))
+            awaitState { it.isBusy }
+            assertThat(awaitState { !it.isBusy }.error).isNull()
+            assertThat(invites.registeredSid).isEqualTo("sid")
+            assertThat(invites.registeredPhone).isEqualTo("+79001234567")
+            assertThat(invites.registeredUsername).isEqualTo("dorzho")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - taken phone shows an error under the phone field and stays on the form`() = runTest {
+        val invites = FakeNyutagInvites(
+            config = Result.success(production),
+            checkPhoneResult = Result.failure(NyutagInviteException(NyutagInviteException.CONTACT_IN_USE, "")),
+        )
+        createPresenter(invites = invites).test {
+            val state = awaitState { it.contactMedium != null }
+            state.eventSink(InviteSignUpEvent.SetDisplayName("Доржо"))
+            state.eventSink(InviteSignUpEvent.SetPhone("+79001234567"))
+            state.eventSink(InviteSignUpEvent.SetContact("dorzho@example.com"))
+            state.eventSink(InviteSignUpEvent.SetPassword("password1"))
+            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
+            val failed = awaitState { it.error != null && !it.isBusy }
+            assertThat((failed.error as NyutagInviteException).errcode).isEqualTo(NyutagInviteException.CONTACT_IN_USE)
+            assertThat(failed.errorField).isEqualTo(SignUpField.Phone)
+            assertThat(failed.step).isEqualTo(SignUpStep.Form)
+            assertThat(failed.verification).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - wrong email code shows an error and back returns to the form`() = runTest {
+        val invites = FakeNyutagInvites(
+            config = Result.success(production),
+            checkResult = Result.failure(NyutagInviteException(NyutagInviteException.VERIFY_WRONG, "")),
+        )
+        createPresenter(invites = invites).test {
+            val state = awaitState { it.contactMedium != null }
+            state.eventSink(InviteSignUpEvent.SetDisplayName("Доржо"))
+            state.eventSink(InviteSignUpEvent.SetPhone("+79001234567"))
+            state.eventSink(InviteSignUpEvent.SetContact("dorzho@example.com"))
+            state.eventSink(InviteSignUpEvent.SetPassword("password1"))
+            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
+            val verify = awaitState { it.step == SignUpStep.Verify }
+            verify.eventSink(InviteSignUpEvent.SetVerifyCode("000000"))
+            val failed = awaitState { it.error != null && !it.isBusy }
+            assertThat(failed.errorField).isEqualTo(SignUpField.VerifyCode)
+            assertThat(invites.registeredUsername).isNull()
+            failed.eventSink(InviteSignUpEvent.Back)
+            val form = awaitState { it.step == SignUpStep.Form }
+            assertThat(form.form.contact).isEqualTo("dorzho@example.com")
+            assertThat(form.error).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - without contact channels the account is created straight from the form`() = runTest {
         val invites = FakeNyutagInvites()
         val client = FakeMatrixClient()
         // Имя ставится в области приложения уже после входа — даём ей доработать до проверки.
         createPresenter(invites = invites, client = client, appScope = this).test {
-            val password = goToPassword()
-            password.eventSink(InviteSignUpEvent.SetPassword("password1"))
-            password.eventSink(InviteSignUpEvent.SetPasswordRepeat("password2"))
-            val mismatch = awaitState { it.form.passwordRepeat == "password2" }
-            assertThat(mismatch.showsPasswordMismatch).isTrue()
-            assertThat(mismatch.canContinue).isFalse()
-            mismatch.eventSink(InviteSignUpEvent.SetPasswordRepeat("password1"))
-            val ready = awaitState { it.canContinue }
-            assertThat(ready.showsPasswordMismatch).isFalse()
-            ready.eventSink(InviteSignUpEvent.Next)
+            fillForm().eventSink(InviteSignUpEvent.Next)
             awaitState { it.isBusy }
             val done = awaitState { !it.isBusy }
             assertThat(done.error).isNull()
-            assertThat(invites.registeredUsername).isEqualTo("dorzho")
+            assertThat(done.step).isEqualTo(SignUpStep.Form)
+            assertThat(invites.registeredUsername).isEqualTo("dorzho.tsyrenov")
+            assertThat(invites.registeredSid).isNull()
             cancelAndIgnoreRemainingEvents()
         }
         advanceUntilIdle()
@@ -244,16 +230,26 @@ class InviteSignUpPresenterTest {
     }
 
     @Test
+    fun `present - a short password keeps the button disabled`() = runTest {
+        createPresenter().test {
+            val form = fillForm()
+            form.eventSink(InviteSignUpEvent.SetPassword("1234567"))
+            assertThat(awaitState { it.form.password == "1234567" }.canContinue).isFalse()
+            form.eventSink(InviteSignUpEvent.SetPassword("12345678"))
+            assertThat(awaitState { it.form.password == "12345678" }.canContinue).isTrue()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - failed sign-in after registration is retried without registering again`() = runTest {
         val invites = FakeNyutagInvites()
         val authenticationService = anAuthenticationService().apply { givenLoginError(IllegalStateException("offline")) }
         createPresenter(invites = invites, authenticationService = authenticationService, appScope = backgroundScope).test {
-            val password = goToPassword()
-            password.eventSink(InviteSignUpEvent.SetPassword("password1"))
-            password.eventSink(InviteSignUpEvent.SetPasswordRepeat("password1"))
-            awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
+            fillForm().eventSink(InviteSignUpEvent.Next)
             val failed = awaitState { it.error != null && !it.isBusy }
             assertThat((failed.error as NyutagInviteException).errcode).isEqualTo(InviteSignUpPresenter.LOGIN_AFTER_REGISTER)
+            assertThat(failed.errorField).isEqualTo(SignUpField.Password)
             // Повторная регистрация упала бы с этой ошибкой — значит, её нет.
             invites.registerResult = Result.failure(NyutagInviteException(NyutagInviteException.USER_IN_USE, ""))
             authenticationService.givenLoginError(null)
@@ -264,28 +260,13 @@ class InviteSignUpPresenterTest {
         }
     }
 
-    @Test
-    fun `present - back returns to the previous step`() = runTest {
-        createPresenter().test {
-            val name = goToName()
-            name.eventSink(InviteSignUpEvent.Back)
-            val code = awaitState { it.step == SignUpStep.Code }
-            assertThat(code.form.code).isEqualTo(this@InviteSignUpPresenterTest.code)
-            assertThat(code.isCodeValid).isTrue()
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    private suspend fun TurbineTestContext<InviteSignUpState>.goToName(): InviteSignUpState {
+    /** Конфигурация по умолчанию (код обязателен, контактов нет): код, имя и пароль — кнопка активна. */
+    private suspend fun TurbineTestContext<InviteSignUpState>.fillForm(): InviteSignUpState {
         awaitItem().eventSink(InviteSignUpEvent.SetCode(code))
-        awaitState { it.isCodeValid }.eventSink(InviteSignUpEvent.Next)
-        return awaitState { it.step == SignUpStep.Name }
-    }
-
-    private suspend fun TurbineTestContext<InviteSignUpState>.goToPassword(): InviteSignUpState {
-        goToName().eventSink(InviteSignUpEvent.SetDisplayName("Доржо"))
-        awaitState { it.canContinue }.eventSink(InviteSignUpEvent.Next)
-        return awaitState { it.step == SignUpStep.Password }
+        val checked = awaitState { it.isCodeValid }
+        checked.eventSink(InviteSignUpEvent.SetDisplayName("Доржо Цыренов"))
+        checked.eventSink(InviteSignUpEvent.SetPassword("password1"))
+        return awaitState { it.canContinue }
     }
 
     private suspend fun TurbineTestContext<InviteSignUpState>.awaitState(predicate: (InviteSignUpState) -> Boolean): InviteSignUpState {

@@ -26,7 +26,7 @@
         <item quantity="other">%1$d градус</item>
     </plurals>
     <string name="screen_image_edition_title">Фото заһаха</string>
-    <string name="screen_media_upload_preview_caption_warning">Хуушан аппликаци хэрэглэдэг хүнүүдтэ гарсагууд харагдахагүй байжа магад.</string>
+    <string name="screen_media_upload_preview_caption_warning">Хуушан аппликаци хэрэглэдэг хүнүүдтэ тайлбаринууд харагдахагүй байжа магад.</string>
     <string name="screen_media_upload_preview_change_video_quality_prompt">Видео ашаалха шанар һэлгэхын тула дарагты</string>
     <string name="screen_media_upload_preview_error_could_not_be_uploaded">Файл ашаалагдажа шадабагүй.</string>
     <string name="screen_media_upload_preview_error_failed_processing">Ашаалха медиа боловсруулжа шадабагүй, дахин оролдогты.</string>
@@ -84,7 +84,7 @@
     </plurals>
     <string name="screen_room_timeline_tombstoned_room_action">Шэнэ бүлэг руу ороха</string>
     <string name="screen_room_timeline_tombstoned_room_message">Энэ бүлэг һэлгэгдэжэ, ажаллахаа болёо</string>
-    <string name="screen_room_timeline_upgraded_room_action">Хуушан бэшэгүүдые харах</string>
+    <string name="screen_room_timeline_upgraded_room_action">Хуушан бэшэгүүдые хараха</string>
     <string name="screen_room_timeline_upgraded_room_message">Энэ бүлэг ондоо бүлэгэй үргэлжэлэл гээшэ</string>
     <plurals name="screen_room_typing_many_members">
         <item quantity="other">%1$s, %2$s болон бусад %3$d</item>

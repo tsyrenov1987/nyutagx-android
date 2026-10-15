@@ -119,12 +119,7 @@ fun PreferencesRootView(
                     },
                 matrixUser = state.myUser,
             )
-            if (state.userStatusState != null) {
-                UserStatusSection(
-                    userStatusState = state.userStatusState,
-                    emojiPickerRenderer = emojiPickerRenderer,
-                )
-            }
+            // Нютаг: статус «Как у Вас дела?» не показываем — лишний пункт для простого мессенджера.
             if (state.isMultiAccountEnabled) {
                 MultiAccountSection(
                     state = state,
@@ -145,6 +140,14 @@ fun PreferencesRootView(
                 thickness = 8.dp,
                 color = ElementTheme.colors.bgSubtleSecondary,
             )
+            // Нютаг: сначала настройки приложения, аккаунт с выходом и удалением — ниже.
+            // 'App settings' section
+            AppSettingsSection(
+                state = state,
+                onOpenLockScreenSettings = onOpenLockScreenSettings,
+                onOpenMediaSettings = onOpenMediaSettings,
+                onOpenLocationSettings = onOpenLocationSettings,
+            )
             // Account settings section
             PreferencesAccountView(
                 state = state.preferencesAccountState,
@@ -156,13 +159,6 @@ fun PreferencesRootView(
                 onOpenNotificationSettings = onOpenNotificationSettings,
                 onSignOutClick = onSignOutClick,
                 onDeactivateClick = onDeactivateClick,
-            )
-            // 'App settings' section
-            AppSettingsSection(
-                state = state,
-                onOpenLockScreenSettings = onOpenLockScreenSettings,
-                onOpenMediaSettings = onOpenMediaSettings,
-                onOpenLocationSettings = onOpenLocationSettings,
             )
             // General section
             GeneralSection(

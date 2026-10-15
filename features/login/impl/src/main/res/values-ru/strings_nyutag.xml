@@ -63,4 +63,7 @@
     <string name="nyutag_signup_phone_subtitle">По этому номеру вас найдут знакомые в Нютаге. Сам номер никто не увидит.</string>
     <string name="nyutag_signup_error_email_required">Подтвердите e-mail кодом из письма.</string>
     <string name="nyutag_signup_error_phone_required">Укажите номер телефона.</string>
+    <string name="nyutag_signup_form_subtitle">Заполните несколько полей — и вы в Нютаге.</string>
+    <string name="nyutag_signup_verify_subtitle">Мы отправили код на %1$s. Введите его здесь.</string>
+    <string name="nyutag_signup_optional">(необязательно)</string>
 </resources>

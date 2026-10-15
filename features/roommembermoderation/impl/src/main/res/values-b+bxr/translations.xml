@@ -11,7 +11,7 @@
     <string name="screen_bottom_sheet_manage_room_member_kick_member_confirmation_description">Тэдэ урилга абаа һаа, энэ бүлэгтэ дахин орожо шадаха.</string>
     <string name="screen_bottom_sheet_manage_room_member_kick_member_confirmation_title">Энэ гэшүүниие хаһахадаа итгэлтэй гүт?</string>
     <string name="screen_bottom_sheet_manage_room_member_kick_member_from_space_confirmation_description">Энэ хүн урилга абаа һаа, энэ оршондо дахин орожо шадаха, бүлэгүүд болон доодо оршонуудта гэшүүн хэбээрээ үлэхэ.</string>
-    <string name="screen_bottom_sheet_manage_room_member_member_user_info">Профиль харах</string>
+    <string name="screen_bottom_sheet_manage_room_member_member_user_info">Профиль хараха</string>
     <string name="screen_bottom_sheet_manage_room_member_remove">Хэрэглэгшые хаһаха</string>
     <string name="screen_bottom_sheet_manage_room_member_remove_confirmation_title">Гэшүүниие хаһажа, саашадаа орохыень хориглохо гү?</string>
     <string name="screen_bottom_sheet_manage_room_member_removing_user">%1$s хаһажа байна…</string>

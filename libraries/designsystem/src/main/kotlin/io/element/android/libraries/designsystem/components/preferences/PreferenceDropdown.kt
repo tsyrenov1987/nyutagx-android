@@ -92,7 +92,7 @@ fun <T : DropdownOption> PreferenceDropdown(
                     expanded = isDropdownExpanded,
                     onExpandedChange = { isDropdownExpanded = it },
                     enabled = enabled,
-                    modifier = Modifier.fillMaxSize(0.3f),
+                    modifier = Modifier.fillMaxSize(0.45f), // Нютаг: «Как в системе» не влезало в 30 %
                 )
             }
         ),

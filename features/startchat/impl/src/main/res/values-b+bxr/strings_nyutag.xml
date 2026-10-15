@@ -8,10 +8,10 @@
     <string name="nyutag_by_phone_search">Бэдэрхэ</string>
     <string name="nyutag_by_phone_found">Нютагта бии</string>
     <string name="nyutag_by_phone_write">Бэшэхэ</string>
-    <string name="nyutag_by_phone_not_found_title">Энэ дугаар Нютагта һаял үгы</string>
-    <string name="nyutag_by_phone_not_found_subtitle">Уригты: SMS-ээр али ямар бэ мессенджерээр ссылка эльгээгты, али QR-код харуулагты. Урилга нэгэ удаа хэрэглэгдэхэ, 7 хоног хүсэнтэй.</string>
+    <string name="nyutag_by_phone_not_found_title">Энэ дугаар Нютагта үшөө үгы</string>
+    <string name="nyutag_by_phone_not_found_subtitle">Уригты: SMS-ээр али ямар бэ мессенджерээр холбоос эльгээгты, али QR-код харуулагты. Урилга нэгэ удаа хэрэглэгдэхэ, 7 хоног хүсэнтэй.</string>
     <string name="nyutag_by_phone_invite">Нютаг руу уриха</string>
-    <string name="nyutag_by_phone_qr_hint">Кодые камераар харуулагты: ссылка бүртгэл нээхэ</string>
+    <string name="nyutag_by_phone_qr_hint">Кодые камераар харуулагты: холбоос бүридхэл нээхэ</string>
     <string name="nyutag_by_phone_code">Код: %1$s</string>
     <string name="nyutag_by_phone_sms">SMS</string>
     <string name="nyutag_by_phone_share">Эльгээхэ</string>
@@ -24,6 +24,6 @@
     <string name="nyutag_by_phone_error_limit">Мүнөөдэр хэтэ олон бэдэрбэт. Үглөөдэр оролдогты.</string>
     <string name="nyutag_by_phone_error_invite_limit">Урилгын хизаар: 10 хэрэглэгдээгүй код, хоногто 20.</string>
     <string name="nyutag_by_phone_error_bad_phone">Энэ утаһанай дугаар бэшэ шэнги.</string>
-    <string name="nyutag_by_phone_error_phone_in_use">Энэ дугаар өөр аккаунтда оруулагдаһан.</string>
+    <string name="nyutag_by_phone_error_phone_in_use">Энэ дугаар ондоо аккаунтда оруулагдаһан.</string>
     <string name="nyutag_by_phone_error_generic">Бүтэбэгүй. Һүүлээрнь оролдогты.</string>
 </resources>

@@ -20,7 +20,7 @@
     <string name="common_account_settings">Настройки аккаунта</string>
     <string name="common_app_settings">Настройки приложения</string>
     <string name="common_media_upload_quality">Качество отправки медиа</string>
-    <string name="common_moderation_and_safety">Модерация и безопасность</string>
+    <string name="common_moderation_and_safety">Приватность</string>
     <!-- Поиск по сообщениям -->
     <string name="start_searching_title">Начните поиск…</string>
     <string name="start_searching_subtitle">Ищите чаты и сообщения</string>

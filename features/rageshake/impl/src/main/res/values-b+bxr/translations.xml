@@ -5,10 +5,10 @@
     <string name="screen_bug_report_contact_me">Нэмэлтэ асуудал гарабал, намтай холбоо барижа болоно.</string>
     <string name="screen_bug_report_contact_me_title">Намтай холбоо бариха</string>
     <string name="screen_bug_report_edit_screenshot">Скриншот заһаха</string>
-    <string name="screen_bug_report_editor_description">Асуудалаа бэшэгты. Юу хэбэт? Юу болохо гэжэ хүлеэбэт? Жэнхэнээрээ юу болобо? Аргаараа дэлгэрэнгыгээр бэшэгты.</string>
+    <string name="screen_bug_report_editor_description">Асуудалаа бэшэгты. Юу хэбэт? Юун болохо гэжэ хүлеэбэт? Үнэндөө юун болобо? Аргаараа тодорхойгоор бэшэгты.</string>
     <string name="screen_bug_report_editor_placeholder">Асуудалаа бэшэгты…</string>
     <string name="screen_bug_report_editor_supporting">Болохо һаа, тодорхойлгоо англи хэлээр бэшэгты.</string>
-    <string name="screen_bug_report_error_description_too_short">Тодорхойлго хэтэ богони, юу болоһые дэлгэрэнгыгээр хэлэгты. Баярлалаа!</string>
+    <string name="screen_bug_report_error_description_too_short">Тодорхойлго хэтэ богони, юу болоһые тодорхойгоор хэлэгты. Һайн даа!</string>
     <string name="screen_bug_report_github_issue_description">Холбоотой GitHub асуудал байгаа һаа, тэрэнэй дугаар оруулжа болохот.</string>
     <string name="screen_bug_report_github_issue_label">GitHub асуудал</string>
     <string name="screen_bug_report_include_crash_logs">Алдуунай журнал эльгээхэ</string>
@@ -19,5 +19,5 @@
     <string name="screen_bug_report_rash_logs_alert_title">%1$s һүүлшын удаа хэрэглэгдэхэдээ гэнтэ хаагдаа. Алдуунай мэдүүлэг манда эльгээхэ гү?</string>
     <string name="screen_bug_report_send_notification_settings_description">Мэдээсэлнүүдтэй асуудал бии һаа, мэдээсэлэй push-дүрэмүүдые ашаалха нь шалтагааниие олоходо туһалжа магад. Эдэ дүрэмүүд таны харагдаха нэрэ али мэдээсэлэй түлхюур үгэнүүд гэхэ мэтэ хубиин мэдээн агуулжа магад.</string>
     <string name="screen_bug_report_send_notification_settings_title">Мэдээсэлэй тохируулгануудые эльгээхэ</string>
-    <string name="screen_bug_report_view_logs">Журнал харах</string>
+    <string name="screen_bug_report_view_logs">Журнал хараха</string>
 </resources>

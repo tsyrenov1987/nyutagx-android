@@ -78,8 +78,8 @@
     <string name="dropdown_menu">Унажа гарадаг меню</string>
     <string name="error_a11y_label">Алдуу: буруу</string>
     <string name="error_icon_content_description">Алдуу</string>
-    <string name="exo_controls_cc_disabled_description">Гарсагуудые носоохо</string>
-    <string name="exo_controls_cc_enabled_description">Гарсагуудые унтарааха</string>
+    <string name="exo_controls_cc_disabled_description">Тайлбаринуудые носоохо</string>
+    <string name="exo_controls_cc_enabled_description">Тайлбаринуудые унтарааха</string>
     <string name="exo_controls_fastforward_description">Урагшаа гүйлгэхэ</string>
     <string name="exo_controls_fullscreen_enter_description">Бүтэн дэлгэсэ</string>
     <string name="exo_controls_fullscreen_exit_description">Бүтэн дэлгэсэһээ гараха</string>
@@ -114,7 +114,7 @@
     <string name="exo_track_bitrate">%1$.2f Мбит/с</string>
     <string name="exo_track_mono">Моно</string>
     <string name="exo_track_role_alternate">Ондоо бэшэлгэ</string>
-    <string name="exo_track_role_closed_captions">Гарсагууд</string>
+    <string name="exo_track_role_closed_captions">Тайлбаринууд</string>
     <string name="exo_track_role_commentary">Тайлбари</string>
     <string name="exo_track_role_supplementary">Нэмэлтэ</string>
     <string name="exo_track_selection_auto">Автомат</string>
@@ -138,7 +138,7 @@
     <string name="fingerprint_error_hw_not_available">Хурганай мүрэй сканер хүртэмжэгүй.</string>
     <string name="fingerprint_error_hw_not_present">Энэ түхеэрэлгэдэ хурганай мүрэй сканер үгы</string>
     <string name="fingerprint_error_lockout">Хэтэ олон оролдолго. Һүүлдэ дахин оролдогты.</string>
-    <string name="fingerprint_error_no_fingerprints">Хурганай мүр бүртхэгдээгүй.</string>
+    <string name="fingerprint_error_no_fingerprints">Хурганай мүр бүридхэгдээгүй.</string>
     <string name="fingerprint_error_user_canceled">Хурганай мүрөөр үйлэдэл хэрэглэгшэ болюулба.</string>
     <string name="fingerprint_not_recognized">Танигдабагүй</string>
     <string name="fingerprint_or_screen_lock_prompt_message">Үргэлжэлүүлхын тула хурганай мүр али дэлгэсэй түгжээ хэрэглэгты</string>

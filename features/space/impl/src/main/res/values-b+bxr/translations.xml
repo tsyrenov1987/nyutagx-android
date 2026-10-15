@@ -16,7 +16,7 @@
     <string name="screen_space_add_room_action">Бүлэг</string>
     <string name="screen_space_add_rooms_room_access_description">Бүлэг нэмэхэдэ бүлэгэй хандалга хубилхагүй. Хандалга һэлгэхын тула Бүлэгэй тохируулганууд &gt; Аюулгүй байдал ба нюусал руу орогты.</string>
     <string name="screen_space_empty_state_title">Түрүүшынгээ бүлэгые нэмэгты</string>
-    <string name="screen_space_menu_action_members">Гэшүүдые харах</string>
+    <string name="screen_space_menu_action_members">Гэшүүдые хараха</string>
     <string name="screen_space_remove_rooms_confirmation_content">Бүлэг хаһахада бүлэгэй хандалга хубилхагүй. Хандалга һэлгэхын тула Бүлэгэй мэдээн &gt; Аюулгүй байдал ба нюусал руу орогты.</string>
     <plurals name="screen_space_remove_rooms_confirmation_title">
         <item quantity="other">%2$s-һаа %1$d бүлэг хаһаха</item>

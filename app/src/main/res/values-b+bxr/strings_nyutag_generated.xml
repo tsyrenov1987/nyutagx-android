@@ -7,9 +7,17 @@
     <string name="action_signout_anyway">Тиигэбэшье гараха</string>
     <string name="banner_set_up_recovery_content">Бүхы утаһаа гээбэл, түүнгүйгөөр бэшэлгээ бусаажа шадахагүйт.</string>
     <string name="banner_set_up_recovery_title">Сэргээхэ түлхюурээ хадагалагты</string>
+    <string name="common_advanced_settings">Нэмэлтэ</string>
+    <string name="common_encryption">Сэргээхэ түлхюур</string>
     <string name="common_people">Гэшүүд</string>
     <string name="common_private_space">Хаалттай оршон</string>
     <string name="common_public_space">Нээлттэй оршон</string>
+    <string name="screen_advanced_settings_share_presence">Байһанаа харуулха</string>
+    <string name="screen_advanced_settings_share_presence_description">Хөөрэлдэгшэд таны бэшэжэ байһые, уншаһые харана, та — тэдэнэйхиие.</string>
+    <string name="screen_advanced_settings_show_media_timeline_title">Чат соо фото, видео харуулха</string>
+    <string name="screen_chat_backup_recovery_action_change_description">Сэргээхэ түлхюургүйгөөр бүхы түхеэрэлгэнүүдээ алдабал, бэшэлгэеэ бусааха аргагүй.</string>
+    <string name="screen_chat_backup_recovery_action_confirm_description">Энэ түхеэрэлгэ дээрэ чатнуудайнгаа түүхые харахын тула сэргээхэ түлхюураа оруулагты.</string>
+    <string name="screen_chat_backup_recovery_action_setup_description">Сэргээхэ түлхюургүйгөөр бүхы түхеэрэлгэнүүдээ алдабал, бэшэлгэеэ бусааха аргагүй.</string>
     <string name="screen_create_room_add_people_title">Хүнүүдые уриха</string>
     <string name="screen_create_room_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
     <string name="screen_edit_room_address_room_address_section_footer">Каталог болон урилгада богони холбоос.</string>
@@ -23,6 +31,8 @@
     <string name="screen_knock_requests_list_title">Орохо гуйлтанууд</string>
     <string name="screen_login_form_header">Таны мэдээн</string>
     <string name="screen_login_title_with_homeserver">Нютаг руу орохо</string>
+    <string name="screen_moderation_and_safety_other_users_heading">Бусад хүнүүд</string>
+    <string name="screen_moderation_and_safety_share_presence_heading">Онлайн байдал</string>
     <string name="screen_room_details_invite_people_title">Хүнүүдые уриха</string>
     <string name="screen_room_details_requests_to_join_title">Орохо гуйлтанууд</string>
     <string name="screen_roomlist_empty_message">Нютаг руу урилгаар ороно. Нүхэдөө, түрэлөө уригты.</string>

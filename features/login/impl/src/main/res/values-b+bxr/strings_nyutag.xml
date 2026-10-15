@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Буряад хэлэн. Носитель хэлэнэй шалгалта хэрэгтэй (nyutag-buryat-strings-review.tsv). -->
 <resources>
-    <string name="nyutag_invite_signup_title">Урилгаар бүртхүүлхэ</string>
+    <string name="nyutag_invite_signup_title">Урилгаар бүридхүүлхэ</string>
     <string name="nyutag_invite_signup_subtitle">Нютаг руу зөөхэн урилгаар ороно. Эндэ байһан хүнһөө код гуйгты.</string>
     <string name="nyutag_invite_code_label">Урилгын код</string>
     <string name="nyutag_invite_username_label">Хэрэглэгшын нэрэ</string>
@@ -18,9 +18,9 @@
     <string name="nyutag_invite_error_limit">Хэтэ олон оролдолго. Нэгэ минута хүлеэгээд, дахин оролдогты.</string>
     <string name="nyutag_invite_error_network">Сервертэй холбоо үгы. Дахин оролдогты.</string>
     <string name="nyutag_invite_error_login_after_register">Аккаунт бүтээгдэбэ, харин орожо шадабагүйбди. «Орохо» гэжэ дараад, тэрэ нэрэ, нюуса үгөө оруулагты.</string>
-    <string name="nyutag_invite_error_generic">Аккаунт бүтээжэ шадабагүйб. Һүүлдэ оролдогты.</string>
-    <string name="nyutag_signup_title">Бүртхүүлхэ</string>
-    <string name="nyutag_signup_subtitle">Утасанай дугаараар али e-mail хаягаар бүртхүүлэгты.</string>
+    <string name="nyutag_invite_error_generic">Аккаунт бүтээжэ шадабагүйбди. Һүүлдэ оролдогты.</string>
+    <string name="nyutag_signup_title">Бүридхүүлхэ</string>
+    <string name="nyutag_signup_subtitle">Утаһанай дугаараар али e-mail хаягаар бүридхүүлэгты.</string>
     <string name="nyutag_contact_title">Утаһан али e-mail</string>
     <string name="nyutag_contact_title_optional">Утаһан али e-mail (заабол бэшэ)</string>
     <string name="nyutag_contact_phone">Утаһан</string>
@@ -33,7 +33,7 @@
     <string name="nyutag_contact_send_code">Код абаха</string>
     <string name="nyutag_contact_code_sms">SMS-һээ код</string>
     <string name="nyutag_contact_code_email">Бэшэгһээ код</string>
-    <string name="nyutag_contact_error_bad">Утасанай дугаар али почтын хаягаа шалгагты.</string>
+    <string name="nyutag_contact_error_bad">Утаһанай дугаар али почтын хаягаа шалгагты.</string>
     <string name="nyutag_contact_error_in_use">Энэ дугаар али хаяг аккаунтда холбоотой. Тэрээн руугаа орогты.</string>
     <string name="nyutag_contact_error_required">Утаһан али e-mail оруулаад, кодоор баталагты.</string>
     <string name="nyutag_contact_error_not_verified">Түрүүн утаһан али почтоо кодоор баталагты.</string>
@@ -45,12 +45,12 @@
     <string name="nyutag_login_identifier_hint">Нэрэ, утаһан али e-mail</string>
     <string name="nyutag_start_sign_in">Орохо</string>
     <string name="nyutag_start_have_invite">Намда урилга бии</string>
-    <string name="nyutag_start_sign_up">Бүртхүүлхэ</string>
+    <string name="nyutag_start_sign_up">Бүридхүүлхэ</string>
     <string name="nyutag_signup_step">%2$d алхамһаа %1$d-дэхи</string>
     <string name="nyutag_signup_code_title">Урилгын кодоо оруулагты</string>
     <string name="nyutag_signup_paste">Оруулха</string>
-    <string name="nyutag_signup_contact_subtitle">Баталха код эльгээхэбди. Үөр хүн харахагүй.</string>
-    <string name="nyutag_signup_name_title">Таныень нэрэ хэн бэ?</string>
+    <string name="nyutag_signup_contact_subtitle">Баталха код эльгээхэбди. Ондоо хүн харахагүй.</string>
+    <string name="nyutag_signup_name_title">Таниие хэн гэдэг бэ?</string>
     <string name="nyutag_signup_name_subtitle">Энэ нэрые нүхэд чатнуудта харана.</string>
     <string name="nyutag_signup_name_label">Нэрэ</string>
     <string name="nyutag_signup_username_footer">Орохо нэрэ: %1$s</string>
@@ -64,4 +64,7 @@
     <string name="nyutag_signup_phone_subtitle">Энэ дугаараар танилнуудтнай Нютагта таниие олохо. Дугаарыетнай хэншье харахагүй.</string>
     <string name="nyutag_signup_error_email_required">E-mail хаягаа захидалай кодоор баталагты.</string>
     <string name="nyutag_signup_error_phone_required">Утаһанай дугаараа оруулагты.</string>
+    <string name="nyutag_signup_form_subtitle">Хэдэн мүр бэшэгты — тиигээд Нютагта орохот.</string>
+    <string name="nyutag_signup_verify_subtitle">%1$s хаягта код эльгээбэбди. Эндэ оруулагты.</string>
+    <string name="nyutag_signup_optional">(заабал бэшэ)</string>
 </resources>
