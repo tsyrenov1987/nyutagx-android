@@ -15,5 +15,7 @@ data class CallScreenState(
     val webViewError: String?,
     val userAgent: String,
     val isCallActive: Boolean,
+    /** Нютаг: включён ли микрофон (по сообщениям Element Call). */
+    val isMicrophoneEnabled: Boolean,
     val eventSink: (CallScreenEvent) -> Unit,
 )

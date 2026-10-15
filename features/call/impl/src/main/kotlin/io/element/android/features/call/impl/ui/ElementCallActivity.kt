@@ -9,9 +9,15 @@
 package io.element.android.features.call.impl.ui
 
 import android.Manifest
+import android.app.PendingIntent
 import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
@@ -30,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.core.app.PictureInPictureModeChangedInfo
+import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
@@ -41,6 +48,7 @@ import io.element.android.compound.colors.SemanticColorsLightDark
 import io.element.android.compound.theme.ForcedDarkElementTheme
 import io.element.android.features.call.api.CallData
 import io.element.android.features.call.impl.DefaultElementCallEntryPoint
+import io.element.android.features.call.impl.R
 import io.element.android.features.call.impl.di.CallBindings
 import io.element.android.features.call.impl.pip.PictureInPictureEvent
 import io.element.android.features.call.impl.pip.PictureInPicturePresenter
@@ -56,10 +64,12 @@ import io.element.android.libraries.audio.api.AudioFocus
 import io.element.android.libraries.audio.api.AudioFocusRequester
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.designsystem.icons.CompoundDrawables
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.hasCompactHeightWindowSize
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
+import io.element.android.libraries.ui.strings.CommonStrings
 import timber.log.Timber
 
 private val loggerTag = LoggerTag("ElementCallActivity")
@@ -89,6 +99,17 @@ class ElementCallActivity :
 
     private var currentPipOrientation: Int? = null
 
+    // Нютаг: кнопки в свёрнутом окне звонка (микрофон, завершить) — через широковещательные намерения.
+    private var isMicrophoneEnabled = true
+    private val pipActionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                ACTION_PIP_HANG_UP -> eventSink?.invoke(CallScreenEvent.Hangup)
+                ACTION_PIP_TOGGLE_MICROPHONE -> eventSink?.invoke(CallScreenEvent.ToggleMicrophone)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -110,6 +131,15 @@ class ElementCallActivity :
         }
 
         pictureInPicturePresenter.setPipView(this)
+        ContextCompat.registerReceiver(
+            this,
+            pipActionReceiver,
+            IntentFilter().apply {
+                addAction(ACTION_PIP_HANG_UP)
+                addAction(ACTION_PIP_TOGGLE_MICROPHONE)
+            },
+            ContextCompat.RECEIVER_NOT_EXPORTED,
+        )
 
         Timber.d("Created ElementCallActivity with call type: ${webViewTarget.value}")
 
@@ -155,6 +185,12 @@ class ElementCallActivity :
                     LaunchedEffect(state.isCallActive) {
                         if (state.isCallActive) {
                             setCallIsActive()
+                        }
+                    }
+                    LaunchedEffect(state.isMicrophoneEnabled) {
+                        isMicrophoneEnabled = state.isMicrophoneEnabled
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            setPipParams()
                         }
                     }
                     CallScreenView(
@@ -225,6 +261,9 @@ class ElementCallActivity :
 
     override fun onDestroy() {
         super.onDestroy()
+        if (::presenter.isInitialized) {
+            unregisterReceiver(pipActionReceiver)
+        }
         audioFocus.releaseAudioFocus()
         CallForegroundService.stop(this)
         pictureInPicturePresenter.setPipView(null)
@@ -314,6 +353,7 @@ class ElementCallActivity :
         val orientation = currentPipOrientation ?: Configuration.ORIENTATION_PORTRAIT
         return PictureInPictureParams.Builder()
             .setAspectRatioFromOrientation(orientation)
+            .setActions(pipActions())
             .apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     setAutoEnterEnabled(true)
@@ -322,8 +362,36 @@ class ElementCallActivity :
             .build()
     }
 
+    /** Нютаг: кнопки свёрнутого окна — микрофон и завершить звонок. */
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun pipActions(): List<RemoteAction> {
+        fun action(requestCode: Int, actionName: String, icon: Int, title: String) = RemoteAction(
+            Icon.createWithResource(this, icon),
+            title,
+            title,
+            PendingIntent.getBroadcast(
+                this,
+                requestCode,
+                Intent(actionName).setPackage(packageName),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ),
+        )
+        val microphone = if (isMicrophoneEnabled) {
+            action(1, ACTION_PIP_TOGGLE_MICROPHONE, CompoundDrawables.ic_compound_mic_on, getString(CommonStrings.common_mute))
+        } else {
+            action(1, ACTION_PIP_TOGGLE_MICROPHONE, CompoundDrawables.ic_compound_mic_off, getString(CommonStrings.common_unmute))
+        }
+        val hangUp = action(2, ACTION_PIP_HANG_UP, CompoundDrawables.ic_compound_end_call, getString(R.string.nyutag_call_end))
+        return listOf(microphone, hangUp)
+    }
+
     override fun hangUp() {
         eventSink?.invoke(CallScreenEvent.Hangup)
+    }
+
+    companion object {
+        private const val ACTION_PIP_HANG_UP = "chat.nyutag.messenger.call.PIP_HANG_UP"
+        private const val ACTION_PIP_TOGGLE_MICROPHONE = "chat.nyutag.messenger.call.PIP_TOGGLE_MICROPHONE"
     }
 }
 

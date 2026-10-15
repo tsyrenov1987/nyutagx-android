@@ -16,6 +16,7 @@ import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.exception.ClientException
+import io.element.android.libraries.matrix.api.nyutag.NyutagCallPushRules
 import io.element.android.libraries.matrix.api.pusher.SetHttpPusherData
 import io.element.android.libraries.matrix.api.pusher.UnsetHttpPusherData
 import io.element.android.libraries.pushproviders.api.PusherSubscriber
@@ -33,6 +34,7 @@ class DefaultPusherSubscriber(
     private val buildMeta: BuildMeta,
     private val pushClientSecret: PushClientSecret,
     private val userPushStoreFactory: UserPushStoreFactory,
+    private val nyutagCallPushRules: NyutagCallPushRules,
 ) : PusherSubscriber {
     /**
      * Register a pusher to the server if not done yet.
@@ -54,6 +56,8 @@ class DefaultPusherSubscriber(
             )
             .onSuccess {
                 userDataStore.setCurrentRegisteredPushKey(pushKey)
+                // Нютаг: без этого правила событие звонка не доходит пушем
+                nyutagCallPushRules.ensure(matrixClient.sessionId)
             }
             .mapFailure { throwable ->
                 Timber.tag(loggerTag.value).e(throwable, "Unable to register the pusher")

@@ -45,6 +45,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import timber.log.Timber
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
@@ -82,6 +87,7 @@ class CallScreenPresenter(
         var isWidgetLoaded by rememberSaveable { mutableStateOf(false) }
         var ignoreWebViewError by rememberSaveable { mutableStateOf(false) }
         var webViewError by remember { mutableStateOf<String?>(null) }
+        var isMicrophoneEnabled by remember { mutableStateOf(true) }
         val languageTag = languageTagProvider.provideLanguageTag()
         val theme = "dark"
 
@@ -132,6 +138,9 @@ class CallScreenPresenter(
                                 close(callWidgetDriver.value, navigator)
                             } else if (parsedMessage.action == WidgetMessage.Action.ContentLoaded) {
                                 isWidgetLoaded = true
+                            } else if (parsedMessage.action == WidgetMessage.Action.DeviceMute) {
+                                // Нютаг: Element Call сообщает состояние микрофона — для кнопки в свёрнутом окне.
+                                (parsedMessage.data as? JsonObject)?.get("audio_enabled")?.jsonPrimitive?.booleanOrNull?.let { isMicrophoneEnabled = it }
                             }
                         }
                     }
@@ -176,6 +185,15 @@ class CallScreenPresenter(
                 is CallScreenEvent.SetupMessageChannels -> {
                     messageInterceptor.value = event.widgetMessageInterceptor
                 }
+                is CallScreenEvent.ToggleMicrophone -> {
+                    val widgetId = callWidgetDriver.value?.id
+                    val interceptor = messageInterceptor.value
+                    if (widgetId != null && interceptor != null && isWidgetLoaded) {
+                        val enabled = !isMicrophoneEnabled
+                        sendDeviceMuteMessage(widgetId, interceptor, audioEnabled = enabled)
+                        isMicrophoneEnabled = enabled
+                    }
+                }
                 is CallScreenEvent.OnWebViewError -> {
                     if (!ignoreWebViewError) {
                         webViewError = event.description.orEmpty()
@@ -190,6 +208,7 @@ class CallScreenPresenter(
             webViewError = webViewError,
             userAgent = userAgent,
             isCallActive = isWidgetLoaded,
+            isMicrophoneEnabled = isMicrophoneEnabled,
             eventSink = ::handleEvent,
         )
     }
@@ -251,6 +270,18 @@ class CallScreenPresenter(
             requestId = "widgetapi-${clock.epochMillis()}",
             action = WidgetMessage.Action.HangUp,
             data = null,
+        )
+        messageInterceptor.sendMessage(widgetMessageSerializer.serialize(message))
+    }
+
+    /** Нютаг: переключить микрофон в Element Call (то же сообщение, которым iOS глушит звонок из CallKit). */
+    private fun sendDeviceMuteMessage(widgetId: String, messageInterceptor: WidgetMessageInterceptor, audioEnabled: Boolean) {
+        val message = WidgetMessage(
+            direction = WidgetMessage.Direction.ToWidget,
+            widgetId = widgetId,
+            requestId = "widgetapi-${clock.epochMillis()}",
+            action = WidgetMessage.Action.DeviceMute,
+            data = buildJsonObject { put("audio_enabled", audioEnabled) },
         )
         messageInterceptor.sendMessage(widgetMessageSerializer.serialize(message))
     }

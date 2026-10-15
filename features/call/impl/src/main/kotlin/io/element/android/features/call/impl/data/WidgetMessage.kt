@@ -37,6 +37,10 @@ data class WidgetMessage(
         @SerialName("im.vector.hangup")
         HangUp,
 
+        /** Нютаг: микрофон/камера — от Element Call (текущее состояние) и к нему (переключить). */
+        @SerialName("io.element.device_mute")
+        DeviceMute,
+
         @SerialName("io.element.close")
         Close,
 

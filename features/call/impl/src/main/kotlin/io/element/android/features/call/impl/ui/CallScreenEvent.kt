@@ -12,6 +12,9 @@ import io.element.android.features.call.impl.utils.WidgetMessageInterceptor
 
 sealed interface CallScreenEvent {
     data object Hangup : CallScreenEvent
+
+    /** Нютаг: кнопка микрофона в свёрнутом окне звонка. */
+    data object ToggleMicrophone : CallScreenEvent
     data class SetupMessageChannels(val widgetMessageInterceptor: WidgetMessageInterceptor) : CallScreenEvent
     data class OnWebViewError(val description: String?) : CallScreenEvent
 }

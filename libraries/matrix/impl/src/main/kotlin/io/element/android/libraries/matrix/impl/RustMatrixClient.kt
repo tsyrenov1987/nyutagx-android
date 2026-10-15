@@ -61,6 +61,7 @@ import io.element.android.libraries.matrix.impl.media.RustMediaLoader
 import io.element.android.libraries.matrix.impl.media.RustMediaPreviewService
 import io.element.android.libraries.matrix.impl.notification.RustNotificationService
 import io.element.android.libraries.matrix.impl.notificationsettings.RustNotificationSettingsService
+import io.element.android.libraries.matrix.impl.nyutag.NyutagInviteAutoJoin
 import io.element.android.libraries.matrix.impl.oauth.toRustAction
 import io.element.android.libraries.matrix.impl.pushers.RustPushersService
 import io.element.android.libraries.matrix.impl.room.GetRoomResult
@@ -319,6 +320,10 @@ class RustMatrixClient(
             notificationSettingsService.start()
             // Setup user profile logic
             setupUserProfile()
+        }
+        // Нютаг: приглашения принимаем сами
+        sessionCoroutineScope.launch {
+            NyutagInviteAutoJoin.run(this@RustMatrixClient)
         }
 
         // Schedule regular database vacuuming to ensure DB performance remains optimal

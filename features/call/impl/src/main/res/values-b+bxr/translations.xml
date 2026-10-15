@@ -4,4 +4,5 @@
     <string name="call_foreground_service_channel_title_android">Үргэлжэлжэ байһан дуудалга</string>
     <string name="call_foreground_service_message_android">Дуудалга руу бусахын тула дарагты</string>
     <string name="call_foreground_service_title_android">☎️ Дуудалга үргэлжэлжэ байна</string>
+    <string name="screen_incoming_call_subtitle_android">Нютаг: дуудалга ерэжэ байна</string>
 </resources>

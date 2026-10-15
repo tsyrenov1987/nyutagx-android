@@ -10,6 +10,7 @@ package io.element.android.libraries.push.impl
 
 import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.matrix.api.nyutag.NyutagCallPushRules
 import io.element.android.libraries.matrix.api.pusher.SetHttpPusherData
 import io.element.android.libraries.matrix.api.pusher.UnsetHttpPusherData
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
@@ -180,6 +181,7 @@ class DefaultPusherSubscriberTest {
             buildMeta = buildMeta,
             pushClientSecret = pushClientSecret,
             userPushStoreFactory = userPushStoreFactory,
+            nyutagCallPushRules = NyutagCallPushRules { Result.success(Unit) },
         )
     }
 }

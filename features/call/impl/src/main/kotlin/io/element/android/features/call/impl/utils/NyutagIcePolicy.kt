@@ -65,7 +65,11 @@ object NyutagIcePolicy {
     internal fun udpReachable(): Boolean {
         val request = ByteArray(20)
         request[1] = 0x01 // Binding Request, длина 0
-        request[4] = 0x21; request[5] = 0x12; request[6] = 0xA4.toByte(); request[7] = 0x42 // magic cookie
+        // magic cookie
+        request[4] = 0x21
+        request[5] = 0x12
+        request[6] = 0xA4.toByte()
+        request[7] = 0x42
         val transactionId = ByteArray(12).also { SecureRandom().nextBytes(it) }
         System.arraycopy(transactionId, 0, request, 8, 12)
         repeat(ATTEMPTS) {
