@@ -14,6 +14,14 @@
 
     <!-- Resource -->
     <issue id="MissingTranslation" severity="ignore" />
+    <!-- Нютаг: переводы ru/bxr для строк из библиотечных модулей и зависимостей лежат в app (strings_nyutag_*.xml);
+         ресурсы сливаются при сборке, базовые значения есть в своих модулях -->
+    <issue id="ExtraTranslation" severity="error">
+        <ignore path="**/strings_nyutag_*.xml" />
+    </issue>
+    <issue id="MissingDefaultResource" severity="error">
+        <ignore path="**/strings_nyutag_*.xml" />
+    </issue>
     <issue id="TypographyEllipsis" severity="error" />
     <issue id="ImpliedQuantity" severity="error" />
     <issue id="MissingQuantity" severity="warning" />
