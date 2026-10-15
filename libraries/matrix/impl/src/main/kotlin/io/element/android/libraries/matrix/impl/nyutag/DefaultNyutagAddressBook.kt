@@ -15,6 +15,7 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.matrix.api.nyutag.NyutagAddressBook
+import io.element.android.libraries.matrix.api.nyutag.NyutagContact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -40,6 +41,27 @@ class DefaultNyutagAddressBook(
             }
         }
         phones.toList()
+    }
+
+    override suspend fun contacts(): List<NyutagContact> = withContext(Dispatchers.IO) {
+        if (!canRead()) return@withContext emptyList()
+        val seen = mutableSetOf<String>()
+        val contacts = mutableListOf<NyutagContact>()
+        context.contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME),
+            null,
+            null,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+        )?.use { cursor ->
+            while (cursor.moveToNext() && contacts.size < MAX_PHONES) {
+                val phone = cursor.getString(0)?.takeIf { it.isNotBlank() } ?: continue
+                // Один и тот же номер, записанный по-разному (+7… и 8…), — одна запись.
+                if (!seen.add(phone.filter { it.isDigit() }.takeLast(10))) continue
+                contacts += NyutagContact(name = cursor.getString(1)?.takeIf { it.isNotBlank() } ?: phone, phone = phone)
+            }
+        }
+        contacts
     }
 
     private companion object {

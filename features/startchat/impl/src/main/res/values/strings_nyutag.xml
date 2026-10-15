@@ -26,4 +26,11 @@
     <string name="nyutag_by_phone_error_bad_phone">This does not look like a phone number.</string>
     <string name="nyutag_by_phone_error_phone_in_use">This number is already taken by another account.</string>
     <string name="nyutag_by_phone_error_generic">Something went wrong. Try again later.</string>
+    <!-- Синхронизация записной книжки: кто из контактов уже в Нютаге -->
+    <string name="nyutag_contacts_section">Contacts on Nyutag</string>
+    <string name="nyutag_contacts_allow">Find friends from your contacts</string>
+    <string name="nyutag_contacts_allow_subtitle">Numbers are checked on the server and not stored.</string>
+    <string name="nyutag_contacts_empty">None of your contacts are on Nyutag yet. Invite them by phone number.</string>
+    <string name="nyutag_contacts_denied">Allow access to contacts in the phone settings to see who is already on Nyutag.</string>
+    <string name="nyutag_contacts_syncing">Checking contacts…</string>
 </resources>

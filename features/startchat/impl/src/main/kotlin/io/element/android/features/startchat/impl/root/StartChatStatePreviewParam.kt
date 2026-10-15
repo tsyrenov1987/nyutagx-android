@@ -14,11 +14,15 @@ import io.element.android.features.startchat.impl.userlist.UserListState
 import io.element.android.features.startchat.impl.userlist.aRecentDirectRoomList
 import io.element.android.features.startchat.impl.userlist.aUserListState
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.designsystem.theme.components.SearchBarResultState
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagMatchedContact
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 import io.element.android.libraries.usersearch.api.UserSearchResult
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 open class StartChatStatePreviewParam : PreviewParameterProvider<StartChatState> {
@@ -55,6 +59,16 @@ open class StartChatStatePreviewParam : PreviewParameterProvider<StartChatState>
             aCreateRoomRootState(
                 startDmAction = aConfirmingStartDmWithMatrixUser()
             ),
+            aCreateRoomRootState(
+                canReadContacts = true,
+                nyutagContacts = AsyncData.Success(
+                    persistentListOf(
+                        NyutagMatchedContact("Баир", "+7 900 000-00-01", MatrixUser(UserId("@bair:nyutag.chat"), "bair")),
+                        NyutagMatchedContact("Сэсэг", "+7 900 000-00-02", MatrixUser(UserId("@seseg:nyutag.chat"))),
+                    )
+                ),
+            ),
+            aCreateRoomRootState(canReadContacts = true, nyutagContacts = AsyncData.Success(persistentListOf())),
         )
 }
 
@@ -72,10 +86,14 @@ fun aCreateRoomRootState(
     applicationName: String = "Element X Preview",
     userListState: UserListState = aUserListState(),
     startDmAction: AsyncAction<RoomId> = AsyncAction.Uninitialized,
+    canReadContacts: Boolean = false,
+    nyutagContacts: AsyncData<ImmutableList<NyutagMatchedContact>> = AsyncData.Uninitialized,
     eventSink: (StartChatEvent) -> Unit = {},
 ) = StartChatState(
     applicationName = applicationName,
     userListState = userListState,
     startDmAction = startDmAction,
+    canReadContacts = canReadContacts,
+    nyutagContacts = nyutagContacts,
     eventSink = eventSink,
 )

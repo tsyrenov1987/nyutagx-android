@@ -14,4 +14,10 @@ sealed interface StartChatEvent {
     data class StartDM(val matrixUser: MatrixUser) : StartChatEvent
     data object CancelStartDM : StartChatEvent
     data class OpenSavedMessages(val name: String, val topic: String) : StartChatEvent
+
+    /** Нютаг: разрешение на контакты получено или нажато «обновить» — сверить книжку с сервером. */
+    data class SyncContacts(val force: Boolean = false) : StartChatEvent
+
+    /** Нютаг: чат с человеком из записной книжки — без вопроса «начать чат?», как при поиске по номеру. */
+    data class StartDMWithContact(val matrixUser: MatrixUser) : StartChatEvent
 }

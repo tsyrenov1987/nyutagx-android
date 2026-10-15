@@ -26,4 +26,11 @@
     <string name="nyutag_by_phone_error_bad_phone">Это не похоже на номер телефона.</string>
     <string name="nyutag_by_phone_error_phone_in_use">Этот номер уже указан у другого аккаунта.</string>
     <string name="nyutag_by_phone_error_generic">Не получилось. Попробуйте позже.</string>
+    <!-- Синхронизация записной книжки: кто из контактов уже в Нютаге -->
+    <string name="nyutag_contacts_section">Контакты в Нютаге</string>
+    <string name="nyutag_contacts_allow">Найти знакомых из контактов</string>
+    <string name="nyutag_contacts_allow_subtitle">Номера сверяются на сервере и не сохраняются.</string>
+    <string name="nyutag_contacts_empty">Из ваших контактов в Нютаге пока никого нет. Пригласите их по номеру телефона.</string>
+    <string name="nyutag_contacts_denied">Разрешите доступ к контактам в настройках телефона, чтобы увидеть, кто уже в Нютаге.</string>
+    <string name="nyutag_contacts_syncing">Сверяем контакты…</string>
 </resources>

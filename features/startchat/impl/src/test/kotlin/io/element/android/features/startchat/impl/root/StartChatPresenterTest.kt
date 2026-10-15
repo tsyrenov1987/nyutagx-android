@@ -18,14 +18,21 @@ import io.element.android.features.startchat.impl.userlist.FakeUserListPresenter
 import io.element.android.features.startchat.impl.userlist.FakeUserListPresenterFactory
 import io.element.android.features.startchat.impl.userlist.UserListDataStore
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagAddressBook
+import io.element.android.libraries.matrix.api.nyutag.NyutagContactsSync
+import io.element.android.libraries.matrix.api.nyutag.NyutagMatchedContact
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.A_ROOM_ID
+import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.core.aBuildMeta
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagContactsSync
 import io.element.android.libraries.usersearch.test.FakeUserRepository
 import io.element.android.tests.testutils.WarmUpRule
+import io.element.android.tests.testutils.awaitLastSequentialItem
 import io.element.android.tests.testutils.lambda.any
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
@@ -166,11 +173,48 @@ class StartChatPresenterTest {
             )
         }
     }
+
+    @Test
+    fun `present - contacts are synced     when the permission is granted and a contact opens a DM without confirmation`() = runTest {
+        val bair = NyutagMatchedContact("Баир", "+79000000001", MatrixUser(UserId("@bair:nyutag.chat")))
+        val contactsSync = FakeNyutagContactsSync(cachedResult = null, syncResult = Result.success(listOf(bair)))
+        val executeResult = lambdaRecorder<MatrixUser, Boolean, MutableState<AsyncAction<RoomId>>, Unit> { _, _, actionState ->
+            actionState.value = AsyncAction.Success(A_ROOM_ID)
+        }
+        val presenter = createStartChatPresenter(
+            startDMAction = FakeStartDMAction(executeResult = executeResult),
+            canReadContacts = true,
+            contactsSync = contactsSync,
+        )
+        presenter.test {
+            val synced = awaitLastSequentialItem()
+            assertThat(synced.canReadContacts).isTrue()
+            assertThat(synced.nyutagContacts.dataOrNull()).containsExactly(bair)
+            assertThat(contactsSync.syncCalls).isEqualTo(1)
+            synced.eventSink(StartChatEvent.StartDMWithContact(bair.user))
+            assertThat(awaitLastSequentialItem().startDmAction).isEqualTo(AsyncAction.Success(A_ROOM_ID))
+            executeResult.assertions().isCalledOnce().with(value(bair.user), value(true), any())
+        }
+    }
+
+    @Test
+    fun `present - contacts are not synced without the permission`() = runTest {
+        val contactsSync = FakeNyutagContactsSync()
+        val presenter = createStartChatPresenter(canReadContacts = false, contactsSync = contactsSync)
+        presenter.test {
+            val state = awaitLastSequentialItem()
+            assertThat(state.canReadContacts).isFalse()
+            assertThat(state.nyutagContacts).isEqualTo(AsyncData.Uninitialized)
+            assertThat(contactsSync.syncCalls).isEqualTo(0)
+        }
+    }
 }
 
 internal fun createStartChatPresenter(
     startDMAction: StartDMAction = FakeStartDMAction(),
     savedMessages: NyutagSavedMessages = NyutagSavedMessages { _, _ -> error("not expected") },
+    canReadContacts: Boolean = false,
+    contactsSync: NyutagContactsSync = FakeNyutagContactsSync(),
 ): StartChatPresenter {
     return StartChatPresenter(
         presenterFactory = FakeUserListPresenterFactory(FakeUserListPresenter()),
@@ -179,5 +223,11 @@ internal fun createStartChatPresenter(
         startDMAction = startDMAction,
         savedMessages = savedMessages,
         buildMeta = aBuildMeta(),
+        matrixClient = FakeMatrixClient(),
+        addressBook = object : NyutagAddressBook {
+            override fun canRead() = canReadContacts
+            override suspend fun phones() = emptyList<String>()
+        },
+        contactsSync = contactsSync,
     )
 }

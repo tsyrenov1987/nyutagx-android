@@ -26,4 +26,11 @@
     <string name="nyutag_by_phone_error_bad_phone">Энэ утаһанай дугаар бэшэ шэнги.</string>
     <string name="nyutag_by_phone_error_phone_in_use">Энэ дугаар ондоо аккаунтда оруулагдаһан.</string>
     <string name="nyutag_by_phone_error_generic">Бүтэбэгүй. Һүүлээрнь оролдогты.</string>
+    <!-- Синхронизация записной книжки: кто из контактов уже в Нютаге -->
+    <string name="nyutag_contacts_section">Нютаг соо байһан контактнууд</string>
+    <string name="nyutag_contacts_allow">Контактнуудһаа танилнуудаа олохо</string>
+    <string name="nyutag_contacts_allow_subtitle">Дугаарнууд сервер дээрэ зэргэсүүлэгдэнэ, хадагалагдахагүй.</string>
+    <string name="nyutag_contacts_empty">Танай контактнуудһаа Нютаг соо үшөө хэншье үгы. Утаһанай дугаараар уригты.</string>
+    <string name="nyutag_contacts_denied">Хэн Нютаг соо байһыень харахын тула утаһанайнгаа тохиргоодо контактнуудта хандаха зүбшөөл үгэгты.</string>
+    <string name="nyutag_contacts_syncing">Контактнуудые шалгажа байнабди…</string>
 </resources>

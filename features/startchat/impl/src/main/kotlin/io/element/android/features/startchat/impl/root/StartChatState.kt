@@ -10,11 +10,18 @@ package io.element.android.features.startchat.impl.root
 
 import io.element.android.features.startchat.impl.userlist.UserListState
 import io.element.android.libraries.architecture.AsyncAction
+import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.nyutag.NyutagMatchedContact
+import kotlinx.collections.immutable.ImmutableList
 
 data class StartChatState(
     val applicationName: String,
     val userListState: UserListState,
     val startDmAction: AsyncAction<RoomId>,
+    /** Нютаг: разрешение на контакты выдано — книжка сверяется с сервером. */
+    val canReadContacts: Boolean,
+    /** Нютаг: кто из записной книжки уже в Нютаге (Uninitialized — без разрешения). */
+    val nyutagContacts: AsyncData<ImmutableList<NyutagMatchedContact>>,
     val eventSink: (StartChatEvent) -> Unit,
 )

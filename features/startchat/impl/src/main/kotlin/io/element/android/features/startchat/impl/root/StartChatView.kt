@@ -8,6 +8,9 @@
 
 package io.element.android.features.startchat.impl.root
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +22,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
@@ -34,6 +43,7 @@ import io.element.android.features.startchat.api.ConfirmingStartDmWithMatrixUser
 import io.element.android.features.startchat.impl.R
 import io.element.android.features.startchat.impl.components.UserListView
 import io.element.android.libraries.androidutils.ui.hideKeyboardAndAwaitAnimation
+import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.components.async.AsyncActionViewDefaults
 import io.element.android.libraries.designsystem.components.button.BackButton
@@ -42,12 +52,14 @@ import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.ListSectionHeader
+import io.element.android.libraries.designsystem.theme.components.CircularProgressIndicator
 import io.element.android.libraries.designsystem.theme.components.Scaffold
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.designsystem.utils.lazyColumnContentPadding
 import io.element.android.libraries.designsystem.utils.scaffoldScrollableContentInsets
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.CreateDmConfirmationBottomSheet
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -222,6 +234,7 @@ private fun CreateRoomActionButtonsList(
                 onClick = onJoinByAddressClick,
             )
         }
+        nyutagContacts(state, onContactClick = { state.eventSink(StartChatEvent.StartDMWithContact(it)) })
         if (state.userListState.recentDirectRooms.isNotEmpty()) {
             item {
                 ListSectionHeader(
@@ -242,6 +255,86 @@ private fun CreateRoomActionButtonsList(
                 }
             }
         }
+    }
+}
+
+/** Нютаг: кто из записной книжки уже здесь. Без разрешения — строка «Найти знакомых из контактов». */
+private fun LazyListScope.nyutagContacts(state: StartChatState, onContactClick: (MatrixUser) -> Unit) {
+    if (!state.canReadContacts) {
+        item { NyutagContactsPermissionRow(onGranted = { state.eventSink(StartChatEvent.SyncContacts(force = true)) }) }
+        return
+    }
+    item {
+        ListSectionHeader(title = stringResource(R.string.nyutag_contacts_section), hasDivider = false)
+    }
+    val contacts = state.nyutagContacts.dataOrNull()
+    when {
+        contacts == null -> item {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (state.nyutagContacts is AsyncData.Loading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                Text(
+                    text = stringResource(
+                        if (state.nyutagContacts is AsyncData.Failure) R.string.nyutag_by_phone_error_network else R.string.nyutag_contacts_syncing
+                    ),
+                    style = ElementTheme.typography.fontBodyMdRegular,
+                    color = ElementTheme.colors.textSecondary,
+                )
+            }
+        }
+        contacts.isEmpty() -> item {
+            Text(
+                text = stringResource(R.string.nyutag_contacts_empty),
+                style = ElementTheme.typography.fontBodyMdRegular,
+                color = ElementTheme.colors.textSecondary,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+        }
+        else -> items(contacts, key = { it.user.userId.value }) { contact ->
+            // Имя — как записано в книжке; аватар — из профиля в Нютаге.
+            val user = contact.user.copy(displayName = contact.name)
+            MatrixUserRow(
+                modifier = Modifier.clickable { onContactClick(user) },
+                matrixUser = user,
+            )
+        }
+    }
+}
+
+@Composable
+private fun NyutagContactsPermissionRow(onGranted: () -> Unit) {
+    var denied by rememberSaveable { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        denied = !granted
+        if (granted) onGranted()
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { permissionLauncher.launch(Manifest.permission.READ_CONTACTS) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                tint = ElementTheme.colors.iconSecondary,
+                resourceId = CompoundDrawables.ic_compound_user_add,
+                contentDescription = null,
+            )
+            Text(
+                text = stringResource(R.string.nyutag_contacts_allow),
+                style = ElementTheme.typography.fontBodyLgRegular,
+            )
+        }
+        Text(
+            text = stringResource(if (denied) R.string.nyutag_contacts_denied else R.string.nyutag_contacts_allow_subtitle),
+            style = ElementTheme.typography.fontBodySmRegular,
+            color = if (denied) ElementTheme.colors.textCriticalPrimary else ElementTheme.colors.textSecondary,
+            modifier = Modifier.padding(start = 40.dp, top = 4.dp),
+        )
     }
 }
 

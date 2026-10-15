@@ -12,4 +12,10 @@ interface NyutagAddressBook {
 
     /** Все номера книжки как записаны; пусто без разрешения. */
     suspend fun phones(): List<String>
+
+    /** Записи книжки с именами (один номер — одна запись); пусто без разрешения. */
+    suspend fun contacts(): List<NyutagContact> = phones().map { NyutagContact(name = it, phone = it) }
 }
+
+/** Запись телефонной книги: имя, как записано у человека, и номер. */
+data class NyutagContact(val name: String, val phone: String)
