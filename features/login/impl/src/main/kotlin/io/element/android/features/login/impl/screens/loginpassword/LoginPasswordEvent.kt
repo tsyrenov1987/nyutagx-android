@@ -13,4 +13,13 @@ sealed interface LoginPasswordEvent {
     data class SetPassword(val password: String) : LoginPasswordEvent
     data object Submit : LoginPasswordEvent
     data object ClearError : LoginPasswordEvent
+
+    // Нютаг: «Забыли пароль?»
+    data object OpenPasswordReset : LoginPasswordEvent
+    data object ClosePasswordReset : LoginPasswordEvent
+    data class SetResetEmail(val email: String) : LoginPasswordEvent
+    data class SetResetCode(val code: String) : LoginPasswordEvent
+    data class SetResetPassword(val password: String) : LoginPasswordEvent
+    data object SendResetCode : LoginPasswordEvent
+    data object SubmitPasswordReset : LoginPasswordEvent
 }

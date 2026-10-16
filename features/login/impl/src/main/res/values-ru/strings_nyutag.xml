@@ -66,4 +66,9 @@
     <string name="nyutag_signup_form_subtitle">Заполните несколько полей — и вы в Нютаге.</string>
     <string name="nyutag_signup_verify_subtitle">Мы отправили код на %1$s. Введите его здесь.</string>
     <string name="nyutag_signup_optional">(необязательно)</string>
+    <string name="nyutag_password_reset_title">Сброс пароля</string>
+    <string name="nyutag_password_reset_subtitle">Введите почту, к которой привязан аккаунт Нютага. Пришлём на неё код.</string>
+    <string name="nyutag_password_reset_new">Новый пароль, не короче 8 символов</string>
+    <string name="nyutag_password_reset_submit">Сохранить и войти</string>
+    <string name="nyutag_password_reset_error_unknown">К этой почте не привязан ни один аккаунт Нютага. Проверьте адрес: возможно, вы регистрировались с другой почтой.</string>
 </resources>

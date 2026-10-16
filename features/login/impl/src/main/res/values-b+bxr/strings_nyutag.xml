@@ -67,4 +67,9 @@
     <string name="nyutag_signup_form_subtitle">Хэдэн мүр бэшэгты — тиигээд Нютагта орохот.</string>
     <string name="nyutag_signup_verify_subtitle">%1$s хаягта код эльгээбэбди. Эндэ оруулагты.</string>
     <string name="nyutag_signup_optional">(заабал бэшэ)</string>
+    <string name="nyutag_password_reset_title">Нюуса үгэ шэнэлхэ</string>
+    <string name="nyutag_password_reset_subtitle">Нютагай аккаунтдаа холбоотой e-mail хаягаа оруулагты. Тэндэ код эльгээхэбди.</string>
+    <string name="nyutag_password_reset_new">Шэнэ нюуса үгэ, 8 тэмдэгһээ доошо бэшэ</string>
+    <string name="nyutag_password_reset_submit">Хадагалаад орохо</string>
+    <string name="nyutag_password_reset_error_unknown">Энэ хаягта Нютагай аккаунт холбоотой бэшэ. Хаягаа шалгагты: ондоо почтоор бүртхүүлһэн байжа магад.</string>
 </resources>

@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.focus.FocusDirection
@@ -61,9 +62,11 @@ import io.element.android.libraries.designsystem.modifiers.onTabOrEnterKeyFocusN
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.theme.components.Button
+import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.PasswordVisibilityToggle
 import io.element.android.libraries.designsystem.theme.components.Scaffold
+import io.element.android.libraries.designsystem.theme.components.TextButton
 import io.element.android.libraries.designsystem.theme.components.TextField
 import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.testtags.TestTags
@@ -77,6 +80,12 @@ fun LoginPasswordView(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Нютаг: «Забыли пароль?» открывается поверх входа и сам входит после смены пароля.
+    val passwordReset = state.passwordReset
+    if (passwordReset != null) {
+        NyutagPasswordResetView(state = passwordReset, eventSink = state.eventSink, modifier = modifier)
+        return
+    }
     val autofillManager = LocalAutofillManager.current
 
     BackHandler {
@@ -273,6 +282,15 @@ private fun LoginForm(
             ),
             singleLine = true,
         )
+        // Нютаг: сброс пароля кодом на почту аккаунта.
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+            TextButton(
+                text = stringResource(CommonStrings.action_forgot_password),
+                size = ButtonSize.Small,
+                enabled = !isLoading,
+                onClick = { eventSink(LoginPasswordEvent.OpenPasswordReset) },
+            )
+        }
     }
 }
 

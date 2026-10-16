@@ -54,6 +54,14 @@ class FakeNyutagInvites(
         registeredPhone = phone
     }
     override suspend fun resolveLogin(identifier: String, password: String) = resolveResult
+
+    var passwordResetStartResult: Result<NyutagVerification> = Result.success(NyutagVerification("reset-sid", 60))
+    var passwordResetResult: Result<String> = Result.success("@alice:nyutag.chat")
+    var passwordResetAddress: String? = null
+    var passwordResetSid: String? = null
+    override suspend fun startPasswordReset(address: String) = passwordResetStartResult.also { passwordResetAddress = address }
+    override suspend fun resetPassword(sid: String, token: String, password: String) = passwordResetResult.also { passwordResetSid = sid }
+
     override suspend fun createInvite(sessionId: SessionId) = inviteResult
     override suspend fun lookupPhones(sessionId: SessionId, phones: List<String>) = lookupResult.also { lookedUpPhones += phones }
 

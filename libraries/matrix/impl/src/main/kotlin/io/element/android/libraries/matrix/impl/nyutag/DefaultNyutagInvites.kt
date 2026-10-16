@@ -150,6 +150,22 @@ class DefaultNyutagInvites(
         json.getString("user_id")
     }
 
+    override suspend fun startPasswordReset(address: String): Result<NyutagVerification> = call {
+        val body = JSONObject().put("address", address).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/password/start", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("sid")) throw response.toException()
+        NyutagVerification(sid = json.getString("sid"), resendAfterSeconds = json.optInt("resend_after_s", 60))
+    }
+
+    override suspend fun resetPassword(sid: String, token: String, password: String): Result<String> = call {
+        val body = JSONObject().put("sid", sid).put("token", token).put("password", password).toString()
+        val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/password/reset", jsonBody = body)
+        val json = response.json()
+        if (response.status != 200 || !json.has("user_id")) throw response.toException()
+        json.getString("user_id")
+    }
+
     override suspend fun checkPhone(phone: String, inviteCode: String): Result<String> = call {
         val body = JSONObject().put("phone", phone).put("code", inviteCode).toString()
         val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/phone/check", jsonBody = body)

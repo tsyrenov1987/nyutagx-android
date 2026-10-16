@@ -18,7 +18,9 @@ data class LoginPasswordState(
     val accountProvider: AccountProvider,
     val formState: LoginFormState,
     val loginAction: AsyncData<SessionId>,
-    val eventSink: (LoginPasswordEvent) -> Unit
+    val eventSink: (LoginPasswordEvent) -> Unit,
+    /** Нютаг: открыт «Забыли пароль?»; null — обычный вход. */
+    val passwordReset: NyutagPasswordResetState? = null,
 ) {
     val submitEnabled: Boolean
         get() = loginAction !is AsyncData.Failure &&

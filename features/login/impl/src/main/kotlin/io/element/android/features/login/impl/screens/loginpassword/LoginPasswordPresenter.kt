@@ -9,13 +9,16 @@
 package io.element.android.features.login.impl.screens.loginpassword
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -25,9 +28,11 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.api.nyutag.looksLikeNyutagContact
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AssistedInject
@@ -60,6 +65,46 @@ class LoginPasswordPresenter(
             )
         }
         val accountProvider by accountProviderDataSource.flow.collectAsState()
+        var passwordReset by remember { mutableStateOf<NyutagPasswordResetState?>(null) }
+        val resetResendIn = remember { mutableIntStateOf(0) }
+        LaunchedEffect(resetResendIn.intValue) {
+            if (resetResendIn.intValue > 0) {
+                delay(1_000)
+                resetResendIn.intValue -= 1
+            }
+        }
+
+        fun sendResetCode() {
+            val reset = passwordReset?.takeIf { it.canSendCode && resetResendIn.intValue == 0 } ?: return
+            passwordReset = reset.copy(isBusy = true, error = null)
+            localCoroutineScope.launch {
+                nyutagInvites.startPasswordReset(reset.email.trim())
+                    .onSuccess {
+                        resetResendIn.intValue = it.resendAfterSeconds
+                        passwordReset = passwordReset?.copy(sid = it.sid, code = "", isBusy = false)
+                    }
+                    .onFailure { passwordReset = passwordReset?.copy(isBusy = false, error = it) }
+            }
+        }
+
+        fun submitPasswordReset() {
+            val reset = passwordReset?.takeIf { it.canSubmit } ?: return
+            passwordReset = reset.copy(isBusy = true, error = null)
+            localCoroutineScope.launch {
+                nyutagInvites.resetPassword(reset.sid.orEmpty(), reset.code, reset.password)
+                    .onSuccess {
+                        // Пароль сменён — входим по той же почте, как будто её ввели на экране входа.
+                        passwordReset = null
+                        formState.value = LoginFormState(login = reset.email.trim(), password = reset.password)
+                        submit(formState.value, loginAction)
+                    }
+                    .onFailure { error ->
+                        // Код больше не годится — назад к почте за новым.
+                        val codeIsGone = (error as? NyutagInviteException)?.errcode in RESET_CODE_GONE
+                        passwordReset = passwordReset?.copy(sid = if (codeIsGone) null else reset.sid, isBusy = false, error = error)
+                    }
+            }
+        }
 
         fun handleEvent(event: LoginPasswordEvent) {
             when (event) {
@@ -73,6 +118,16 @@ class LoginPasswordPresenter(
                     localCoroutineScope.submit(formState.value, loginAction)
                 }
                 LoginPasswordEvent.ClearError -> loginAction.value = AsyncData.Uninitialized
+                LoginPasswordEvent.OpenPasswordReset -> {
+                    val login = formState.value.login.trim()
+                    passwordReset = NyutagPasswordResetState(email = if (login.contains('@') && !login.startsWith('@')) login else "")
+                }
+                LoginPasswordEvent.ClosePasswordReset -> passwordReset = null
+                is LoginPasswordEvent.SetResetEmail -> passwordReset = passwordReset?.copy(email = event.email, error = null)
+                is LoginPasswordEvent.SetResetCode -> passwordReset = passwordReset?.copy(code = event.code, error = null)
+                is LoginPasswordEvent.SetResetPassword -> passwordReset = passwordReset?.copy(password = event.password, error = null)
+                LoginPasswordEvent.SendResetCode -> sendResetCode()
+                LoginPasswordEvent.SubmitPasswordReset -> submitPasswordReset()
             }
         }
 
@@ -81,6 +136,7 @@ class LoginPasswordPresenter(
             formState = formState.value,
             loginAction = loginAction.value,
             eventSink = ::handleEvent,
+            passwordReset = passwordReset?.copy(resendInSeconds = resetResendIn.intValue),
         )
     }
 
@@ -110,3 +166,9 @@ class LoginPasswordPresenter(
         formState.value = updateLambda(formState.value)
     }
 }
+
+private val RESET_CODE_GONE = setOf(
+    NyutagInviteException.UNKNOWN_SESSION,
+    NyutagInviteException.VERIFY_EXPIRED,
+    NyutagInviteException.VERIFY_ATTEMPTS,
+)

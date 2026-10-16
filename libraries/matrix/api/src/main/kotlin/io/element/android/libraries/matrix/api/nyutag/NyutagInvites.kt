@@ -47,6 +47,12 @@ interface NyutagInvites {
     /** Вход по телефону или почте: Matrix ID аккаунта, если пароль верный. */
     suspend fun resolveLogin(identifier: String, password: String): Result<String>
 
+    /** «Забыли пароль?»: шлёт шестизначный код на почту, к которой привязан аккаунт. */
+    suspend fun startPasswordReset(address: String): Result<NyutagVerification>
+
+    /** Ставит новый пароль по коду из письма и возвращает Matrix ID аккаунта. Другие устройства остаются в аккаунте. */
+    suspend fun resetPassword(sid: String, token: String, password: String): Result<String>
+
     /** Выпускает одноразовый код от имени участника [sessionId]; код живёт 7 дней. */
     suspend fun createInvite(sessionId: SessionId): Result<NyutagInvite>
 
@@ -125,6 +131,7 @@ class NyutagInviteException(val errcode: String, message: String) : Exception(me
         const val NETWORK = "NYUTAG_NETWORK"
         const val BAD_CONTACT = "NYUTAG_BAD_CONTACT"
         const val CONTACT_IN_USE = "NYUTAG_CONTACT_IN_USE"
+        const val CONTACT_UNKNOWN = "NYUTAG_CONTACT_UNKNOWN"
         const val CONTACT_REQUIRED = "NYUTAG_CONTACT_REQUIRED"
         const val CONTACT_NOT_VERIFIED = "NYUTAG_CONTACT_NOT_VERIFIED"
         const val CHANNEL_UNAVAILABLE = "NYUTAG_CHANNEL_UNAVAILABLE"

@@ -67,4 +67,9 @@
     <string name="nyutag_signup_form_subtitle">Fill in a few fields and you are in.</string>
     <string name="nyutag_signup_verify_subtitle">We sent a code to %1$s. Enter it here.</string>
     <string name="nyutag_signup_optional">(optional)</string>
+    <string name="nyutag_password_reset_title">Reset password</string>
+    <string name="nyutag_password_reset_subtitle">Enter the email your Nyutag account is linked to. We will send a code there.</string>
+    <string name="nyutag_password_reset_new">New password, at least 8 characters</string>
+    <string name="nyutag_password_reset_submit">Save and sign in</string>
+    <string name="nyutag_password_reset_error_unknown">No Nyutag account is linked to this email. Check the address: you may have signed up with a different one.</string>
 </resources>
