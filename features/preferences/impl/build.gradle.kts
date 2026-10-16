@@ -63,6 +63,7 @@ dependencies {
     implementation(projects.libraries.troubleshoot.api)
     implementation(projects.libraries.testtags)
     implementation(projects.libraries.uiStrings)
+    implementation(projects.libraries.donate)
     implementation(projects.libraries.matrixui)
     implementation(projects.libraries.deeplink.api)
     implementation(projects.libraries.mediaviewer.api)

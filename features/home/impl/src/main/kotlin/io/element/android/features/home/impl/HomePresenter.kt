@@ -32,7 +32,14 @@ import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.combine
+import androidx.compose.runtime.mutableStateOf
+import io.element.android.libraries.designsystem.nyutag.NyutagLanguageOption
+import io.element.android.libraries.matrix.api.nyutag.NyutagAnnouncement
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
+import kotlinx.coroutines.delay
+import java.util.Locale
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Inject
 class HomePresenter(
@@ -45,6 +52,7 @@ class HomePresenter(
     private val logoutPresenter: Presenter<DirectLogoutState>,
     private val rageshakeFeatureAvailability: RageshakeFeatureAvailability,
     private val sessionStore: SessionStore,
+    private val nyutagInvites: NyutagInvites,
 ) : Presenter<HomeState> {
     private val currentUserWithNeighborsBuilder = CurrentUserWithNeighborsBuilder()
 
@@ -73,6 +81,16 @@ class HomePresenter(
             // Force a refresh of the profile
             client.getUserProfile()
         }
+        // Нютаг: обращение разработчика — после того, как список успеет появиться.
+        var nyutagAnnouncement by remember { mutableStateOf<NyutagAnnouncement?>(null) }
+        var isNyutagDonateOpen by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            delay(4_000)
+            val language = runCatching { NyutagLanguageOption.current().tags }.getOrDefault("").ifEmpty { Locale.getDefault().language }
+            nyutagInvites.nextAnnouncement(language)
+                .onSuccess { nyutagAnnouncement = it }
+                .onFailure { Timber.w(it, "Nyutag announce: failed") }
+        }
         // Avatar indicator
         val showAvatarIndicator by indicatorService.showRoomListTopBarIndicator()
         val directLogoutState = logoutPresenter.present()
@@ -85,6 +103,16 @@ class HomePresenter(
                 is HomeEvent.SwitchToAccount -> coroutineState.launch {
                     sessionStore.setLatestSession(event.sessionId.value)
                 }
+                is HomeEvent.NyutagAnnouncementDismiss -> {
+                    nyutagAnnouncement?.let { nyutagInvites.markAnnouncement(it, later = true) }
+                    nyutagAnnouncement = null
+                }
+                is HomeEvent.NyutagAnnouncementAction -> {
+                    nyutagAnnouncement?.let { nyutagInvites.markAnnouncement(it, later = false) }
+                    nyutagAnnouncement = null
+                    if (event.action.kind == NyutagAnnouncement.Kind.Donate) isNyutagDonateOpen = true
+                }
+                is HomeEvent.NyutagDonateDismiss -> isNyutagDonateOpen = false
             }
         }
 
@@ -100,6 +128,8 @@ class HomePresenter(
             canReportBug = canReportBug,
             directLogoutState = directLogoutState,
             eventSink = ::handleEvent,
+            nyutagAnnouncement = nyutagAnnouncement,
+            isNyutagDonateOpen = isNyutagDonateOpen,
         )
     }
 }

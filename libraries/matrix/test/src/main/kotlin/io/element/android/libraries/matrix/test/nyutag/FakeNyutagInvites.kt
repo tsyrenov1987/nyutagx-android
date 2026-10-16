@@ -7,6 +7,7 @@
 package io.element.android.libraries.matrix.test.nyutag
 
 import io.element.android.libraries.matrix.api.core.SessionId
+import io.element.android.libraries.matrix.api.nyutag.NyutagAnnouncement
 import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvite
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
@@ -32,6 +33,14 @@ class FakeNyutagInvites(
     var registeredPhone: String? = null
     var registeredSid: String? = null
     val lookedUpPhones = mutableListOf<String>()
+
+    var announcementResult: Result<NyutagAnnouncement?> = Result.success(null)
+    val markedAnnouncements = mutableListOf<Pair<NyutagAnnouncement, Boolean>>()
+
+    override suspend fun nextAnnouncement(language: String) = announcementResult
+    override fun markAnnouncement(announcement: NyutagAnnouncement, later: Boolean) {
+        markedAnnouncements += announcement to later
+    }
 
     override suspend fun signUpConfig() = config
     override suspend fun checkInvite(code: String) = checkInviteResult

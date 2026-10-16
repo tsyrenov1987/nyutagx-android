@@ -40,6 +40,7 @@ dependencies {
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.testtags)
     implementation(projects.libraries.uiStrings)
+    implementation(projects.libraries.donate)
     implementation(projects.libraries.dateformatter.api)
     implementation(projects.libraries.eventformatter.api)
     implementation(projects.libraries.indicator.api)

@@ -14,6 +14,7 @@ import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.nyutag.NyutagContactMedium
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvite
 import io.element.android.libraries.matrix.api.nyutag.NyutagInviteException
+import io.element.android.libraries.matrix.api.nyutag.NyutagAnnouncement
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.api.nyutag.NyutagSignUpConfig
 import io.element.android.libraries.matrix.api.nyutag.NyutagVerification
@@ -32,6 +33,71 @@ class DefaultNyutagInvites(
     private val context: Context,
     private val sessionStore: SessionStore,
 ) : NyutagInvites {
+    private val announcePrefs by lazy { context.getSharedPreferences("nyutag_announce", Context.MODE_PRIVATE) }
+
+    override suspend fun nextAnnouncement(language: String): Result<NyutagAnnouncement?> = call {
+        val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/announce")
+        if (response.status != 200) throw response.toException()
+        val list = response.json().optJSONArray("announcements") ?: JSONArray()
+        (0 until list.length())
+            .mapNotNull { list.optJSONObject(it)?.let { json -> parseAnnouncement(json, language) } }
+            .firstOrNull { shouldShow(it) }
+    }
+
+    override fun markAnnouncement(announcement: NyutagAnnouncement, later: Boolean) {
+        if (later && announcement.repeatDays > 0) {
+            announcePrefs.edit().putLong("later_${announcement.id}", System.currentTimeMillis()).apply()
+        } else {
+            val seen = announcePrefs.getStringSet("seen", emptySet()).orEmpty() + announcement.id
+            announcePrefs.edit().putStringSet("seen", seen).apply()
+        }
+    }
+
+    private fun shouldShow(announcement: NyutagAnnouncement): Boolean {
+        if (announcement.id in announcePrefs.getStringSet("seen", emptySet()).orEmpty()) return false
+        val laterAt = announcePrefs.getLong("later_${announcement.id}", 0L)
+        if (laterAt == 0L) return true
+        if (announcement.repeatDays <= 0) return false
+        return System.currentTimeMillis() - laterAt >= announcement.repeatDays * 86_400_000L
+    }
+
+    private fun localized(value: Any?, language: String): String? {
+        if (value is String) return value.takeIf { it.isNotEmpty() }
+        val table = value as? JSONObject ?: return null
+        for (key in listOf(language, "ru", "en")) {
+            table.optString(key).takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        return table.keys().asSequence().map { table.optString(it) }.firstOrNull { it.isNotEmpty() }
+    }
+
+    private fun parseAnnouncement(json: JSONObject, language: String): NyutagAnnouncement? {
+        val id = json.optString("id").takeIf { it.isNotEmpty() } ?: return null
+        val title = localized(json.opt("title"), language) ?: return null
+        val body = localized(json.opt("body"), language) ?: return null
+        val today = java.time.LocalDate.now()
+        json.optString("from").takeIf { it.isNotEmpty() }?.let { if (today < java.time.LocalDate.parse(it)) return null }
+        json.optString("until").takeIf { it.isNotEmpty() }?.let { if (today > java.time.LocalDate.parse(it)) return null }
+        val actionsJson = json.optJSONArray("actions") ?: JSONArray()
+        val actions = (0 until actionsJson.length()).mapNotNull { i ->
+            val item = actionsJson.optJSONObject(i) ?: return@mapNotNull null
+            val kind = when (item.optString("type")) {
+                "url" -> NyutagAnnouncement.Kind.Url
+                "donate" -> NyutagAnnouncement.Kind.Donate
+                else -> return@mapNotNull null
+            }
+            val label = localized(item.opt("label"), language) ?: return@mapNotNull null
+            NyutagAnnouncement.Action(kind, label, item.optString("url").takeIf { it.isNotEmpty() })
+        }
+        return NyutagAnnouncement(
+            id = id,
+            title = title,
+            body = body,
+            actions = actions,
+            dismissLabel = localized(json.opt("dismiss"), language),
+            repeatDays = json.optInt("repeat_days", 0),
+        )
+    }
+
     override suspend fun signUpConfig(): Result<NyutagSignUpConfig> = call {
         val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/config")
         if (response.status != 200) throw response.toException()

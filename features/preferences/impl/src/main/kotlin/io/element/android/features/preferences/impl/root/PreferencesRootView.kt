@@ -64,6 +64,7 @@ import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconSource
 import io.element.android.libraries.designsystem.theme.components.ListItem
 import io.element.android.libraries.designsystem.theme.components.Text
+import io.element.android.libraries.donate.NyutagDonateDialog
 import io.element.android.libraries.designsystem.utils.CommonDrawables
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
@@ -136,6 +137,16 @@ fun PreferencesRootView(
                 leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
                 onClick = onInviteFriendClick,
             )
+            // Нютаг: просьба поддержать серверы.
+            var isDonateOpen by remember { mutableStateOf(false) }
+            ListItem(
+                content = { Text(stringResource(id = CommonStrings.nyutag_donate_title)) },
+                leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Favourite())),
+                onClick = { isDonateOpen = true },
+            )
+            if (isDonateOpen) {
+                NyutagDonateDialog(onDismiss = { isDonateOpen = false })
+            }
             HorizontalDivider(
                 thickness = 8.dp,
                 color = ElementTheme.colors.bgSubtleSecondary,

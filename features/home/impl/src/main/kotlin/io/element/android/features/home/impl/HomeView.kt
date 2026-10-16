@@ -49,6 +49,8 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
 import io.element.android.features.home.impl.components.RoomListContentView
+import io.element.android.features.home.impl.components.NyutagAnnouncementDialog
+import io.element.android.libraries.donate.NyutagDonateDialog
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.roomlist.RoomListContextMenu
@@ -120,6 +122,13 @@ fun HomeView(
         }
 
         leaveRoomView()
+
+        homeState.nyutagAnnouncement?.let { announcement ->
+            NyutagAnnouncementDialog(announcement = announcement, eventSink = homeState.eventSink)
+        }
+        if (homeState.isNyutagDonateOpen) {
+            NyutagDonateDialog(onDismiss = { homeState.eventSink(HomeEvent.NyutagDonateDismiss) })
+        }
 
         HomeScaffold(
             state = homeState,

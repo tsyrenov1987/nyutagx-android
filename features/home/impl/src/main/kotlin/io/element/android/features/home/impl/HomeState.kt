@@ -8,6 +8,7 @@
 
 package io.element.android.features.home.impl
 
+import io.element.android.libraries.matrix.api.nyutag.NyutagAnnouncement
 import io.element.android.features.home.impl.roomlist.RoomListState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
@@ -31,6 +32,10 @@ data class HomeState(
     val canReportBug: Boolean,
     val directLogoutState: DirectLogoutState,
     val eventSink: (HomeEvent) -> Unit,
+    /** Нютаг: обращение разработчика, показанное окном. */
+    val nyutagAnnouncement: NyutagAnnouncement? = null,
+    /** Окно «Поддержать Нютаг» (кнопка `donate` в обращении). */
+    val isNyutagDonateOpen: Boolean = false,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats && roomListState.displayFilters

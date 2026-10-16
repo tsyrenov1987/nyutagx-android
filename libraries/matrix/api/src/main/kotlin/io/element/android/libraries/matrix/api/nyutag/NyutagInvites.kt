@@ -13,6 +13,12 @@ import io.element.android.libraries.matrix.api.core.SessionId
  * ходим к нему тем же туннелем «Кильватер» и с тем же CA, что и SDK.
  */
 interface NyutagInvites {
+    /** Ближайшее непоказанное обращение разработчика на языке [language] (ru/bxr/en) или null. */
+    suspend fun nextAnnouncement(language: String): Result<NyutagAnnouncement?>
+
+    /** Запомнить, что обращение закрыто: [later] — показать снова через repeatDays, иначе больше не показывать. */
+    fun markAnnouncement(announcement: NyutagAnnouncement, later: Boolean)
+
     /** Что требует сервер при регистрации и какие каналы доставки кодов настроены. */
     suspend fun signUpConfig(): Result<NyutagSignUpConfig>
 
