@@ -107,8 +107,8 @@ class HomePresenterTest {
             val initialState = awaitItem()
             assertThat(initialState.showAvatarIndicator).isFalse()
             indicatorService.setShowRoomListTopBarIndicator(true)
-            val finalState = awaitItem()
-            assertThat(finalState.showAvatarIndicator).isTrue()
+            // Нютаг: точка на аватаре отключена, индикатор остаётся только в настройках.
+            expectNoEvents()
         }
     }
 

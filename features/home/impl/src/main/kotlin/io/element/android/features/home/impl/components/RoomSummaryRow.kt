@@ -325,6 +325,17 @@ private fun MessagePreviewAndIndicatorRow(
                         tint = ElementTheme.colors.iconTertiary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
+                } else if ((room.latestEvent as? LatestEvent.Synced)?.isOwn == true) {
+                    // Нютаг: моё сообщение доставлено на сервер — галочка, как в привычных мессенджерах.
+                    Icon(
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .size(16.dp),
+                        imageVector = CompoundIcons.Check(),
+                        contentDescription = stringResource(CommonStrings.common_sent),
+                        tint = ElementTheme.colors.iconTertiary,
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                 }
                 val messagePreview = room.latestEvent.content()
                 val annotatedMessagePreview = messagePreview as? AnnotatedString ?: AnnotatedString(text = messagePreview.orEmpty().toString())

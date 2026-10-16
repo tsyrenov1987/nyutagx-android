@@ -62,6 +62,7 @@ fun EditUserProfileView(
     state: EditUserProfileState,
     onEditProfileSuccess: () -> Unit,
     modifier: Modifier = Modifier,
+    onAvatarPreview: ((String) -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
     val isAvatarActionsSheetVisible = remember { mutableStateOf(false) }
@@ -121,6 +122,10 @@ fun EditUserProfileView(
                 onClick = ::onAvatarClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 enabled = state.canChangeAvatarUrl,
+                // Нютаг: тап по картинке открывает аватар во весь экран, карандаш — выбор фото.
+                onAvatarClick = state.userAvatarUrl?.takeIf { it.startsWith("mxc://") && onAvatarPreview != null }?.let { url ->
+                    { focusManager.clearFocus(); onAvatarPreview?.invoke(url) }
+                },
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(

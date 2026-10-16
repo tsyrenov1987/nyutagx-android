@@ -48,6 +48,7 @@ import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.mediaviewer.api.FileViewerEntryPoint
+import io.element.android.libraries.mediaviewer.api.MediaViewerEntryPoint
 import io.element.android.libraries.troubleshoot.api.NotificationTroubleShootEntryPoint
 import io.element.android.libraries.troubleshoot.api.PushHistoryEntryPoint
 import kotlinx.parcelize.Parcelize
@@ -64,6 +65,7 @@ class PreferencesFlowNode(
     private val logoutEntryPoint: LogoutEntryPoint,
     private val openSourceLicensesEntryPoint: OpenSourceLicensesEntryPoint,
     private val accountDeactivationEntryPoint: AccountDeactivationEntryPoint,
+    private val mediaViewerEntryPoint: MediaViewerEntryPoint,
 ) : BaseFlowNode<PreferencesFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = plugins.filterIsInstance<PreferencesEntryPoint.Params>().first().initialElement.toNavTarget(),
@@ -117,6 +119,9 @@ class PreferencesFlowNode(
 
         @Parcelize
         data class UserProfile(val matrixUser: MatrixUser) : NavTarget
+
+        @Parcelize
+        data class AvatarPreview(val name: String, val avatarUrl: String) : NavTarget
 
         @Parcelize
         data object BlockedUsers : NavTarget
@@ -341,8 +346,34 @@ class PreferencesFlowNode(
                     override fun onDone() {
                         backstack.pop()
                     }
+
+                    override fun openAvatarPreview(name: String, avatarUrl: String) {
+                        backstack.push(NavTarget.AvatarPreview(name, avatarUrl))
+                    }
                 }
                 createNode<EditUserProfileNode>(buildContext, listOf(inputs, callback))
+            }
+            is NavTarget.AvatarPreview -> {
+                // Нютаг: свой аватар во весь экран из «Редактировать профиль».
+                val callback = object : MediaViewerEntryPoint.Callback {
+                    override fun onDone() {
+                        backstack.pop()
+                    }
+
+                    override fun viewInTimeline(eventId: EventId) = Unit
+
+                    override fun forwardEvent(eventId: EventId, fromPinnedEvents: Boolean) = Unit
+                }
+                val params = mediaViewerEntryPoint.createParamsForAvatar(
+                    filename = navTarget.name,
+                    avatarUrl = navTarget.avatarUrl,
+                )
+                mediaViewerEntryPoint.createNode(
+                    parentNode = this,
+                    buildContext = buildContext,
+                    params = params,
+                    callback = callback,
+                )
             }
             NavTarget.LockScreenSettings -> {
                 lockScreenEntryPoint.createNode(

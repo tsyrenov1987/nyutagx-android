@@ -55,17 +55,29 @@ enum class NyutagWallpaperStyle(
     private val dark: Long,
     private val lightInk: Long,
     private val darkInk: Long,
+    // Пузыри сообщений поверх обоев: свои / чужие, светлая и тёмная тема. Контраст заметно выше, чем у цветов темы.
+    private val lightMine: Long,
+    private val lightOther: Long,
+    private val darkMine: Long,
+    private val darkOther: Long,
 ) {
-    Sky(CommonStrings.nyutag_wallpaper_sky, 0xFFE6EEF6, 0xFF0E141B, 0x171C6FB3, 0x1A4C9BE6),
-    Steppe(CommonStrings.nyutag_wallpaper_steppe, 0xFFE7F0E2, 0xFF0F1610, 0x1A3F7A35, 0x1A6DBE5F),
-    Sand(CommonStrings.nyutag_wallpaper_sand, 0xFFF3EADB, 0xFF1A150F, 0x1A9A6B25, 0x1AD9A227),
-    Dusk(CommonStrings.nyutag_wallpaper_dusk, 0xFFECE7F5, 0xFF15111D, 0x1A6A4AA5, 0x1C9C7BE0),
-    Plain(CommonStrings.nyutag_wallpaper_plain, 0, 0, 0, 0);
+    Sky(CommonStrings.nyutag_wallpaper_sky, 0xFFE6EEF6, 0xFF0E141B, 0x171C6FB3, 0x1A4C9BE6, 0xFFCFE3F8, 0xFFFFFFFF, 0xFF224B70, 0xFF222C36),
+    Steppe(CommonStrings.nyutag_wallpaper_steppe, 0xFFE7F0E2, 0xFF0F1610, 0x1A3F7A35, 0x1A6DBE5F, 0xFFD3EBCB, 0xFFFFFFFF, 0xFF2A4C2E, 0xFF222C24),
+    Sand(CommonStrings.nyutag_wallpaper_sand, 0xFFF3EADB, 0xFF1A150F, 0x1A9A6B25, 0x1AD9A227, 0xFFF0DEBB, 0xFFFFFFFF, 0xFF5A4320, 0xFF2E2620),
+    Dusk(CommonStrings.nyutag_wallpaper_dusk, 0xFFECE7F5, 0xFF15111D, 0x1A6A4AA5, 0x1C9C7BE0, 0xFFDDD3F1, 0xFFFFFFFF, 0xFF3F2F66, 0xFF2A2333),
+    Plain(CommonStrings.nyutag_wallpaper_plain, 0, 0, 0, 0, 0, 0, 0, 0);
 
     /** null — обычный фон темы, без узора. */
     fun background(isLight: Boolean): Color? = if (this == Plain) null else Color(if (isLight) light else dark)
 
     fun ink(isLight: Boolean): Color? = if (this == Plain) null else Color(if (isLight) lightInk else darkInk)
+
+    /** null — цвет пузыря из темы (без обоев). */
+    fun bubble(isMine: Boolean, isLight: Boolean): Color? = when {
+        this == Plain -> null
+        isMine -> Color(if (isLight) lightMine else darkMine)
+        else -> Color(if (isLight) lightOther else darkOther)
+    }
 }
 
 /** Выбранный фон: один на устройство, меняется сразу во всех открытых чатах. */

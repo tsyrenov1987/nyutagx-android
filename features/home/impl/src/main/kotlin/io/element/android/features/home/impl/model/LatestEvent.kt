@@ -15,6 +15,8 @@ sealed interface LatestEvent {
 
     data class Synced(
         val content: CharSequence?,
+        /** Нютаг: последнее сообщение — моё и уже на сервере, в списке показываем галочку. */
+        val isOwn: Boolean = false,
     ) : LatestEvent
 
     data class Sending(

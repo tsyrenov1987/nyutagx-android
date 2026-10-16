@@ -105,6 +105,7 @@ class RoomListRoomSummaryFactory(
                 val content = roomLatestEventFormatter.format(latestEvent, dm).orEmpty()
                 LatestEvent.Synced(
                     content = content,
+                    isOwn = latestEvent.isOwn,
                 )
             }
             is LatestEventValue.RoomInvite -> LatestEvent.None

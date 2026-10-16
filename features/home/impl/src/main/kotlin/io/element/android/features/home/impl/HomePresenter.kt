@@ -91,8 +91,8 @@ class HomePresenter(
                 .onSuccess { nyutagAnnouncement = it }
                 .onFailure { Timber.w(it, "Nyutag announce: failed") }
         }
-        // Avatar indicator
-        val showAvatarIndicator by indicatorService.showRoomListTopBarIndicator()
+        // Нютаг: красную точку на аватаре читают как статус «онлайн»; напоминание о ключе — баннер и строка в настройках.
+        val showAvatarIndicator = false
         val directLogoutState = logoutPresenter.present()
 
         fun handleEvent(event: HomeEvent) {

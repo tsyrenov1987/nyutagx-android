@@ -85,6 +85,8 @@ fun AvatarPickerView(
     onClick: (() -> Unit) = {},
     onClickLabel: String? = stringResource(CommonStrings.a11y_edit_avatar),
     enabled: Boolean = true,
+    // Нютаг: тап по самой картинке (не по карандашу) — например, открыть аватар во весь экран.
+    onAvatarClick: (() -> Unit)? = null,
 ) {
     val a11yAvatar = stringResource(CommonStrings.a11y_avatar)
     val interactionSource = remember { MutableInteractionSource() }
@@ -147,7 +149,13 @@ fun AvatarPickerView(
                 Avatar(
                     avatarData = state.avatarData,
                     avatarType = state.type,
-                    modifier = clickableModifier.then(backgroundModifier),
+                    modifier = if (onAvatarClick != null) {
+                        Modifier
+                            .clickable(onClickLabel = a11yAvatar, onClick = onAvatarClick)
+                            .then(backgroundModifier)
+                    } else {
+                        clickableModifier.then(backgroundModifier)
+                    },
                 )
                 if (enabled) {
                     OverlayEditButton(

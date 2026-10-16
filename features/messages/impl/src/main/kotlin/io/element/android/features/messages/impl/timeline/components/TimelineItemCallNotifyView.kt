@@ -9,6 +9,7 @@
 package io.element.android.features.messages.impl.timeline.components
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +64,8 @@ internal fun TimelineItemCallNotifyView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                // Нютаг: заливка как у чужого пузыря, иначе на обоях рамка «висит в воздухе».
+                .background(MessageEventBubbleDefaults.backgroundBubbleColor(isMine = false), RoundedCornerShape(8.dp))
                 .border(1.dp, ElementTheme.colors.borderInteractiveSecondary, RoundedCornerShape(8.dp))
                 .combinedClickable(
                     enabled = true,

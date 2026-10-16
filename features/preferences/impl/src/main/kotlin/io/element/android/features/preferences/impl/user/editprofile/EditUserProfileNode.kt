@@ -36,6 +36,7 @@ class EditUserProfileNode(
 
     interface Callback : Plugin {
         fun onDone()
+        fun openAvatarPreview(name: String, avatarUrl: String)
     }
 
     val matrixUser = inputs<Inputs>().matrixUser
@@ -51,7 +52,8 @@ class EditUserProfileNode(
         EditUserProfileView(
             state = state,
             onEditProfileSuccess = ::close,
-            modifier = modifier
+            modifier = modifier,
+            onAvatarPreview = { url -> callback.openAvatarPreview(state.displayName, url) },
         )
     }
 
