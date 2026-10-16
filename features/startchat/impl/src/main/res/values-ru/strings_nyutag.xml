@@ -18,6 +18,7 @@
     <string name="nyutag_by_phone_invite_text">Приглашаю тебя в Нютаг, наш мессенджер: %2$s\nКод приглашения: %1$s</string>
     <string name="nyutag_by_phone_no_sms_app">Нет приложения для SMS</string>
     <string name="nyutag_by_phone_pick_failed">Не удалось прочитать номер из контакта, введите его вручную</string>
+    <string name="nyutag_by_phone_other_contacts">Остальные контакты</string>
     <string name="nyutag_by_phone_own_title">Ваш номер не указан</string>
     <string name="nyutag_by_phone_own_subtitle">Укажите его, чтобы друзья нашли вас. Сам номер никто не увидит.</string>
     <string name="nyutag_by_phone_own_label">Ваш номер телефона</string>

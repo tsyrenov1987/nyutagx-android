@@ -17,8 +17,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
@@ -27,11 +29,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -44,12 +47,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.startchat.impl.R
+import io.element.android.features.startchat.impl.root.NyutagContactsPermissionRow
 import io.element.android.libraries.androidutils.system.startSharePlainTextIntent
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.AsyncData
@@ -63,6 +68,7 @@ import io.element.android.libraries.designsystem.theme.components.ButtonSize
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.IconSource
+import io.element.android.libraries.designsystem.theme.components.ListSectionHeader
 import io.element.android.libraries.designsystem.theme.components.OutlinedButton
 import io.element.android.libraries.designsystem.theme.components.Scaffold
 import io.element.android.libraries.designsystem.theme.components.Text
@@ -78,6 +84,8 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.qrcode.QrCodeImage
 import io.element.android.libraries.ui.strings.CommonStrings
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,61 +118,19 @@ fun FindByPhoneView(
             )
         },
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(padding)
                 .consumeWindowInsets(padding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .imePadding(),
+            contentPadding = PaddingValues(vertical = 8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.nyutag_by_phone_subtitle),
-                style = ElementTheme.typography.fontBodyMdRegular,
-                color = ElementTheme.colors.textSecondary,
+            item { SearchBlock(state, onPickContact = { runCatching { pickContact.launch(Unit) } }, onSearch = ::search) }
+            phoneBook(
+                state = state,
+                onPick = { state.eventSink(FindByPhoneEvent.PickContact(it)) },
+                onGranted = { state.eventSink(FindByPhoneEvent.ContactsGranted) },
             )
-            Spacer(Modifier.height(16.dp))
-            TextField(
-                label = stringResource(R.string.nyutag_by_phone_label),
-                value = state.phone,
-                placeholder = "+7 900 000-00-00",
-                onValueChange = { state.eventSink(FindByPhoneEvent.SetPhone(it.filterNot { ch -> ch == '\n' })) },
-                trailingIcon = {
-                    IconButton(onClick = { runCatching { pickContact.launch(Unit) } }) {
-                        Icon(
-                            imageVector = CompoundIcons.UserProfile(),
-                            contentDescription = stringResource(R.string.nyutag_by_phone_pick_contact),
-                        )
-                    }
-                },
-                supportingText = state.search.errorOrNull()?.let { stringResource(errorRes(it)) },
-                validity = if (state.search is AsyncData.Failure) TextFieldValidity.Invalid else TextFieldValidity.None,
-                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Phone, imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { if (state.canSearch) search() }),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(12.dp))
-            Button(
-                text = stringResource(R.string.nyutag_by_phone_search),
-                onClick = ::search,
-                enabled = state.canSearch,
-                showProgress = state.search.isLoading(),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(24.dp))
-            when (val search = state.search) {
-                is AsyncData.Success -> {
-                    val user = search.data
-                    if (user != null) FoundUser(user, onWrite = { state.eventSink(FindByPhoneEvent.StartDM(user)) }) else NotFound(state)
-                }
-                else -> Unit
-            }
-            if (state.hasOwnPhone == false) {
-                Spacer(Modifier.height(32.dp))
-                OwnPhoneCard(state)
-            }
-            Spacer(Modifier.height(24.dp))
         }
     }
     AsyncActionView(
@@ -176,6 +142,107 @@ fun FindByPhoneView(
         errorMessage = { stringResource(R.string.screen_start_chat_error_starting_chat) },
         onErrorDismiss = { state.eventSink(FindByPhoneEvent.CancelStartDM) },
     )
+}
+
+/** Поле номера, кнопка «Найти», итог поиска и карточка своего номера — верх экрана. */
+@Composable
+private fun SearchBlock(state: FindByPhoneState, onPickContact: () -> Unit, onSearch: () -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = stringResource(R.string.nyutag_by_phone_subtitle),
+            style = ElementTheme.typography.fontBodyMdRegular,
+            color = ElementTheme.colors.textSecondary,
+        )
+        Spacer(Modifier.height(16.dp))
+        TextField(
+            label = stringResource(R.string.nyutag_by_phone_label),
+            value = state.phone,
+            placeholder = "+7 900 000-00-00",
+            onValueChange = { state.eventSink(FindByPhoneEvent.SetPhone(it.filterNot { ch -> ch == '\n' })) },
+            trailingIcon = {
+                IconButton(onClick = onPickContact) {
+                    Icon(
+                        imageVector = CompoundIcons.UserProfile(),
+                        contentDescription = stringResource(R.string.nyutag_by_phone_pick_contact),
+                    )
+                }
+            },
+            supportingText = state.search.errorOrNull()?.let { stringResource(errorRes(it)) },
+            validity = if (state.search is AsyncData.Failure) TextFieldValidity.Invalid else TextFieldValidity.None,
+            keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Phone, imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { if (state.canSearch) onSearch() }),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(12.dp))
+        Button(
+            text = stringResource(R.string.nyutag_by_phone_search),
+            onClick = onSearch,
+            enabled = state.canSearch,
+            showProgress = state.search.isLoading(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(24.dp))
+        when (val search = state.search) {
+            is AsyncData.Success -> {
+                val user = search.data
+                if (user != null) FoundUser(user, onWrite = { state.eventSink(FindByPhoneEvent.StartDM(user)) }) else NotFound(state)
+            }
+            else -> Unit
+        }
+        if (state.hasOwnPhone == false) {
+            Spacer(Modifier.height(32.dp))
+            OwnPhoneCard(state)
+        }
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+/** Телефонная книга под поиском: сначала те, кто уже в Нютаге, ниже остальные; ввод в поле сужает список. */
+private fun LazyListScope.phoneBook(state: FindByPhoneState, onPick: (FindByPhoneContact) -> Unit, onGranted: () -> Unit) {
+    if (!state.canReadContacts) {
+        item { NyutagContactsPermissionRow(onGranted = onGranted) }
+        return
+    }
+    val contacts = state.visibleContacts
+    val inNyutag = contacts.filter { it.user != null }
+    val others = contacts.filter { it.user == null }
+    if (inNyutag.isNotEmpty()) {
+        item { ListSectionHeader(title = stringResource(R.string.nyutag_contacts_section), hasDivider = false) }
+        items(inNyutag, key = { "n:" + it.phone }) { contact ->
+            MatrixUserRow(
+                modifier = Modifier.clickable { onPick(contact) },
+                matrixUser = contact.user!!.copy(displayName = contact.name),
+            )
+        }
+    }
+    if (others.isNotEmpty()) {
+        item { ListSectionHeader(title = stringResource(R.string.nyutag_by_phone_other_contacts), hasDivider = inNyutag.isNotEmpty()) }
+        items(others, key = { "p:" + it.phone }) { contact -> PhoneBookRow(contact, onClick = { onPick(contact) }) }
+    }
+}
+
+@Composable
+private fun PhoneBookRow(contact: FindByPhoneContact, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+    ) {
+        Text(
+            text = contact.name,
+            style = ElementTheme.typography.fontBodyLgRegular,
+            color = ElementTheme.colors.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = contact.phone,
+            style = ElementTheme.typography.fontBodySmRegular,
+            color = ElementTheme.colors.textSecondary,
+        )
+    }
 }
 
 @Composable
@@ -397,6 +464,16 @@ internal class FindByPhoneStateProvider : PreviewParameterProvider<FindByPhoneSt
         aState(phone = "+7 900 000-00-01", search = AsyncData.Success(null)),
         aState(phone = "+7 900 000-00-01", search = AsyncData.Success(null), invite = AsyncData.Success(NyutagInvite("7KQ2-M9XA", 0L))),
         aState(phone = "+7 900", search = AsyncData.Failure(NyutagInviteException(NyutagInviteException.NETWORK, "")), hasOwnPhone = false),
+        aState(canReadContacts = false),
+        aState(
+            contacts = AsyncData.Success(
+                persistentListOf(
+                    FindByPhoneContact("Баир", "+7 900 111-22-33", MatrixUser(UserId("@bair:nyutag.chat"), "Bair")),
+                    FindByPhoneContact("Аюна", "+7 900 555-66-77"),
+                    FindByPhoneContact("Сэсэг", "8 900 111-00-00"),
+                )
+            ),
+        ),
     )
 
     private fun aState(
@@ -404,6 +481,8 @@ internal class FindByPhoneStateProvider : PreviewParameterProvider<FindByPhoneSt
         search: AsyncData<MatrixUser?> = AsyncData.Uninitialized,
         invite: AsyncData<NyutagInvite> = AsyncData.Uninitialized,
         hasOwnPhone: Boolean? = true,
+        canReadContacts: Boolean = true,
+        contacts: AsyncData<ImmutableList<FindByPhoneContact>> = AsyncData.Uninitialized,
     ) = FindByPhoneState(
         phone = phone,
         search = search,
@@ -412,6 +491,8 @@ internal class FindByPhoneStateProvider : PreviewParameterProvider<FindByPhoneSt
         ownPhone = "",
         ownPhoneSave = AsyncAction.Uninitialized,
         startDmAction = AsyncAction.Uninitialized,
+        canReadContacts = canReadContacts,
+        contacts = contacts,
         eventSink = {},
     )
 }

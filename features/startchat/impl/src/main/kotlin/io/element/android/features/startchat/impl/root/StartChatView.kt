@@ -305,7 +305,7 @@ private fun LazyListScope.nyutagContacts(state: StartChatState, onContactClick: 
 }
 
 @Composable
-private fun NyutagContactsPermissionRow(onGranted: () -> Unit) {
+internal fun NyutagContactsPermissionRow(onGranted: () -> Unit) {
     var denied by rememberSaveable { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         denied = !granted

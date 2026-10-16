@@ -23,9 +23,15 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagAddressBook
+import io.element.android.libraries.matrix.api.nyutag.NyutagContact
+import io.element.android.libraries.matrix.api.nyutag.NyutagContactsSync
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvite
 import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
+import io.element.android.libraries.matrix.api.nyutag.NyutagMatchedContact
 import io.element.android.libraries.matrix.api.user.MatrixUser
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -34,6 +40,8 @@ class FindByPhonePresenter(
     private val invites: NyutagInvites,
     private val matrixClient: MatrixClient,
     private val startDMAction: StartDMAction,
+    private val addressBook: NyutagAddressBook,
+    private val contactsSync: NyutagContactsSync,
 ) : Presenter<FindByPhoneState> {
     @Composable
     override fun present(): FindByPhoneState {
@@ -48,10 +56,25 @@ class FindByPhonePresenter(
         var ownPhoneSave by remember { mutableStateOf<AsyncAction<Unit>>(AsyncAction.Uninitialized) }
         val startDmAction: MutableState<AsyncAction<RoomId>> = remember { mutableStateOf(AsyncAction.Uninitialized) }
         var searchJob by remember { mutableStateOf<Job?>(null) }
+        var canReadContacts by remember { mutableStateOf(addressBook.canRead()) }
+        var contacts by remember { mutableStateOf<AsyncData<ImmutableList<FindByPhoneContact>>>(AsyncData.Uninitialized) }
 
         LaunchedEffect(Unit) {
             invites.hasPhone(matrixClient.sessionId).onSuccess { hasOwnPhone = it }
         }
+
+        // Книга показывается сразу с прошлой сверкой, затем уточняется с сервера (не чаще раза в час).
+        fun loadContacts() = scope.launch {
+            canReadContacts = addressBook.canRead()
+            if (!canReadContacts) return@launch
+            val book = addressBook.contacts()
+            contacts = AsyncData.Loading(mergeContacts(book, contactsSync.cached(matrixClient.sessionId).orEmpty()))
+            contacts = contactsSync.sync(matrixClient.sessionId).fold(
+                onSuccess = { AsyncData.Success(mergeContacts(book, it)) },
+                onFailure = { AsyncData.Success(contacts.dataOrNull() ?: mergeContacts(book, emptyList())) },
+            )
+        }
+        LaunchedEffect(Unit) { loadContacts() }
 
         fun phoneKey(value: String) = value.filter { it.isDigit() }
 
@@ -102,6 +125,13 @@ class FindByPhonePresenter(
                     startDMAction.execute(event.user, createIfDmDoesNotExist = true, actionState = startDmAction)
                 }
                 FindByPhoneEvent.CancelStartDM -> startDmAction.value = AsyncAction.Uninitialized
+                FindByPhoneEvent.ContactsGranted -> loadContacts()
+                is FindByPhoneEvent.PickContact -> {
+                    val user = event.contact.user
+                    // Имя — как записано в книжке, аватар — из профиля в Нютаге.
+                    if (user != null) handleEvent(FindByPhoneEvent.StartDM(user.copy(displayName = event.contact.name)))
+                    else handleEvent(FindByPhoneEvent.PickedPhone(event.contact.phone))
+                }
                 is FindByPhoneEvent.SetOwnPhone -> {
                     ownPhone = event.phone
                     if (ownPhoneSave is AsyncAction.Failure) ownPhoneSave = AsyncAction.Uninitialized
@@ -129,7 +159,19 @@ class FindByPhonePresenter(
             ownPhone = ownPhone,
             ownPhoneSave = ownPhoneSave,
             startDmAction = startDmAction.value,
+            canReadContacts = canReadContacts,
+            contacts = contacts,
             eventSink = ::handleEvent,
         )
     }
+}
+
+/** Книга с пометкой, кто в Нютаге: такие — наверх, дальше остальные по имени. */
+internal fun mergeContacts(book: List<NyutagContact>, matched: List<NyutagMatchedContact>): ImmutableList<FindByPhoneContact> {
+    fun key(phone: String) = phone.filter { it.isDigit() }.takeLast(10)
+    val users = matched.associateBy({ key(it.phone) }, { it.user })
+    return book
+        .map { FindByPhoneContact(name = it.name, phone = it.phone, user = users[key(it.phone)]) }
+        .sortedWith(compareByDescending<FindByPhoneContact> { it.user != null }.thenBy { it.name.lowercase() })
+        .toImmutableList()
 }
