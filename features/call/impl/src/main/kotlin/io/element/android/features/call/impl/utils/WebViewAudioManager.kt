@@ -22,6 +22,8 @@ import io.element.android.libraries.core.extensions.runCatchingExceptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -159,6 +161,36 @@ class WebViewAudioManager(
      * Marks if the WebView audio is in call mode or not.
      */
     val isInCallMode = AtomicBoolean(false)
+
+    /** Нютаг: звук сейчас идёт через встроенный динамик (громкая связь) — для кнопки в свёрнутом окне. */
+    private val _isSpeakerOn = MutableStateFlow(false)
+    val isSpeakerOn: StateFlow<Boolean> = _isSpeakerOn
+
+    /**
+     * Нютаг: переключить громкую связь из свёрнутого окна. Включаем встроенный динамик либо
+     * возвращаемся к лучшему из остальных устройств (гарнитура, провод, разговорный динамик)
+     * и сообщаем об этом Element Call, чтобы его интерфейс остался в согласии.
+     */
+    fun toggleSpeaker() {
+        val devices = listAudioDevices()
+        val target = if (_isSpeakerOn.value) {
+            devices.firstOrNull { it.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER && it.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE }
+        } else {
+            devices.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+        }
+        if (target == null) {
+            Timber.w("Audio: speaker toggle from PiP has nowhere to switch (devices: ${devices.map { it.type }})")
+            return
+        }
+        val id = target.id.toString()
+        Timber.d("Audio: toggling speaker from PiP, selecting ${deviceName(target.type, target.productName.toString())}")
+        previousSelectedDevice = target
+        ecRequestedDeviceId = id
+        audioManager.selectAudioDevice(target)
+        coroutineScope.launch(Dispatchers.Main) {
+            webView.evaluateJavascript("controls.setAudioDevice(\"$id\");", null)
+        }
+    }
 
     init {
         // Apparently, registering the javascript interface takes a while, so registering and immediately using it doesn't work
@@ -321,6 +353,7 @@ class WebViewAudioManager(
      * @param device The info of the audio device to select, or none to clear the selected device.
      */
     private fun AudioManager.selectAudioDevice(device: AudioDeviceInfo?) {
+        _isSpeakerOn.value = device?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (device != null) {
                 runCatchingExceptions {

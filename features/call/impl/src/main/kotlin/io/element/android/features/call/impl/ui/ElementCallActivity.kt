@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.core.app.PictureInPictureModeChangedInfo
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
@@ -54,6 +55,7 @@ import io.element.android.features.call.impl.pip.PictureInPictureEvent
 import io.element.android.features.call.impl.pip.PictureInPicturePresenter
 import io.element.android.features.call.impl.pip.PictureInPictureState
 import io.element.android.features.call.impl.pip.PipView
+import io.element.android.features.call.impl.utils.WebViewAudioManager
 import io.element.android.features.call.impl.services.CallForegroundService
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.libraries.androidutils.browser.ConsoleMessageLogger
@@ -70,6 +72,7 @@ import io.element.android.libraries.designsystem.utils.hasCompactHeightWindowSiz
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.ui.strings.CommonStrings
+import kotlinx.coroutines.flow.flowOf
 import timber.log.Timber
 
 private val loggerTag = LoggerTag("ElementCallActivity")
@@ -99,13 +102,16 @@ class ElementCallActivity :
 
     private var currentPipOrientation: Int? = null
 
-    // Нютаг: кнопки в свёрнутом окне звонка (микрофон, завершить) — через широковещательные намерения.
+    // Нютаг: кнопки в свёрнутом окне звонка (микрофон, громкая связь, завершить) — через широковещательные намерения.
     private var isMicrophoneEnabled = true
+    private var isSpeakerOn = false
+    private var webViewAudioManager by mutableStateOf<WebViewAudioManager?>(null)
     private val pipActionReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 ACTION_PIP_HANG_UP -> eventSink?.invoke(CallScreenEvent.Hangup)
                 ACTION_PIP_TOGGLE_MICROPHONE -> eventSink?.invoke(CallScreenEvent.ToggleMicrophone)
+                ACTION_PIP_TOGGLE_SPEAKER -> webViewAudioManager?.toggleSpeaker()
             }
         }
     }
@@ -137,6 +143,7 @@ class ElementCallActivity :
             IntentFilter().apply {
                 addAction(ACTION_PIP_HANG_UP)
                 addAction(ACTION_PIP_TOGGLE_MICROPHONE)
+                addAction(ACTION_PIP_TOGGLE_SPEAKER)
             },
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
@@ -193,6 +200,13 @@ class ElementCallActivity :
                             setPipParams()
                         }
                     }
+                    val speakerOn by (webViewAudioManager?.isSpeakerOn ?: flowOf(false)).collectAsState(initial = false)
+                    LaunchedEffect(speakerOn) {
+                        isSpeakerOn = speakerOn
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            setPipParams()
+                        }
+                    }
                     CallScreenView(
                         state = state,
                         pipState = pipState,
@@ -202,7 +216,8 @@ class ElementCallActivity :
                         requestPermissions = { permissions, callback ->
                             requestPermissionCallback = callback
                             requestPermissionsLauncher.launch(permissions)
-                        }
+                        },
+                        onAudioManagerChanged = { webViewAudioManager = it },
                     )
                 }
             }
@@ -362,7 +377,7 @@ class ElementCallActivity :
             .build()
     }
 
-    /** Нютаг: кнопки свёрнутого окна — микрофон и завершить звонок. */
+    /** Нютаг: кнопки свёрнутого окна — микрофон, громкая связь и завершить звонок. */
     @RequiresApi(Build.VERSION_CODES.O)
     private fun pipActions(): List<RemoteAction> {
         fun action(requestCode: Int, actionName: String, icon: Int, title: String) = RemoteAction(
@@ -381,8 +396,13 @@ class ElementCallActivity :
         } else {
             action(1, ACTION_PIP_TOGGLE_MICROPHONE, CompoundDrawables.ic_compound_mic_off, getString(CommonStrings.common_unmute))
         }
+        val speaker = if (isSpeakerOn) {
+            action(3, ACTION_PIP_TOGGLE_SPEAKER, CompoundDrawables.ic_compound_volume_on, getString(R.string.nyutag_call_speaker_off))
+        } else {
+            action(3, ACTION_PIP_TOGGLE_SPEAKER, CompoundDrawables.ic_compound_volume_off, getString(R.string.nyutag_call_speaker_on))
+        }
         val hangUp = action(2, ACTION_PIP_HANG_UP, CompoundDrawables.ic_compound_end_call, getString(R.string.nyutag_call_end))
-        return listOf(microphone, hangUp)
+        return listOf(microphone, speaker, hangUp)
     }
 
     override fun hangUp() {
@@ -392,6 +412,7 @@ class ElementCallActivity :
     companion object {
         private const val ACTION_PIP_HANG_UP = "chat.nyutag.messenger.call.PIP_HANG_UP"
         private const val ACTION_PIP_TOGGLE_MICROPHONE = "chat.nyutag.messenger.call.PIP_TOGGLE_MICROPHONE"
+        private const val ACTION_PIP_TOGGLE_SPEAKER = "chat.nyutag.messenger.call.PIP_TOGGLE_SPEAKER"
     }
 }
 

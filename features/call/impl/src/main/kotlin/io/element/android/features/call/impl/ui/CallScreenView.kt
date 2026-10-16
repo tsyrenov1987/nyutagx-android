@@ -64,6 +64,7 @@ internal fun CallScreenView(
     onConsoleMessage: (ConsoleMessage) -> Unit,
     requestPermissions: (Array<String>, RequestPermissionCallback) -> Unit,
     modifier: Modifier = Modifier,
+    onAudioManagerChanged: (WebViewAudioManager?) -> Unit = {},
 ) {
     var callWebView by remember { mutableStateOf<WebView?>(null) }
 
@@ -132,6 +133,7 @@ internal fun CallScreenView(
                     coroutineScope = coroutineScope,
                     onInvalidAudioDeviceAdded = { invalidAudioDeviceReason = it },
                 )
+                onAudioManagerChanged(webViewAudioManager)
                 state.eventSink(CallScreenEvent.SetupMessageChannels(interceptor))
                 val pipController = WebViewPipController(
                     webView = webView,
@@ -145,6 +147,7 @@ internal fun CallScreenView(
                 callWebView = null
                 // Reset audio mode
                 webViewAudioManager?.onCallStopped()
+                onAudioManagerChanged(null)
             }
         )
         when (state.urlState) {
