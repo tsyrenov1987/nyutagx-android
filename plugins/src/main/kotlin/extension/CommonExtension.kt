@@ -102,6 +102,9 @@ fun defaultComposeLintOptions(lint: Lint) = lint.apply {
     error.add("ComposableLambdaParameterPosition")
     ignoreTestFixturesSources = true
     checkGeneratedSources = false
+    // Нютаг: lintVital перед release-сборкой гоняет lint по ~190 модулям и на Маке 8 ГБ забивает
+    // metaspace демона (сборка 26.09.8 висела 90 мин в GC). Полный lint запускается отдельно задачей lint.
+    checkReleaseBuilds = false
 }
 
 fun Project.defaultLintOptions(lint: Lint) = lint.apply {
@@ -116,4 +119,7 @@ fun Project.defaultLintOptions(lint: Lint) = lint.apply {
     ignoreTestSources = true
     ignoreTestFixturesSources = true
     checkGeneratedSources = false
+    // Нютаг: lintVital перед release-сборкой гоняет lint по ~190 модулям и на Маке 8 ГБ забивает
+    // metaspace демона (сборка 26.09.8 висела 90 мин в GC). Полный lint запускается отдельно задачей lint.
+    checkReleaseBuilds = false
 }
