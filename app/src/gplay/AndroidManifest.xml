@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: в сборке для Google Play не запрашиваем установку APK из чата
+     (политика Play для REQUEST_INSTALL_PACKAGES) и не объявляем службу
+     трансляции геопозиции: без ключа MapTiler функция недоступна, а Play
+     требует демонстрацию каждой службы переднего плана. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission
+        android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        tools:node="remove" />
+
+    <application>
+        <service
+            android:name="io.element.android.features.location.impl.live.service.LiveLocationSharingService"
+            tools:node="remove" />
+    </application>
+
+</manifest>
