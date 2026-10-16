@@ -17,6 +17,7 @@
     <string name="nyutag_by_phone_share">Эльгээхэ</string>
     <string name="nyutag_by_phone_invite_text">Нютаг — манай мессенджер руу урижа байнаб: %2$s\nУрилгын код: %1$s</string>
     <string name="nyutag_by_phone_no_sms_app">SMS эльгээхэ программа үгы</string>
+    <string name="nyutag_by_phone_pick_failed">Контактһаа дугаар уншагдабагүй, өөрөө оруулагты</string>
     <string name="nyutag_by_phone_own_title">Таны дугаар оруулагдаагүй</string>
     <string name="nyutag_by_phone_own_subtitle">Нүхэдтнай таниие олохын тула оруулагты. Дугаарыетнай хэншье харахагүй.</string>
     <string name="nyutag_by_phone_own_label">Таны утаһанай дугаар</string>

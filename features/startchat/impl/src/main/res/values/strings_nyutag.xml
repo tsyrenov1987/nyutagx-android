@@ -17,6 +17,7 @@
     <string name="nyutag_by_phone_share">Send</string>
     <string name="nyutag_by_phone_invite_text">Join me in Nyutag, our messenger: %2$s\nInvitation code: %1$s</string>
     <string name="nyutag_by_phone_no_sms_app">No app for SMS</string>
+    <string name="nyutag_by_phone_pick_failed">Could not read the number from this contact, type it in</string>
     <string name="nyutag_by_phone_own_title">Your number is not set</string>
     <string name="nyutag_by_phone_own_subtitle">Add it so friends can find you. Nobody will see the number itself.</string>
     <string name="nyutag_by_phone_own_label">Your phone number</string>

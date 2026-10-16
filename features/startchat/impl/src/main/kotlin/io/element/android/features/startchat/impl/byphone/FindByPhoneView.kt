@@ -78,6 +78,7 @@ import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.MatrixUserRow
 import io.element.android.libraries.qrcode.QrCodeImage
 import io.element.android.libraries.ui.strings.CommonStrings
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +92,10 @@ fun FindByPhoneView(
     val context = LocalContext.current
     val pickContact = rememberLauncherForActivityResult(PickPhoneContract()) { uri ->
         val phone = uri?.let { context.readPickedPhone(it) }
-        if (!phone.isNullOrBlank()) state.eventSink(FindByPhoneEvent.PickedPhone(phone))
+        when {
+            !phone.isNullOrBlank() -> state.eventSink(FindByPhoneEvent.PickedPhone(phone))
+            uri != null -> Toast.makeText(context, R.string.nyutag_by_phone_pick_failed, Toast.LENGTH_SHORT).show()
+        }
     }
     fun search() {
         keyboard?.hide()
@@ -355,11 +359,26 @@ private class PickPhoneContract : ActivityResultContract<Unit, Uri?>() {
     override fun parseResult(resultCode: Int, intent: Intent?): Uri? = intent?.data.takeIf { resultCode == Activity.RESULT_OK }
 }
 
-private fun Context.readPickedPhone(uri: Uri): String? = runCatching {
-    contentResolver.query(uri, arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER), null, null, null)?.use { cursor ->
-        if (cursor.moveToFirst()) cursor.getString(0) else null
+private fun Context.readPickedPhone(uri: Uri): String? {
+    // Обычный случай: системное окно отдаёт строку данных, её читаем напрямую.
+    readPhoneColumn(uri, null, null)?.let { return it }
+    // Оболочки с «безопасным доступом к контактам» (HONOR/Huawei) отдают ссылку без номера
+    // или без прав на чтение — тогда ищем ту же строку через общий справочник телефонов.
+    val id = uri.lastPathSegment?.toLongOrNull() ?: return null
+    val phones = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+    return readPhoneColumn(phones, "${ContactsContract.CommonDataKinds.Phone._ID} = ?", arrayOf(id.toString()))
+        ?: readPhoneColumn(phones, "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?", arrayOf(id.toString()))
+}
+
+private fun Context.readPhoneColumn(uri: Uri, selection: String?, args: Array<String>?): String? = runCatching {
+    contentResolver.query(uri, null, selection, args, null)?.use { cursor ->
+        if (!cursor.moveToFirst()) return@use null
+        val index = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER).takeIf { it >= 0 }
+            ?: cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER).takeIf { it >= 0 }
+            ?: return@use null
+        cursor.getString(index)
     }
-}.getOrNull()
+}.onFailure { Timber.w(it, "readPickedPhone %s", uri) }.getOrNull()?.takeIf { it.isNotBlank() }
 
 @StringRes
 private fun errorRes(error: Throwable): Int = when ((error as? NyutagInviteException)?.errcode) {
