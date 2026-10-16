@@ -24,10 +24,40 @@ object NyutagTunnel {
      */
     private const val CATALOGUE_ASSET = "nyutag/catalogue.txt"
 
-    private fun catalogue(context: Context): String? = try {
+    private fun bundledCatalogue(context: Context): String? = try {
         context.assets.open(CATALOGUE_ASSET).bufferedReader().use { it.readText() }.trim().ifEmpty { null }
     } catch (e: java.io.IOException) {
         null
+    }
+
+    /** Последний состав входов с ядра ([NyutagCatalogue]); меняется без выпуска сборки. */
+    private const val CATALOGUE_PREFS = "nyutag_catalogue"
+    private const val CATALOGUE_KEY = "json"
+    private const val CATALOGUE_PATH = "/_nyutag/v1/catalogue"
+
+    private fun catalogue(context: Context): String? {
+        val saved = context.getSharedPreferences(CATALOGUE_PREFS, Context.MODE_PRIVATE).getString(CATALOGUE_KEY, null)
+        return NyutagCatalogue.compose(bundledCatalogue(context), NyutagCatalogue.parse(saved))
+    }
+
+    @Volatile private var catalogueRefreshed = false
+
+    /**
+     * Раз за процесс, уже через поднятый туннель, спрашивает у ядра актуальный состав входов и сохраняет его.
+     * Работающий туннель не перезапускается (живые соединения не рвём) — новый состав берётся при следующем запуске.
+     */
+    private fun refreshCatalogue(context: Context) {
+        if (catalogueRefreshed) return
+        catalogueRefreshed = true
+        Thread({
+            runCatching {
+                val response = NyutagHttp.request(context, "GET", CATALOGUE_PATH)
+                if (response.status != 200) return@runCatching
+                val fetched = NyutagCatalogue.parse(response.body) ?: return@runCatching
+                context.getSharedPreferences(CATALOGUE_PREFS, Context.MODE_PRIVATE).edit().putString(CATALOGUE_KEY, fetched.toJson()).apply()
+                Timber.i("Nyutag tunnel: catalogue v%d saved, %d paths", fetched.version, fetched.paths.size)
+            }.onFailure { Timber.w(it, "Nyutag tunnel: catalogue refresh failed") }
+        }, "nyutag-catalogue").apply { isDaemon = true }.start()
     }
 
     /** Ядро за входом; TLS сквозной, сертификат выпущен [CA_PEM]. */
@@ -89,6 +119,7 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
                 return null
             }
         }
+        refreshCatalogue(context)
         return "socks5h://${Mobile.socksUser()}:${Mobile.socksPass()}@127.0.0.1:$port"
     }
 
