@@ -42,6 +42,7 @@ import io.element.android.libraries.matrix.impl.auth.qrlogin.toStep
 import io.element.android.libraries.matrix.impl.exception.mapClientException
 import io.element.android.libraries.matrix.impl.keys.SecretGenerator
 import io.element.android.libraries.matrix.impl.mapper.toSessionData
+import io.element.android.libraries.matrix.impl.nyutag.NyutagPasswordRecovery
 import io.element.android.libraries.matrix.impl.paths.SessionPathsFactory
 import io.element.android.libraries.sessionstorage.api.LoginType
 import io.element.android.libraries.sessionstorage.api.SessionData
@@ -169,7 +170,7 @@ class RustMatrixAuthenticationService(
                         passphrase = pendingKey.formattedAsString(),
                         sessionPaths = currentSessionPaths,
                     )
-                finalizeClientCreation(sessionData)
+                finalizeClientCreation(sessionData, password)
             }.mapFailure { failure ->
                 Timber.e(failure, "Failed to login")
                 failure.mapAuthenticationException()
@@ -372,7 +373,8 @@ class RustMatrixAuthenticationService(
             }
         }
 
-    private suspend fun finalizeClientCreation(sessionData: SessionData): SessionId {
+    /** Нютаг: [password] — пароль аккаунта при входе паролем; им запирается и открывается хранилище ключей, см. [NyutagPasswordRecovery]. */
+    private suspend fun finalizeClientCreation(sessionData: SessionData, password: String? = null): SessionId {
         // Nyutag: right after login the SDK spawns an E2EE setup task on the login client (cross-signing bootstrap with
         // the login credentials, key backup creation). Closing the client does not stop that task, so the final client
         // used to open the same stores while it was still running: it then had no private cross-signing keys, created a
@@ -400,6 +402,12 @@ class RustMatrixAuthenticationService(
         matrixClient.syncService.startSync()
 
         matrixClient.waitForKnownVerificationState()
+
+        // Нютаг: ключи шифрования под паролем аккаунта — пока экранов сессии ещё нет, чтобы не мигало «Подтвердите личность».
+        if (password != null) {
+            runCatchingExceptions { NyutagPasswordRecovery.afterLogin(matrixClient, password) }
+                .onFailure { Timber.w(it, "Nyutag recovery: failed after login") }
+        }
 
         newMatrixClientObservers.forEach { it.invoke(matrixClient) }
         sessionStore.addSession(sessionData)

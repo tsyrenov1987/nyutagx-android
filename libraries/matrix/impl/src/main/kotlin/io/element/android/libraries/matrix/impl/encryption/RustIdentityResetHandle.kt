@@ -16,18 +16,21 @@ import io.element.android.libraries.matrix.api.encryption.IdentityResetHandle
 import org.matrix.rustcomponents.sdk.AuthData
 import org.matrix.rustcomponents.sdk.AuthDataPasswordDetails
 import org.matrix.rustcomponents.sdk.CrossSigningResetAuthType
+import timber.log.Timber
 
 object RustIdentityResetHandleFactory {
+    /** Нютаг: [afterPasswordReset] получает пароль после удачного сброса паролем — им заводится новое хранилище ключей. */
     fun create(
         userId: UserId,
-        identityResetHandle: org.matrix.rustcomponents.sdk.IdentityResetHandle?
+        identityResetHandle: org.matrix.rustcomponents.sdk.IdentityResetHandle?,
+        afterPasswordReset: suspend (String) -> Unit = {},
     ): Result<IdentityResetHandle?> {
         return runCatchingExceptions {
             identityResetHandle?.let {
                 when (val authType = identityResetHandle.authType()) {
                     is CrossSigningResetAuthType.OAuth -> RustIdentityOAuthResetHandle(identityResetHandle, authType.info.approvalUrl)
                     // User interactive authentication (user + password)
-                    CrossSigningResetAuthType.Uiaa -> RustPasswordIdentityResetHandle(userId, identityResetHandle)
+                    CrossSigningResetAuthType.Uiaa -> RustPasswordIdentityResetHandle(userId, identityResetHandle, afterPasswordReset)
                 }
             }
         }
@@ -37,9 +40,12 @@ object RustIdentityResetHandleFactory {
 class RustPasswordIdentityResetHandle(
     private val userId: UserId,
     private val identityResetHandle: org.matrix.rustcomponents.sdk.IdentityResetHandle,
+    private val afterPasswordReset: suspend (String) -> Unit = {},
 ) : IdentityPasswordResetHandle {
     override suspend fun resetPassword(password: String): Result<Unit> {
         return runCatchingExceptions { identityResetHandle.reset(AuthData.Password(AuthDataPasswordDetails(userId.value, password))) }
+            // Сброс удался — хранилище ключей заводим тем же паролем; его неудача сброс не отменяет.
+            .onSuccess { runCatchingExceptions { afterPasswordReset(password) }.onFailure { Timber.w(it, "Nyutag recovery: failed after identity reset") } }
     }
 
     override suspend fun cancel() {
