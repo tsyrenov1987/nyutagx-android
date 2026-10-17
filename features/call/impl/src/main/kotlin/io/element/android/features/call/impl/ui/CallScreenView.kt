@@ -20,7 +20,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.element.android.features.call.impl.R
 import io.element.android.features.call.impl.pip.PictureInPictureEvent
@@ -100,56 +104,69 @@ internal fun CallScreenView(
             }
         }
 
-        CallWebView(
-            modifier = modifier.consumeWindowInsets(WindowInsets.systemBars).fillMaxSize(),
-            url = state.urlState,
-            userAgent = state.userAgent,
-            onPermissionsRequest = { request ->
-                val androidPermissions = mapWebkitPermissions(request.resources)
-                val callback: RequestPermissionCallback = { request.grant(it) }
-                requestPermissions(androidPermissions.toTypedArray(), callback)
-            },
-            onConsoleMessage = onConsoleMessage,
-            onCreateWebView = { webView ->
-                callWebView = webView
-                webView.addBackHandler(onBackPressed = ::handleBack)
-                NyutagIcePolicy.install(webView)
-                val interceptor = WebViewWidgetMessageInterceptor(
-                    webView = webView,
-                    onUrlLoaded = { url ->
-                        webView.evaluateJavascript("controls.onBackButtonPressed = () => { backHandler.onBackPressed() }", null)
-                        if (webViewAudioManager?.isInCallMode?.get() == false) {
-                            Timber.d("URL $url is loaded, starting in-call audio mode")
-                            webViewAudioManager?.onCallStarted()
-                            pipState.eventSink(PictureInPictureEvent.OnCallStarted)
-                        } else {
-                            Timber.d("Can't start in-call audio mode since the app is already in it.")
+        Box(modifier = modifier.fillMaxSize()) {
+            CallWebView(
+                modifier = Modifier.consumeWindowInsets(WindowInsets.systemBars).fillMaxSize(),
+                url = state.urlState,
+                userAgent = state.userAgent,
+                onPermissionsRequest = { request ->
+                    val androidPermissions = mapWebkitPermissions(request.resources)
+                    val callback: RequestPermissionCallback = { request.grant(it) }
+                    requestPermissions(androidPermissions.toTypedArray(), callback)
+                },
+                onConsoleMessage = onConsoleMessage,
+                onCreateWebView = { webView ->
+                    callWebView = webView
+                    webView.addBackHandler(onBackPressed = ::handleBack)
+                    NyutagIcePolicy.install(webView)
+                    val interceptor = WebViewWidgetMessageInterceptor(
+                        webView = webView,
+                        onUrlLoaded = { url ->
+                            webView.evaluateJavascript("controls.onBackButtonPressed = () => { backHandler.onBackPressed() }", null)
+                            if (webViewAudioManager?.isInCallMode?.get() == false) {
+                                Timber.d("URL $url is loaded, starting in-call audio mode")
+                                webViewAudioManager?.onCallStarted()
+                                pipState.eventSink(PictureInPictureEvent.OnCallStarted)
+                            } else {
+                                Timber.d("Can't start in-call audio mode since the app is already in it.")
+                            }
+                        },
+                        onError = { state.eventSink(CallScreenEvent.OnWebViewError(it)) },
+                    )
+                    webViewAudioManager = WebViewAudioManager(
+                        webView = webView,
+                        coroutineScope = coroutineScope,
+                        onInvalidAudioDeviceAdded = { invalidAudioDeviceReason = it },
+                    )
+                    onAudioManagerChanged(webViewAudioManager)
+                    state.eventSink(CallScreenEvent.SetupMessageChannels(interceptor))
+                    val pipController = WebViewPipController(
+                        webView = webView,
+                        updatePipOrientation = { orientation ->
+                            pipState.eventSink(PictureInPictureEvent.SetPipOrientation(orientation))
                         }
-                    },
-                    onError = { state.eventSink(CallScreenEvent.OnWebViewError(it)) },
+                    )
+                    pipState.eventSink(PictureInPictureEvent.SetPipController(pipController))
+                },
+                onDestroyWebView = {
+                    callWebView = null
+                    // Reset audio mode
+                    webViewAudioManager?.onCallStopped()
+                    onAudioManagerChanged(null)
+                }
+            )
+            // Нютаг: таймер разговора поверх Element Call, как в Telegram; в свёрнутом окне не нужен.
+            // Отступ сверху — под шапку Element Call с именем собеседника (≈56 dp), чтобы не перекрывать её.
+            state.joinedAtMillis?.takeIf { !pipState.isInPictureInPicture }?.let { joinedAt ->
+                NyutagCallDuration(
+                    joinedAtMillis = joinedAt,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                        .padding(top = 56.dp),
                 )
-                webViewAudioManager = WebViewAudioManager(
-                    webView = webView,
-                    coroutineScope = coroutineScope,
-                    onInvalidAudioDeviceAdded = { invalidAudioDeviceReason = it },
-                )
-                onAudioManagerChanged(webViewAudioManager)
-                state.eventSink(CallScreenEvent.SetupMessageChannels(interceptor))
-                val pipController = WebViewPipController(
-                    webView = webView,
-                    updatePipOrientation = { orientation ->
-                        pipState.eventSink(PictureInPictureEvent.SetPipOrientation(orientation))
-                    }
-                )
-                pipState.eventSink(PictureInPictureEvent.SetPipController(pipController))
-            },
-            onDestroyWebView = {
-                callWebView = null
-                // Reset audio mode
-                webViewAudioManager?.onCallStopped()
-                onAudioManagerChanged(null)
             }
-        )
+        }
         when (state.urlState) {
             AsyncData.Uninitialized,
             is AsyncData.Loading ->

@@ -27,6 +27,7 @@ internal fun aCallScreenState(
     userAgent: String = "",
     isCallActive: Boolean = true,
     isMicrophoneEnabled: Boolean = true,
+    joinedAtMillis: Long? = null,
     eventSink: (CallScreenEvent) -> Unit = {},
 ): CallScreenState {
     return CallScreenState(
@@ -35,6 +36,7 @@ internal fun aCallScreenState(
         userAgent = userAgent,
         isCallActive = isCallActive,
         isMicrophoneEnabled = isMicrophoneEnabled,
+        joinedAtMillis = joinedAtMillis,
         eventSink = eventSink,
     )
 }

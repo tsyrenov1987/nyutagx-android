@@ -162,7 +162,7 @@ private fun NotificationSettingsContentView(
                         Text(stringResource(id = R.string.full_screen_intent_banner_title))
                     },
                     supportingContent = {
-                        Text(stringResource(R.string.full_screen_intent_banner_message))
+                        Text(stringResource(CommonStrings.nyutag_call_permissions_banner_message))
                     },
                     onClick = {
                         state.fullScreenIntentPermissionsState.eventSink(FullScreenIntentPermissionsEvent.OpenSettings)

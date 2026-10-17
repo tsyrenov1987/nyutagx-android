@@ -9,6 +9,7 @@
 package io.element.android.libraries.fullscreenintent.impl
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
@@ -25,6 +26,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsEvent
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
 import io.element.android.libraries.preferences.api.store.PreferenceDataStoreFactory
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 @SingleIn(AppScope::class)
 @Inject
 class FullScreenIntentPermissionsPresenter(
+    @ApplicationContext private val context: Context,
     private val buildVersionSdkIntProvider: BuildVersionSdkIntProvider,
     private val externalIntentLauncher: ExternalIntentLauncher,
     private val buildMeta: BuildMeta,
@@ -61,7 +64,9 @@ class FullScreenIntentPermissionsPresenter(
     @Composable
     override fun present(): FullScreenIntentPermissionsState {
         val coroutineScope = rememberCoroutineScope()
-        val isGranted = notificationManagerCompat.canUseFullScreenIntent()
+        // Нютаг: звонок показываем поверх других приложений, как Telegram, — для этого на Android 10+ нужно ещё
+        // разрешение «поверх других приложений»; без него баннер остаётся и ведёт в его настройки.
+        val isGranted = notificationManagerCompat.canUseFullScreenIntent() && canDrawOverlays()
         val isBannerDismissed by isFullScreenIntentBannerDismissed.collectAsState(initial = true)
 
         fun handleEvent(event: FullScreenIntentPermissionsEvent) {
@@ -80,7 +85,20 @@ class FullScreenIntentPermissionsPresenter(
         )
     }
 
+    private fun canDrawOverlays(): Boolean {
+        if (!buildVersionSdkIntProvider.isAtLeast(Build.VERSION_CODES.Q)) return true
+        return Settings.canDrawOverlays(context)
+    }
+
     private fun openFullScreenIntentSettings() {
+        if (notificationManagerCompat.canUseFullScreenIntent() && !canDrawOverlays()) {
+            try {
+                externalIntentLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${buildMeta.applicationId}".toUri()))
+            } catch (_: ActivityNotFoundException) {
+                externalIntentLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+            }
+            return
+        }
         if (buildVersionSdkIntProvider.isAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)) {
             try {
                 val intent = Intent(

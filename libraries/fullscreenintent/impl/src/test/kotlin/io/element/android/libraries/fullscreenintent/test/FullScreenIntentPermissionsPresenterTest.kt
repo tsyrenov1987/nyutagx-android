@@ -10,6 +10,7 @@ package io.element.android.libraries.fullscreenintent.test
 
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.moleculeFlow
@@ -27,6 +28,7 @@ import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -125,11 +127,17 @@ class FullScreenIntentPermissionsPresenterTest {
         externalIntentLauncher: ExternalIntentLauncher = FakeExternalIntentLauncher(),
         buildMeta: BuildMeta = aBuildMeta(),
         notificationManagerCompat: NotificationManagerCompat = mockk(relaxed = true)
-    ) = FullScreenIntentPermissionsPresenter(
+    ): FullScreenIntentPermissionsPresenter {
+        // Нютаг: разрешение «поверх других приложений» в этих тестах считаем выданным.
+        mockkStatic(Settings::class)
+        every { Settings.canDrawOverlays(any()) } returns true
+        return FullScreenIntentPermissionsPresenter(
+        context = mockk(relaxed = true),
         buildVersionSdkIntProvider = buildVersionSdkIntProvider,
         externalIntentLauncher = externalIntentLauncher,
         buildMeta = buildMeta,
         preferencesDataStoreFactory = dataStoreFactory,
         notificationManagerCompat = notificationManagerCompat,
-    )
+        )
+    }
 }

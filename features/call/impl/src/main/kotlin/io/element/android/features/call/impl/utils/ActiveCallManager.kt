@@ -92,7 +92,7 @@ interface ActiveCallManager {
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
 class DefaultActiveCallManager(
-    @ApplicationContext context: Context,
+    @ApplicationContext private val context: Context,
     @AppCoroutineScope
     private val coroutineScope: CoroutineScope,
     private val onMissedCallNotificationHandler: OnMissedCallNotificationHandler,
@@ -284,6 +284,9 @@ class DefaultActiveCallManager(
         }.onFailure {
             Timber.e(it, "Failed to publish notification for incoming call")
         }
+        // Нютаг: как в Telegram — экран входящего сразу поверх других приложений, не дожидаясь, пока система сама
+        // решит показать full-screen intent (на разблокированном телефоне она показывает лишь шторку).
+        NyutagIncomingCallLauncher.showOverOtherApps(context, notificationData)
     }
 
     private fun cancelIncomingCallNotification() {

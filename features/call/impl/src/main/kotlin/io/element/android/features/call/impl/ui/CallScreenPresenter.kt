@@ -88,6 +88,7 @@ class CallScreenPresenter(
         var ignoreWebViewError by rememberSaveable { mutableStateOf(false) }
         var webViewError by remember { mutableStateOf<String?>(null) }
         var isMicrophoneEnabled by remember { mutableStateOf(true) }
+        var joinedAtMillis by remember { mutableStateOf<Long?>(null) }
         val languageTag = languageTagProvider.provideLanguageTag()
         val theme = "dark"
 
@@ -138,6 +139,9 @@ class CallScreenPresenter(
                                 close(callWidgetDriver.value, navigator)
                             } else if (parsedMessage.action == WidgetMessage.Action.ContentLoaded) {
                                 isWidgetLoaded = true
+                            } else if (parsedMessage.action == WidgetMessage.Action.Join) {
+                                // Нютаг: Element Call сообщил о входе в разговор — с этого момента идёт таймер.
+                                if (joinedAtMillis == null) joinedAtMillis = clock.epochMillis()
                             } else if (parsedMessage.action == WidgetMessage.Action.DeviceMute) {
                                 // Нютаг: Element Call сообщает состояние микрофона — для кнопки в свёрнутом окне.
                                 (parsedMessage.data as? JsonObject)?.get("audio_enabled")?.jsonPrimitive?.booleanOrNull?.let { isMicrophoneEnabled = it }
@@ -209,6 +213,7 @@ class CallScreenPresenter(
             userAgent = userAgent,
             isCallActive = isWidgetLoaded,
             isMicrophoneEnabled = isMicrophoneEnabled,
+            joinedAtMillis = joinedAtMillis,
             eventSink = ::handleEvent,
         )
     }

@@ -12,12 +12,14 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.features.call.impl.utils.DefaultCallWidgetProvider
 import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.widget.CallWidgetSettingsProvider
+import io.element.android.libraries.matrix.api.widget.MatrixWidgetSettings
 import io.element.android.libraries.matrix.test.A_ROOM_ID
 import io.element.android.libraries.matrix.test.A_SESSION_ID
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.FakeMatrixClientProvider
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
+import io.element.android.libraries.matrix.test.room.aRoomInfo
 import io.element.android.libraries.matrix.test.widget.FakeCallWidgetSettingsProvider
 import io.element.android.libraries.matrix.test.widget.FakeMatrixWidgetDriver
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -125,6 +127,33 @@ class DefaultCallWidgetProviderTest {
         provider.getWidget(A_SESSION_ID, A_ROOM_ID, false, "clientId", "languageTag", "theme")
 
         assertThat(settingsProvider.providedBaseUrls).containsExactly("https://custom.element.io")
+    }
+
+    @Test
+    fun `getWidget - a room of two people is a direct call even without the DM flag`() = runTest {
+        val directFlags = mutableListOf<Boolean>()
+        val settingsProvider = FakeCallWidgetSettingsProvider { _, _, _, direct, _, _ ->
+            directFlags += direct
+            MatrixWidgetSettings("id", true, "url")
+        }
+        val client = FakeMatrixClient()
+        val provider = createProvider(
+            matrixClientProvider = FakeMatrixClientProvider { Result.success(client) },
+            callWidgetSettingsProvider = settingsProvider,
+        )
+        for ((activeMembers, isDm) in listOf(2L to false, 3L to false, 3L to true)) {
+            client.givenGetRoomResult(
+                A_ROOM_ID,
+                FakeJoinedRoom(
+                    baseRoom = FakeBaseRoom(initialRoomInfo = aRoomInfo(isDm = isDm, activeMembersCount = activeMembers)),
+                    generateWidgetWebViewUrlResult = { _, _, _, _ -> Result.success("url") },
+                    getWidgetDriverResult = { Result.success(FakeMatrixWidgetDriver()) },
+                ),
+            )
+            provider.getWidget(A_SESSION_ID, A_ROOM_ID, false, "clientId", "languageTag", "theme").getOrThrow()
+        }
+
+        assertThat(directFlags).containsExactly(true, false, true).inOrder()
     }
 
     private fun createProvider(

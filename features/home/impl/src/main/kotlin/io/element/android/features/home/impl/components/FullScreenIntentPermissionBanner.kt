@@ -28,7 +28,7 @@ fun FullScreenIntentPermissionBanner(
 ) {
     Announcement(
         title = stringResource(R.string.full_screen_intent_banner_title),
-        description = stringResource(R.string.full_screen_intent_banner_message),
+        description = stringResource(CommonStrings.nyutag_call_permissions_banner_message),
         type = AnnouncementType.Actionable(
             actionText = stringResource(CommonStrings.action_continue),
             onDismissClick = { state.eventSink(FullScreenIntentPermissionsEvent.Dismiss) },

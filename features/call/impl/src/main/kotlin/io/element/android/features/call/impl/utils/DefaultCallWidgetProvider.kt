@@ -50,10 +50,14 @@ class DefaultCallWidgetProvider(
 
         val roomInfo = room.info()
         val isEncrypted = roomInfo.isEncrypted ?: room.getUpdatedIsEncrypted().getOrThrow()
+        // Нютаг: разговор двоих — всегда личный звонок, как в Telegram: без лобби «Присоединиться», со звонком собеседнику
+        // и завершением, когда он положил трубку. Пометка «личный чат» (m.direct) у второго участника часто отсутствует,
+        // и Element Call открывал ему лобби при приёме входящего.
+        val isOneToOne = roomInfo.activeMembersCount == 2L
         val widgetSettings = callWidgetSettingsProvider.provide(
             baseUrl = baseUrl,
             encrypted = isEncrypted,
-            direct = room.isDm(),
+            direct = room.isDm() || isOneToOne,
             isAudioCall = isAudioCall,
             hasActiveCall = roomInfo.hasRoomCall,
         )

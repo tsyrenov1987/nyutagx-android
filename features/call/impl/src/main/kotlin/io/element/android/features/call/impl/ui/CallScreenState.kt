@@ -17,5 +17,7 @@ data class CallScreenState(
     val isCallActive: Boolean,
     /** Нютаг: включён ли микрофон (по сообщениям Element Call). */
     val isMicrophoneEnabled: Boolean,
+    /** Нютаг: когда вошли в разговор (эпоха, мс) — для таймера; null, пока звонок не начался. */
+    val joinedAtMillis: Long?,
     val eventSink: (CallScreenEvent) -> Unit,
 )
