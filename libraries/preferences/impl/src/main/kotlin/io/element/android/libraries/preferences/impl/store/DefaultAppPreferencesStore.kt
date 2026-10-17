@@ -34,6 +34,7 @@ private val customElementCallBaseUrlKey = stringPreferencesKey("elementCallBaseU
 private val themeKey = stringPreferencesKey("theme")
 private val hideInviteAvatarsKey = booleanPreferencesKey("hideInviteAvatars")
 private val otherAccountsExpandedKey = booleanPreferencesKey("otherAccountsExpanded")
+private val nyutagNotificationHintShownKey = booleanPreferencesKey("nyutagNotificationHintShown")
 private val timelineMediaPreviewValueKey = stringPreferencesKey("timelineMediaPreviewValue")
 private val liveLocationMinimumDistanceUpdateKey = intPreferencesKey("liveLocationMinimumDistanceUpdate")
 private val logLevelKey = stringPreferencesKey("logLevel")
@@ -119,6 +120,18 @@ class DefaultAppPreferencesStore(
     override fun getLiveLocationMinimumDistanceInMetersUpdateFlow(): Flow<Int> {
         return store.data.map { prefs ->
             prefs[liveLocationMinimumDistanceUpdateKey] ?: 10
+        }
+    }
+
+    override suspend fun setNyutagNotificationHintShown(shown: Boolean) {
+        store.edit { prefs ->
+            prefs[nyutagNotificationHintShownKey] = shown
+        }
+    }
+
+    override fun isNyutagNotificationHintShownFlow(): Flow<Boolean> {
+        return store.data.map { prefs ->
+            prefs[nyutagNotificationHintShownKey] ?: false
         }
     }
 

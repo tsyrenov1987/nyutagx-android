@@ -15,4 +15,7 @@ sealed interface LoggedInEvent {
     data object DismissLocalNetworkPermissionPrompt : LoggedInEvent
 
     data object RequestLocationNetworkPermission : LoggedInEvent
+
+    /** Нютаг: подсказка про уведомления закрыта (кнопкой «Проверить» или «Позже») — больше не показывать. */
+    data object CloseNotificationHint : LoggedInEvent
 }

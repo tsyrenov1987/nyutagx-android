@@ -23,6 +23,7 @@ open class LoggedInStatePreviewParam : PreviewParameterProvider<LoggedInState> {
             aLoggedInState(forceNativeSlidingSyncMigration = true),
             aLoggedInState(localNetworkPermissionDialog = LocalNetworkPermissionDialog.Rationale),
             aLoggedInState(localNetworkPermissionDialog = LocalNetworkPermissionDialog.Settings),
+            aLoggedInState(showNotificationHint = true),
         )
 }
 
@@ -32,6 +33,7 @@ fun aLoggedInState(
     forceNativeSlidingSyncMigration: Boolean = false,
     appName: String = "Element X",
     localNetworkPermissionDialog: LocalNetworkPermissionDialog = LocalNetworkPermissionDialog.None,
+    showNotificationHint: Boolean = false,
 ) = LoggedInState(
     syncIndicatorState = syncIndicatorState,
     pusherRegistrationState = pusherRegistrationState,
@@ -39,5 +41,6 @@ fun aLoggedInState(
     forceNativeSlidingSyncMigration = forceNativeSlidingSyncMigration,
     appName = appName,
     localNetworkPermissionDialog = localNetworkPermissionDialog,
+    showNotificationHint = showNotificationHint,
     eventSink = {},
 )

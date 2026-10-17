@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: одноразовая подсказка про уведомления на Xiaomi/Huawei/Honor. Бурятский — черновик, ждёт проверки носителем. -->
+<resources>
+    <string name="nyutag_notification_hint_title">Notifications on this phone</string>
+    <string name="nyutag_notification_hint_content">Phones of this brand save battery by putting Nyutag to sleep in the background, so messages can arrive late. The notification check shows what to switch on.</string>
+    <string name="nyutag_notification_hint_check">Check</string>
+    <string name="nyutag_notification_hint_later">Later</string>
+</resources>

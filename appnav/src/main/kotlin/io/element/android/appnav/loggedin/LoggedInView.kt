@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.lifecycle.Lifecycle
 import io.element.android.appnav.R
 import io.element.android.libraries.architecture.AsyncData
+import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialog
 import io.element.android.libraries.designsystem.components.dialogs.ErrorDialogWithDoNotShowAgain
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -89,6 +90,20 @@ fun LoggedInView(
         onSubmit = { state.eventSink(LoggedInEvent.RequestLocationNetworkPermission) },
         onDismiss = { state.eventSink(LoggedInEvent.DismissLocalNetworkPermissionPrompt) },
     )
+
+    if (state.showNotificationHint) {
+        ConfirmationDialog(
+            title = stringResource(R.string.nyutag_notification_hint_title),
+            content = stringResource(R.string.nyutag_notification_hint_content),
+            submitText = stringResource(R.string.nyutag_notification_hint_check),
+            cancelText = stringResource(R.string.nyutag_notification_hint_later),
+            onSubmitClick = {
+                state.eventSink(LoggedInEvent.CloseNotificationHint)
+                navigateToNotificationTroubleshoot()
+            },
+            onDismiss = { state.eventSink(LoggedInEvent.CloseNotificationHint) },
+        )
+    }
 }
 
 private fun Throwable.getReason(): String? {

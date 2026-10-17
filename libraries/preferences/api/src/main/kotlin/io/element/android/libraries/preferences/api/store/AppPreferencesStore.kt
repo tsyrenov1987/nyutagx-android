@@ -61,6 +61,15 @@ interface AppPreferencesStore {
     fun getLiveLocationMinimumDistanceInMetersUpdateFlow(): Flow<Int>
 
     /**
+     * Нютаг: подсказка «проверьте уведомления» на телефонах, которые усыпляют приложения в фоне (Xiaomi, Huawei, Honor).
+     * @param shown true, когда подсказку показали — второй раз она не нужна.
+     */
+    suspend fun setNyutagNotificationHintShown(shown: Boolean)
+
+    /** Показывали ли подсказку про уведомления; по умолчанию `false`. */
+    fun isNyutagNotificationHintShownFlow(): Flow<Boolean>
+
+    /**
      * Only used to clear the local value once it has been migrated to the server.
      *
      * @param hide the local setting, or `null` to erase it.

@@ -24,5 +24,7 @@ data class LoggedInState(
     val forceNativeSlidingSyncMigration: Boolean,
     val appName: String,
     val localNetworkPermissionDialog: LocalNetworkPermissionDialog,
+    /** Нютаг: одноразовая подсказка «проверьте уведомления» на телефонах, усыпляющих приложения в фоне. */
+    val showNotificationHint: Boolean,
     val eventSink: (LoggedInEvent) -> Unit,
 )

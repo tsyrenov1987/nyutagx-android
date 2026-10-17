@@ -10,6 +10,7 @@ package io.element.android.libraries.matrix.impl.nyutag
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
 import app.farvater.core.mobile.Mobile
@@ -115,6 +116,9 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
     private var appContext: Context? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
+    /** Имя сети, которое ядро знает сейчас ([NyutagNetworkKey]); повтор того же имени ему не шлём. */
+    private var toldNetwork = "cell"
+
     /**
      * Поднимает ядро один раз на процесс и возвращает URL SOCKS-прокси для reqwest
      * (`socks5h://user:pass@127.0.0.1:port`); null — если ядро не поднялось (тогда SDK пойдёт напрямую и упрётся в закрытый порт).
@@ -130,7 +134,9 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
             try {
                 Mobile.setMemoryFile(context.filesDir.resolve("nyutag-core-memory.json").path)
                 val p = ServerSocket(0).use { it.localPort }
-                Mobile.start(catalogue, p.toLong(), network(context))
+                val network = network(context)
+                Mobile.start(catalogue, p.toLong(), network)
+                toldNetwork = network
                 port = p
             } catch (e: Exception) {
                 Timber.e(e, "Nyutag tunnel failed to start")
@@ -163,15 +169,39 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
     }
 
     /**
-     * Смена сети (Wi-Fi ↔ мобильная ↔ провод) — ядру, как делает iOS: оно переключает память путей на новую сеть
-     * и обновляет общие соединения, без перезапуска туннеля. Ядро само игнорирует повтор того же имени.
+     * Смена сети (другой Wi-Fi ↔ мобильная ↔ провод) — ядру, как делает iOS: оно переключает память путей на новую
+     * сеть и обновляет общие соединения, без перезапуска туннеля. Имя Wi-Fi складывается из возможностей сети и
+     * её шлюзов, поэтому ждём и то и другое — как в Farvater.
      */
     private fun watchNetwork(context: Context) {
         if (networkCallback != null) return
         val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-                if (!Mobile.running()) return
-                runCatching { Mobile.setNetwork(networkName(caps)) }.onFailure { Timber.w(it, "Nyutag tunnel: setNetwork failed") }
+            private var on: Network? = null
+            private var caps: NetworkCapabilities? = null
+            private var links: LinkProperties? = null
+
+            override fun onAvailable(network: Network) {
+                on = network
+                caps = null
+                links = null
+            }
+
+            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                if (network != on) return
+                caps = networkCapabilities
+                report()
+            }
+
+            override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+                if (network != on) return
+                links = linkProperties
+                report()
+            }
+
+            private fun report() {
+                val c = caps ?: return
+                val l = links ?: return
+                networkChanged(networkName(c, l))
             }
         }
         runCatching { context.getSystemService(ConnectivityManager::class.java).registerDefaultNetworkCallback(callback) }
@@ -179,15 +209,30 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
             .onFailure { Timber.w(it, "Nyutag tunnel: network callback not registered") }
     }
 
-    private fun network(context: Context): String {
-        val cm = context.getSystemService(ConnectivityManager::class.java)
-        val caps = cm.getNetworkCapabilities(cm.activeNetwork) ?: return "cell"
-        return networkName(caps)
+    /** Ядру — только когда [next] другая сеть, чем та, о которой оно знает. */
+    @Synchronized
+    private fun networkChanged(next: String) {
+        val key = NyutagNetworkKey.change(toldNetwork, next) ?: return
+        toldNetwork = key
+        if (!Mobile.running()) return
+        runCatching { Mobile.setNetwork(key) }.onFailure { Timber.w(it, "Nyutag tunnel: setNetwork failed") }
     }
 
-    private fun networkName(caps: NetworkCapabilities): String = when {
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "wifi"
-        caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "wired"
-        else -> "cell"
+    private fun network(context: Context): String {
+        val cm = context.getSystemService(ConnectivityManager::class.java)
+        val active = cm.activeNetwork
+        val caps = cm.getNetworkCapabilities(active) ?: return "cell"
+        return networkName(caps, cm.getLinkProperties(active))
+    }
+
+    private fun networkName(caps: NetworkCapabilities, links: LinkProperties?): String {
+        val gateways = links?.routes.orEmpty()
+            .filter { it.isDefaultRoute && it.gateway?.isAnyLocalAddress == false }
+            .mapNotNull { it.gateway?.hostAddress }
+        return NyutagNetworkKey.of(
+            wifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI),
+            wired = caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET),
+            gateways = gateways,
+        )
     }
 }

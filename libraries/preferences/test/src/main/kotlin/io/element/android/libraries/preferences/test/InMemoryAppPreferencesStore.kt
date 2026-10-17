@@ -27,6 +27,7 @@ class InMemoryAppPreferencesStore(
     timelineMediaPreviewValue: MediaPreviewValue? = null,
     theme: String? = null,
     liveLocationMinimumDistanceUpdate: Int = 10,
+    nyutagNotificationHintShown: Boolean = false,
     logLevel: LogLevel = LogLevel.INFO,
     traceLogPacks: Set<TraceLogPack> = emptySet(),
     homeserverHistory: List<String> = emptyList(),
@@ -42,6 +43,7 @@ class InMemoryAppPreferencesStore(
     private val customElementCallBaseUrl = MutableStateFlow(customElementCallBaseUrl)
     private val theme = MutableStateFlow(theme)
     private val liveLocationMinimumDistanceUpdate = MutableStateFlow(liveLocationMinimumDistanceUpdate)
+    private val nyutagNotificationHintShown = MutableStateFlow(nyutagNotificationHintShown)
     private val logLevel = MutableStateFlow(logLevel)
     private val tracingLogPacks = MutableStateFlow(traceLogPacks)
     private val homeserverHistory = MutableStateFlow(homeserverHistory)
@@ -92,6 +94,14 @@ class InMemoryAppPreferencesStore(
 
     override fun getLiveLocationMinimumDistanceInMetersUpdateFlow(): Flow<Int> {
         return liveLocationMinimumDistanceUpdate
+    }
+
+    override suspend fun setNyutagNotificationHintShown(shown: Boolean) {
+        nyutagNotificationHintShown.value = shown
+    }
+
+    override fun isNyutagNotificationHintShownFlow(): Flow<Boolean> {
+        return nyutagNotificationHintShown
     }
 
     @Deprecated("Use MediaPreviewService instead. Kept only for migration.")

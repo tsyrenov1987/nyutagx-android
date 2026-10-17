@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nyutag_notification_hint_title">Уведомления на этом телефоне</string>
+    <string name="nyutag_notification_hint_content">Телефоны этой марки берегут батарею и усыпляют Нютаг в фоне, поэтому сообщения могут приходить с опозданием. Проверка уведомлений покажет, что включить.</string>
+    <string name="nyutag_notification_hint_check">Проверить</string>
+    <string name="nyutag_notification_hint_later">Позже</string>
+</resources>

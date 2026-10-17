@@ -34,7 +34,9 @@ internal object NyutagHttp {
     }
 
     private const val CONNECT_TIMEOUT_MS = 15_000
-    private const val READ_TIMEOUT_MS = 40_000
+
+    /** Ответ ядра через туннель приходит за секунды; 20 с без ответа — «нет связи, попробуйте ещё раз», а не минутное ожидание. */
+    private const val READ_TIMEOUT_MS = 20_000
     private const val MAX_BODY = 256 * 1024
 
     private val sslContext: SSLContext by lazy {

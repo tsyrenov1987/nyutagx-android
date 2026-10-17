@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Черновик, ждёт проверки носителем. -->
+<resources>
+    <string name="nyutag_notification_hint_title">Энэ утаһан дээрэ мэдээсэлнүүд</string>
+    <string name="nyutag_notification_hint_content">Энэ маркын утаһанууд батарей хэмнэжэ, Нютагые арада унтуулна, тиимэһээ бэшэгүүд хожомдожо ерэжэ магад. Мэдээсэлэй шалгалта юу залахыень харуулха.</string>
+    <string name="nyutag_notification_hint_check">Шалгаха</string>
+    <string name="nyutag_notification_hint_later">Һүүлдэ</string>
+</resources>

@@ -9,6 +9,7 @@
 package io.element.android.appnav.loggedin
 
 import android.Manifest
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,6 +44,7 @@ import io.element.android.libraries.permissions.api.PermissionsEvent
 import io.element.android.libraries.permissions.api.PermissionsPresenter
 import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPermissionAdvisor
 import io.element.android.libraries.permissions.api.localnetwork.LocalNetworkPermissionDialog
+import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import io.element.android.libraries.push.api.PushService
 import io.element.android.libraries.push.api.PusherRegistrationFailure
 import io.element.android.services.analytics.api.AnalyticsService
@@ -57,6 +59,9 @@ import kotlin.time.Duration.Companion.seconds
 
 private val pusherTag = LoggerTag("Pusher", LoggerTag.PushLoggerTag)
 
+/** Производители, чьи прошивки по умолчанию глушат фон (MIUI/HyperOS, EMUI, MagicOS). */
+private val SLEEPY_MANUFACTURERS = setOf("xiaomi", "huawei", "honor")
+
 @Inject
 class LoggedInPresenter(
     private val matrixClient: MatrixClient,
@@ -68,6 +73,7 @@ class LoggedInPresenter(
     private val buildMeta: BuildMeta,
     private val networkMonitor: NetworkMonitor,
     private val localNetworkPermissionAdvisor: LocalNetworkPermissionAdvisor,
+    private val appPreferencesStore: AppPreferencesStore,
     permissionsPresenterFactory: PermissionsPresenter.Factory,
 ) : Presenter<LoggedInState> {
     private val localNetworkPermissionsPresenter: PermissionsPresenter =
@@ -162,8 +168,20 @@ class LoggedInPresenter(
             else -> LocalNetworkPermissionDialog.Settings
         }
 
+        /**
+         * Нютаг: Xiaomi, Huawei и Honor усыпляют приложения в фоне, и сообщения приходят с опозданием. Один раз, когда пушер
+         * уже зарегистрирован (чтобы не спорить с диалогом ошибки), зовём на экран проверки уведомлений — там видно, что включить.
+         */
+        val notificationHintShown by remember { appPreferencesStore.isNyutagNotificationHintShownFlow() }.collectAsState(initial = false)
+        val showNotificationHint = !notificationHintShown &&
+            pusherRegistrationState.value is AsyncData.Success &&
+            (Build.MANUFACTURER ?: "").lowercase() in SLEEPY_MANUFACTURERS
+
         fun handleEvent(event: LoggedInEvent) {
             when (event) {
+                LoggedInEvent.CloseNotificationHint -> coroutineScope.launch {
+                    appPreferencesStore.setNyutagNotificationHintShown(true)
+                }
                 is LoggedInEvent.CloseErrorDialog -> {
                     pusherRegistrationState.value = AsyncData.Uninitialized
                     if (event.doNotShowAgain) {
@@ -200,6 +218,7 @@ class LoggedInPresenter(
             forceNativeSlidingSyncMigration = forceNativeSlidingSyncMigration,
             appName = buildMeta.applicationName,
             localNetworkPermissionDialog = localNetworkPermissionDialog,
+            showNotificationHint = showNotificationHint,
             eventSink = ::handleEvent,
         )
     }
