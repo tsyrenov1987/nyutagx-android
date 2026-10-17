@@ -62,6 +62,7 @@ import io.element.android.libraries.matrix.impl.media.RustMediaPreviewService
 import io.element.android.libraries.matrix.impl.notification.RustNotificationService
 import io.element.android.libraries.matrix.impl.notificationsettings.RustNotificationSettingsService
 import io.element.android.libraries.matrix.impl.nyutag.NyutagInviteAutoJoin
+import io.element.android.libraries.matrix.impl.nyutag.NyutagTunnel
 import io.element.android.libraries.matrix.impl.oauth.toRustAction
 import io.element.android.libraries.matrix.impl.pushers.RustPushersService
 import io.element.android.libraries.matrix.impl.room.GetRoomResult
@@ -716,6 +717,8 @@ class RustMatrixClient(
             deleteSessionDirectory()
             if (userInitiated) {
                 sessionStore.removeSession(sessionId.value)
+                // Нютаг: без аккаунтов туннелю нечего возить
+                if (sessionStore.numberOfSessions() == 0) NyutagTunnel.stop()
             }
         }
     }
@@ -766,6 +769,7 @@ class RustMatrixClient(
             destroy()
             deleteSessionDirectory()
             sessionStore.removeSession(sessionId.value)
+            if (sessionStore.numberOfSessions() == 0) NyutagTunnel.stop()
         }.onFailure {
             Timber.e(it, "Failed to deactivate account")
         }
