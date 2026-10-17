@@ -16,7 +16,9 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.encryption.EncryptionService
 import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.verification.SessionVerifiedStatus
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import kotlin.time.Duration
@@ -28,6 +30,9 @@ object NyutagPasswordRecovery {
 
     /** Сколько ждём подтверждения устройства после открытия хранилища, чтобы экран «Подтвердите личность» не мигал. */
     private val VERIFIED_TIMEOUT = 10.seconds
+
+    /** Ожидание, пока человек откроет хранилище старым ключом восстановления, чтобы перезапереть его паролем. */
+    private var pendingRelock: Job? = null
 
     /**
      * Сразу после входа паролем, пока клиент уже синхронизируется, а экранов сессии ещё нет. Пароль в лог не попадает.
@@ -45,7 +50,10 @@ object NyutagPasswordRecovery {
                     Timber.i("Nyutag recovery: key store opened with the account password")
                     client.waitUntilVerified()
                 },
-                onFailure = { Timber.w("Nyutag recovery: the account password does not open the key store (${it.javaClass.simpleName})") },
+                onFailure = {
+                    Timber.w("Nyutag recovery: the account password does not open the key store (${it.javaClass.simpleName})")
+                    relockWhenOpened(client, password)
+                },
             )
             // Без подтверждённого устройства SDK завёл бы новую личность вместо той, что уже есть у аккаунта.
             RecoveryState.DISABLED -> if (client.sessionVerificationService.sessionVerifiedStatus.value == SessionVerifiedStatus.Verified) {
@@ -59,9 +67,27 @@ object NyutagPasswordRecovery {
 
     /** После сброса личности паролем хранилище пустое, а устройство подтверждено — заводим хранилище тем же паролем. */
     suspend fun afterIdentityReset(encryption: EncryptionService, password: String) {
+        // Хранилище заводим сами — перезапирать после открытия ключом уже нечего.
+        pendingRelock?.cancel()
+        pendingRelock = null
         when (encryption.settledState(SETTLE_TIMEOUT)) {
             RecoveryState.DISABLED -> encryption.enable(password)
             else -> Timber.w("Nyutag recovery: key store not empty after the identity reset, leaving it")
+        }
+    }
+
+    /**
+     * Пароль не подошёл: хранилище заперто старым ключом восстановления (аккаунт завели до перевода на пароль).
+     * Как только человек откроет его ключом, перезапираем паролем: в состоянии ENABLED `enableRecovery` в SDK лишь
+     * ротирует ключ хранилища. Так старые аккаунты переезжают на пароль сами, по одному разу, без отдельного экрана.
+     * Ждём до конца сессии; новый вход или сброс личности отменяют ожидание.
+     */
+    private fun relockWhenOpened(client: MatrixClient, password: String) {
+        pendingRelock?.cancel()
+        pendingRelock = client.sessionCoroutineScope.launch {
+            client.encryptionService.recoveryStateStateFlow.first { it == RecoveryState.ENABLED }
+            Timber.i("Nyutag recovery: key store opened with a recovery key, re-locking it under the account password")
+            client.encryptionService.enable(password)
         }
     }
 

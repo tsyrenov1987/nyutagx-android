@@ -55,7 +55,9 @@ data class RoomDetailsState(
     val hasNewContent: Boolean,
     val eventSink: (RoomDetailsEvent) -> Unit
 ) {
+    // Нютаг: у личного чата бейджей нет — как в Telegram.
     val roomBadges = buildList {
+        if (roomType is RoomDetailsType.Dm) return@buildList
         if (isEncrypted) {
             add(RoomBadge.ENCRYPTED)
         } else {

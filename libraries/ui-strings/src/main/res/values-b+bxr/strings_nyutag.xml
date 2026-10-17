@@ -46,4 +46,8 @@
     <string name="nyutag_wallpaper_sand">Элһэн</string>
     <string name="nyutag_wallpaper_dusk">Бүрэнхы</string>
     <string name="nyutag_wallpaper_plain">Хээгүй</string>
+    <!-- Сведения о личном чате — как в Telegram -->
+    <string name="nyutag_dm_details_title">Мэдээсэл</string>
+    <string name="nyutag_dm_delete_chat">Чат усадхаха</string>
+    <string name="nyutag_dm_delete_chat_subtitle">Чат танай жагсаалтаһаа үгы болохо. Дахин бэшэлсэбэл, шэнэ чат бии болохо.</string>
 </resources>

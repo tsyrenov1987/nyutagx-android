@@ -193,7 +193,9 @@ fun RoomDetailsView(
             )
             Spacer(Modifier.height(12.dp))
 
-            if (state.roomTopic !is RoomTopicState.Hidden) {
+            // Нютаг: у личного чата нет темы, приглашений и раздела «Безопасность» — как в Telegram.
+            val isDm = state.roomType is RoomDetailsType.Dm
+            if (state.roomTopic !is RoomTopicState.Hidden && !isDm) {
                 TopicSection(
                     roomTopic = state.roomTopic,
                     onActionClick = onActionClick,
@@ -280,12 +282,6 @@ fun RoomDetailsView(
                     }
                 }
                 is RoomDetailsType.Dm -> {
-                    if (state.canInvite) {
-                        // Note: for rooms the invite action is a Main action
-                        PreferenceCategory {
-                            InviteItem(onClick = invitePeople)
-                        }
-                    }
                     state.dmOtherMemberDetailsState?.let { dmMemberDetails ->
                         PreferenceCategory {
                             ProfileItem(
@@ -303,19 +299,22 @@ fun RoomDetailsView(
                         openRoomNotificationSettings = openRoomNotificationSettings
                     )
                 }
-                FavoriteItem(
-                    isFavorite = state.isFavorite,
-                    onFavoriteChanges = {
-                        state.eventSink(RoomDetailsEvent.SetFavorite(it))
-                    }
-                )
+                if (!isDm) {
+                    // Нютаг: у личного чата пометка — в меню списка чатов, как в Telegram.
+                    FavoriteItem(
+                        isFavorite = state.isFavorite,
+                        onFavoriteChanges = {
+                            state.eventSink(RoomDetailsEvent.SetFavorite(it))
+                        }
+                    )
+                }
                 if (state.canShowSecurityAndPrivacy && state.roomType is RoomDetailsType.Room) {
                     SecurityAndPrivacyItem(
                         onClick = onSecurityAndPrivacyClick
                     )
                 }
             }
-            if (state.isEncrypted) {
+            if (state.isEncrypted && !isDm) {
                 PreferenceCategory(
                     title = stringResource(R.string.screen_room_details_security_title)
                 ) {
@@ -332,6 +331,7 @@ fun RoomDetailsView(
             }
             OtherActionsSection(
                 dmOtherMemberDetailsState = state.dmOtherMemberDetailsState,
+                isDm = isDm,
                 canReportRoom = state.canReportRoom,
                 onReportRoomClick = onReportRoomClick,
                 onLeaveRoomClick = { state.eventSink(RoomDetailsEvent.LeaveRoom(needsConfirmation = true)) }
@@ -774,17 +774,6 @@ private fun MembersItem(
 }
 
 @Composable
-private fun InviteItem(
-    onClick: () -> Unit,
-) {
-    ListItem(
-        content = { Text(stringResource(R.string.screen_room_details_invite_title)) },
-        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.UserAdd())),
-        onClick = onClick,
-    )
-}
-
-@Composable
 private fun PinnedMessagesItem(
     pinnedMessagesCount: Int?,
     onPinnedMessagesClick: () -> Unit,
@@ -844,6 +833,7 @@ private fun MediaGalleryItem(
 @Composable
 private fun OtherActionsSection(
     canReportRoom: Boolean,
+    isDm: Boolean,
     onReportRoomClick: () -> Unit,
     onLeaveRoomClick: () -> Unit,
     dmOtherMemberDetailsState: UserProfileState?,
@@ -863,11 +853,12 @@ private fun OtherActionsSection(
                 onClick = onReportRoomClick,
             )
         }
+        // Нютаг: личный чат не «покидают», а удаляют — как в Telegram.
         ListItem(
             content = {
-                Text(stringResource(CommonStrings.action_leave_room))
+                Text(stringResource(if (isDm) CommonStrings.nyutag_dm_delete_chat else CommonStrings.action_leave_room))
             },
-            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Leave())),
+            leadingContent = ListItemContent.Icon(IconSource.Vector(if (isDm) CompoundIcons.Delete() else CompoundIcons.Leave())),
             style = ListItemStyle.Destructive,
             onClick = onLeaveRoomClick,
         )

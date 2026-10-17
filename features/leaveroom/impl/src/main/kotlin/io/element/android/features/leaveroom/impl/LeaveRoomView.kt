@@ -63,9 +63,13 @@ private fun LeaveRoomConfirmationDialog(
     val defaultOnSubmitClick = { roomId: RoomId -> { eventSink(LeaveRoomEvent.LeaveRoom(roomId, needsConfirmation = false)) } }
     val defaultDismissAction = { eventSink(InternalLeaveRoomEvent.ResetState) }
     when (confirmation) {
+        // Нютаг: личный чат не «покидают», а удаляют — как в Telegram.
         is Confirmation.Dm -> LeaveRoomConfirmationDialog(
-            text = stringResource(R.string.leave_room_alert_private_subtitle),
-            isDm = false,
+            title = stringResource(CommonStrings.nyutag_dm_delete_chat),
+            text = stringResource(CommonStrings.nyutag_dm_delete_chat_subtitle),
+            isDm = true,
+            submitText = stringResource(CommonStrings.action_delete),
+            destructiveSubmit = true,
             onSubmitClick = defaultOnSubmitClick(confirmation.roomId),
             onDismiss = defaultDismissAction,
         )

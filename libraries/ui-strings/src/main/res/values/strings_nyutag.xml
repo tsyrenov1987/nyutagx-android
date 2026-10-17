@@ -46,4 +46,8 @@
     <string name="nyutag_wallpaper_sand">Sand</string>
     <string name="nyutag_wallpaper_dusk">Dusk</string>
     <string name="nyutag_wallpaper_plain">No pattern</string>
+    <!-- Сведения о личном чате — как в Telegram -->
+    <string name="nyutag_dm_details_title">Info</string>
+    <string name="nyutag_dm_delete_chat">Delete chat</string>
+    <string name="nyutag_dm_delete_chat_subtitle">The chat will disappear from your list. If you write to each other again, a new chat will appear.</string>
 </resources>
