@@ -20,6 +20,7 @@ import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.WindowManager
 import android.webkit.PermissionRequest
 import androidx.activity.compose.setContent
@@ -36,9 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.PictureInPictureModeChangedInfo
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
+import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -66,6 +69,7 @@ import io.element.android.libraries.audio.api.AudioFocus
 import io.element.android.libraries.audio.api.AudioFocusRequester
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.core.meta.BuildMeta
+import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
 import io.element.android.libraries.designsystem.icons.CompoundDrawables
 import io.element.android.libraries.designsystem.theme.ElementThemeApp
 import io.element.android.libraries.designsystem.utils.hasCompactHeightWindowSize
@@ -97,6 +101,9 @@ class ElementCallActivity :
     private val requestPermissionsLauncher = registerPermissionResultLauncher()
 
     private val webViewTarget = mutableStateOf<CallData?>(null)
+
+    // Нютаг: микрофон запрещён — без предупреждения звонок молча идёт без звука, и собеседник не слышит.
+    private var isMicrophoneDenied by mutableStateOf(false)
 
     private var eventSink: ((CallScreenEvent) -> Unit)? = null
 
@@ -219,6 +226,18 @@ class ElementCallActivity :
                         },
                         onAudioManagerChanged = { webViewAudioManager = it },
                     )
+                    if (isMicrophoneDenied) {
+                        ConfirmationDialog(
+                            title = stringResource(R.string.nyutag_call_microphone_denied_title),
+                            content = stringResource(R.string.nyutag_call_microphone_denied_message),
+                            submitText = stringResource(CommonStrings.action_go_to_settings),
+                            onSubmitClick = {
+                                isMicrophoneDenied = false
+                                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:$packageName".toUri()))
+                            },
+                            onDismiss = { isMicrophoneDenied = false },
+                        )
+                    }
                 }
             }
         }
@@ -335,6 +354,9 @@ class ElementCallActivity :
                         else -> return@forEach
                     }
                     permissionsToGrant.add(webKitPermission)
+                } else if (permission == Manifest.permission.RECORD_AUDIO) {
+                    Timber.tag(loggerTag.value).w("Microphone permission denied, the other side will not hear us")
+                    isMicrophoneDenied = true
                 }
             }
             callback(permissionsToGrant.toTypedArray())

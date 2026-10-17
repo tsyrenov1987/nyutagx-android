@@ -3,4 +3,6 @@
     <string name="nyutag_call_end">Завершить звонок</string>
     <string name="nyutag_call_speaker_on">Громкая связь</string>
     <string name="nyutag_call_speaker_off">Выключить громкую связь</string>
+    <string name="nyutag_call_microphone_denied_title">Нет доступа к микрофону</string>
+    <string name="nyutag_call_microphone_denied_message">Нютагу запрещён микрофон, поэтому собеседник вас не слышит. Разрешите микрофон в настройках приложения.</string>
 </resources>

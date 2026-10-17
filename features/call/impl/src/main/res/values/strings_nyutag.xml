@@ -3,4 +3,6 @@
     <string name="nyutag_call_end">End call</string>
     <string name="nyutag_call_speaker_on">Speaker on</string>
     <string name="nyutag_call_speaker_off">Speaker off</string>
+    <string name="nyutag_call_microphone_denied_title">No access to the microphone</string>
+    <string name="nyutag_call_microphone_denied_message">Nyutag is not allowed to use the microphone, so the other person cannot hear you. Allow the microphone in the app settings.</string>
 </resources>

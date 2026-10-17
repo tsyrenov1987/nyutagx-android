@@ -3,4 +3,6 @@
     <string name="nyutag_call_end">Дуудалга дүүргэхэ</string>
     <string name="nyutag_call_speaker_on">Шанга дуун</string>
     <string name="nyutag_call_speaker_off">Шанга дуун унтарааха</string>
+    <string name="nyutag_call_microphone_denied_title">Микрофон хаалтатай</string>
+    <string name="nyutag_call_microphone_denied_message">Нютагта микрофон хэрэглэхые хоридлогоор, тиимэһээ хамта хөөрэлдэгшэ шамайе дуулахагүй. Программын тааруулгада микрофон зүбшөөгыт.</string>
 </resources>
