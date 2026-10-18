@@ -28,6 +28,7 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.encryption.identity.IdentityState
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.room.StateEventType
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.AN_EXCEPTION
@@ -36,6 +37,7 @@ import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_ID_2
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.encryption.FakeEncryptionService
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagProfileFields
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.powerlevels.FakeRoomPermissions
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
@@ -174,6 +176,21 @@ class UserProfilePresenterTest {
             assertThat(initialState.userName).isNull()
             assertThat(initialState.avatarUrl).isNull()
             assertThat(initialState.isBlocked).isEqualTo(AsyncData.Success(false))
+        }
+    }
+
+    @Test
+    fun `present - nyutag profile fields are loaded`() = runTest {
+        val info = NyutagProfileInfo(about = "Люблю горы", toonto = "Хори", ug = "Хуасай", eastYear = "metal-horse")
+        val presenter = createUserProfilePresenter(
+            userId = A_USER_ID,
+            nyutagProfileFields = FakeNyutagProfileFields(profiles = mutableMapOf(A_USER_ID to info)),
+        )
+        presenter.test {
+            assertThat(awaitItem().nyutagProfile).isEqualTo(NyutagProfileInfo())
+            // Поля приходят отдельным запросом: ждём состояние, где они уже есть.
+            while (awaitItem().nyutagProfile != info) Unit
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -406,6 +423,7 @@ class UserProfilePresenterTest {
         userId: UserId = UserId("@alice:server.org"),
         startDMAction: StartDMAction = FakeStartDMAction(),
         isElementCallAvailable: Boolean = true,
+        nyutagProfileFields: FakeNyutagProfileFields = FakeNyutagProfileFields(),
     ): UserProfilePresenter {
         return UserProfilePresenter(
             userId = userId,
@@ -414,6 +432,7 @@ class UserProfilePresenterTest {
             sessionEnterpriseService = FakeSessionEnterpriseService(
                 isElementCallAvailableResult = { isElementCallAvailable },
             ),
+            nyutagProfileFields = nyutagProfileFields,
         )
     }
 }

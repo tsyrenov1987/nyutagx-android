@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя. Стихии по-бурятски называются цветами. -->
+    <string name="nyutag_profile_about">Өөрын тухай</string>
+    <string name="nyutag_profile_toonto">Тоонто нютаг</string>
+    <string name="nyutag_profile_ug">Уг гарбал</string>
+    <string name="nyutag_profile_east_year">Түрэһэн жэл</string>
+    <string name="nyutag_east_year_format">%1$s %2$s</string>
+    <string-array name="nyutag_east_year_elements_m">
+        <item>Хүхэ</item>
+        <item>Улаан</item>
+        <item>Шара</item>
+        <item>Сагаан</item>
+        <item>Хара</item>
+    </string-array>
+    <string-array name="nyutag_east_year_elements_f">
+        <item>Хүхэ</item>
+        <item>Улаан</item>
+        <item>Шара</item>
+        <item>Сагаан</item>
+        <item>Хара</item>
+    </string-array>
+    <string-array name="nyutag_east_year_animals">
+        <item>хулгана</item>
+        <item>үхэр</item>
+        <item>бар</item>
+        <item>туулай</item>
+        <item>луу</item>
+        <item>могой</item>
+        <item>морин</item>
+        <item>хонин</item>
+        <item>бишэн</item>
+        <item>тахяа</item>
+        <item>нохой</item>
+        <item>гахай</item>
+    </string-array>
+</resources>

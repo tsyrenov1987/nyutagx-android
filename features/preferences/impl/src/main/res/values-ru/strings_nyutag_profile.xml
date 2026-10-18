@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nyutag_profile_about_placeholder">Пару слов о себе</string>
+    <string name="nyutag_profile_toonto_placeholder">Откуда ваш род</string>
+    <string name="nyutag_profile_ug_placeholder">Например, Хуасай</string>
+    <string name="nyutag_profile_east_year_none">Не указан</string>
+    <string name="nyutag_profile_east_year_pick">Год рождения</string>
+    <string name="nyutag_profile_east_year_hint">Восточный год начинается с Сагаалгана (январь–февраль). Если вы родились до Сагаалгана, выберите предыдущий год.</string>
+</resources>

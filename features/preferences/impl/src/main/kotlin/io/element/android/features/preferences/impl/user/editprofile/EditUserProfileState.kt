@@ -10,6 +10,7 @@ package io.element.android.features.preferences.impl.user.editprofile
 
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.ui.media.AvatarAction
 import io.element.android.libraries.permissions.api.PermissionsState
 import kotlinx.collections.immutable.ImmutableList
@@ -24,5 +25,7 @@ data class EditUserProfileState(
     val cameraPermissionState: PermissionsState,
     val canChangeDisplayName: Boolean,
     val canChangeAvatarUrl: Boolean,
+    /** Нютаг: поля «о себе»; null — ещё не загрузились с сервера (тогда их не правим, чтобы не затереть). */
+    val nyutagProfile: NyutagProfileInfo? = null,
     val eventSink: (EditUserProfileEvent) -> Unit
 )

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nyutag_profile_about">О себе</string>
+    <string name="nyutag_profile_toonto">Тоонто нютаг</string>
+    <string name="nyutag_profile_ug">Род (уг гарбал)</string>
+    <string name="nyutag_profile_east_year">Год по восточному календарю</string>
+    <string name="nyutag_east_year_format">%1$s %2$s</string>
+    <string-array name="nyutag_east_year_elements_m">
+        <item>Деревянный</item>
+        <item>Огненный</item>
+        <item>Земляной</item>
+        <item>Металлический</item>
+        <item>Водяной</item>
+    </string-array>
+    <string-array name="nyutag_east_year_elements_f">
+        <item>Деревянная</item>
+        <item>Огненная</item>
+        <item>Земляная</item>
+        <item>Металлическая</item>
+        <item>Водяная</item>
+    </string-array>
+    <string-array name="nyutag_east_year_animals">
+        <item>Крыса</item>
+        <item>Бык</item>
+        <item>Тигр</item>
+        <item>Кролик</item>
+        <item>Дракон</item>
+        <item>Змея</item>
+        <item>Лошадь</item>
+        <item>Овца</item>
+        <item>Обезьяна</item>
+        <item>Петух</item>
+        <item>Собака</item>
+        <item>Свинья</item>
+    </string-array>
+</resources>

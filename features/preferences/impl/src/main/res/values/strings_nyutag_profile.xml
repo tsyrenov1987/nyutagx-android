@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: редактирование полей профиля «о себе» -->
+<resources>
+    <string name="nyutag_profile_about_placeholder">A few words about yourself</string>
+    <string name="nyutag_profile_toonto_placeholder">Where your family is from</string>
+    <string name="nyutag_profile_ug_placeholder">For example, Khuasai</string>
+    <string name="nyutag_profile_east_year_none">Not set</string>
+    <string name="nyutag_profile_east_year_pick">Year of birth</string>
+    <string name="nyutag_profile_east_year_hint">The Eastern year starts at Sagaalgan (January–February). If you were born before Sagaalgan, pick the previous year.</string>
+</resources>

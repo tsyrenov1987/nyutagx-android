@@ -18,6 +18,7 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 
@@ -34,6 +35,7 @@ open class UserProfileStatePreviewParam : PreviewParameterProvider<UserProfileSt
             aUserProfileState(canCall = true),
             aUserProfileState(startDmActionState = ConfirmingStartDmWithMatrixUser(aMatrixUser(), isUserIdentityUnknown = false)),
             aUserProfileState(verificationState = UserProfileVerificationState.VERIFICATION_VIOLATION),
+            aUserProfileState(nyutagProfile = NyutagProfileInfo(about = "Люблю горы", toonto = "Хори", ug = "Хуасай", eastYear = "metal-horse")),
         )
 }
 
@@ -50,6 +52,7 @@ fun aUserProfileState(
     canCall: Boolean = false,
     snackbarMessage: SnackbarMessage? = null,
     displayedStatus: DisplayedStatus? = null,
+    nyutagProfile: NyutagProfileInfo = NyutagProfileInfo(),
     eventSink: (UserProfileEvent) -> Unit = {},
 ) = UserProfileState(
     userId = userId,
@@ -64,5 +67,6 @@ fun aUserProfileState(
     canCall = canCall,
     snackbarMessage = snackbarMessage,
     displayedStatus = displayedStatus,
+    nyutagProfile = nyutagProfile,
     eventSink = eventSink,
 )

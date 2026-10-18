@@ -45,6 +45,7 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.ui.components.CreateDmConfirmationBottomSheet
+import io.element.android.libraries.matrix.ui.nyutag.NyutagProfileFieldsView
 import io.element.android.libraries.ui.strings.CommonStrings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,6 +87,10 @@ fun UserProfileView(
                     state.eventSink(UserProfileEvent.CopyToClipboard(state.userId.value))
                 },
                 withdrawVerificationClick = { state.eventSink(UserProfileEvent.WithdrawVerification) },
+            )
+            NyutagProfileFieldsView(
+                info = state.nyutagProfile,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             )
             UserProfileMainActionsSection(
                 isCurrentUser = state.isCurrentUser,

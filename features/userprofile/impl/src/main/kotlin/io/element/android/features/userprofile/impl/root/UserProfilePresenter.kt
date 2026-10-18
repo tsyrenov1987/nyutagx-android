@@ -34,6 +34,8 @@ import io.element.android.libraries.core.bool.orFalse
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileFields
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.room.powerlevels.canCall
 import io.element.android.libraries.matrix.api.room.powerlevels.use
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -50,6 +52,7 @@ class UserProfilePresenter(
     private val client: MatrixClient,
     private val startDMAction: StartDMAction,
     private val sessionEnterpriseService: SessionEnterpriseService,
+    private val nyutagProfileFields: NyutagProfileFields,
 ) : Presenter<UserProfileState> {
     @AssistedFactory
     interface Factory {
@@ -100,6 +103,9 @@ class UserProfilePresenter(
                 .launchIn(this)
         }
         val userProfile by produceState<MatrixUser?>(null) { value = client.getProfile(userId).getOrNull() }
+        val nyutagProfile by produceState(NyutagProfileInfo()) {
+            nyutagProfileFields.get(client.sessionId, userId).onSuccess { value = it }
+        }
 
         fun handleEvent(event: UserProfileEvent) {
             when (event) {
@@ -146,6 +152,7 @@ class UserProfilePresenter(
             userName = userProfile?.displayName,
             avatarUrl = userProfile?.avatarUrl,
             displayedStatus = userProfile?.displayedStatus,
+            nyutagProfile = nyutagProfile,
             isBlocked = isBlocked.value,
             verificationState = UserProfileVerificationState.UNKNOWN,
             startDmActionState = startDmActionState.value,

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: поля профиля «о себе» (тоонто нютаг, уг гарбал, год по восточному календарю) -->
+<resources>
+    <string name="nyutag_profile_about">About</string>
+    <string name="nyutag_profile_toonto">Toonto nyutag (homeland)</string>
+    <string name="nyutag_profile_ug">Clan (ug garbal)</string>
+    <string name="nyutag_profile_east_year">Year by the Eastern calendar</string>
+    <!-- %1$s — стихия (у бурят цвет), %2$s — животное -->
+    <string name="nyutag_east_year_format">%1$s %2$s</string>
+    <string-array name="nyutag_east_year_elements_m">
+        <item>Wood</item>
+        <item>Fire</item>
+        <item>Earth</item>
+        <item>Metal</item>
+        <item>Water</item>
+    </string-array>
+    <string-array name="nyutag_east_year_elements_f">
+        <item>Wood</item>
+        <item>Fire</item>
+        <item>Earth</item>
+        <item>Metal</item>
+        <item>Water</item>
+    </string-array>
+    <string-array name="nyutag_east_year_animals">
+        <item>Rat</item>
+        <item>Ox</item>
+        <item>Tiger</item>
+        <item>Rabbit</item>
+        <item>Dragon</item>
+        <item>Snake</item>
+        <item>Horse</item>
+        <item>Sheep</item>
+        <item>Monkey</item>
+        <item>Rooster</item>
+        <item>Dog</item>
+        <item>Pig</item>
+    </string-array>
+    <!-- Род слова животного для согласования со стихией: m или f (нужно в русском) -->
+    <string-array name="nyutag_east_year_animal_genders" translatable="false">
+        <item>f</item>
+        <item>m</item>
+        <item>m</item>
+        <item>m</item>
+        <item>m</item>
+        <item>f</item>
+        <item>f</item>
+        <item>f</item>
+        <item>f</item>
+        <item>m</item>
+        <item>f</item>
+        <item>f</item>
+    </string-array>
+</resources>

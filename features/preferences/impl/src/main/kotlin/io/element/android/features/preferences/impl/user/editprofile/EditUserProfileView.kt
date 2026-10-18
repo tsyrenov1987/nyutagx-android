@@ -143,6 +143,13 @@ fun EditUserProfileView(
                 enabled = state.canChangeDisplayName,
                 onValueChange = { state.eventSink(EditUserProfileEvent.UpdateDisplayName(it)) },
             )
+            state.nyutagProfile?.let { info ->
+                NyutagProfileFieldsEditor(
+                    info = info,
+                    onChange = { state.eventSink(EditUserProfileEvent.UpdateNyutagProfile(it)) },
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
         AvatarActionBottomSheet(

@@ -13,6 +13,7 @@ import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 
 data class UserProfileState(
@@ -28,6 +29,8 @@ data class UserProfileState(
     val canCall: Boolean,
     val snackbarMessage: SnackbarMessage?,
     val displayedStatus: DisplayedStatus?,
+    /** Нютаг: «о себе», тоонто нютаг, уг гарбал, год по восточному календарю. */
+    val nyutagProfile: NyutagProfileInfo = NyutagProfileInfo(),
     val eventSink: (UserProfileEvent) -> Unit
 ) {
     enum class ConfirmationDialog {

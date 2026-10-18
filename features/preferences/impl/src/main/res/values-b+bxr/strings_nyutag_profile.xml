@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Нютаг: бурятский (bxr) — черновой перевод, проверить у носителя -->
+    <string name="nyutag_profile_about_placeholder">Өөрынгөө тухай хэдэн үгэ</string>
+    <string name="nyutag_profile_toonto_placeholder">Таанай уг хаанахиб</string>
+    <string name="nyutag_profile_ug_placeholder">Жэшээнь, Хуасай</string>
+    <string name="nyutag_profile_east_year_none">Заагдаагүй</string>
+    <string name="nyutag_profile_east_year_pick">Түрэһэн жэл</string>
+    <string name="nyutag_profile_east_year_hint">Зүүн зүгэй жэл Сагаалганһаа эхилдэг (январь–февраль). Сагаалганай урда түрэһэн хүн урдахи жэлээ шэлэгты.</string>
+</resources>

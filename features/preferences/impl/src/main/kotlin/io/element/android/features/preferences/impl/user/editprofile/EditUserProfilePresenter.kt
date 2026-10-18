@@ -31,6 +31,8 @@ import io.element.android.libraries.architecture.runCatchingUpdatingState
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes
 import io.element.android.libraries.matrix.api.MatrixClient
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileFields
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.media.AvatarAction
 import io.element.android.libraries.mediapickers.api.PickerProvider
@@ -52,6 +54,7 @@ class EditUserProfilePresenter(
     private val mediaPreProcessor: MediaPreProcessor,
     private val temporaryUriDeleter: TemporaryUriDeleter,
     private val mediaOptimizationConfigProvider: MediaOptimizationConfigProvider,
+    private val nyutagProfileFields: NyutagProfileFields,
     permissionsPresenterFactory: PermissionsPresenter.Factory,
 ) : Presenter<EditUserProfileState> {
     private val cameraPermissionPresenter: PermissionsPresenter = permissionsPresenterFactory.create(android.Manifest.permission.CAMERA)
@@ -112,12 +115,19 @@ class EditUserProfilePresenter(
             value = homeserverCapabilities.canChangeAvatarUrl().getOrDefault(true)
         }
 
+        val nyutagProfileOriginal by produceState<NyutagProfileInfo?>(null) {
+            value = nyutagProfileFields.get(matrixClient.sessionId, matrixUser.userId).getOrNull()
+        }
+        var nyutagProfileEdited by remember { mutableStateOf<NyutagProfileInfo?>(null) }
+        val nyutagProfile = nyutagProfileEdited ?: nyutagProfileOriginal
+
         val saveAction: MutableState<AsyncAction<Unit>> = remember { mutableStateOf(AsyncAction.Uninitialized) }
         val localCoroutineScope = rememberCoroutineScope()
 
-        val canSave = remember(userDisplayName, userAvatarUri) {
+        val canSave = remember(userDisplayName, userAvatarUri, nyutagProfile, nyutagProfileOriginal) {
             val hasProfileChanged = hasDisplayNameChanged(userDisplayName, matrixUser) ||
-                hasAvatarUrlChanged(userAvatarUri, matrixUser)
+                hasAvatarUrlChanged(userAvatarUri, matrixUser) ||
+                nyutagProfile?.normalized() != nyutagProfileOriginal?.normalized()
             !userDisplayName.isNullOrBlank() && hasProfileChanged
         }
 
@@ -127,6 +137,7 @@ class EditUserProfilePresenter(
                     name = userDisplayName,
                     avatarUri = userAvatarUri?.toUri(),
                     currentUser = matrixUser,
+                    nyutagProfile = nyutagProfileOriginal?.let { original -> nyutagProfile?.let { original to it } },
                     action = saveAction,
                 )
                 is EditUserProfileEvent.HandleAvatarAction -> {
@@ -145,6 +156,7 @@ class EditUserProfilePresenter(
                     }
                 }
                 is EditUserProfileEvent.UpdateDisplayName -> userDisplayName = event.name
+                is EditUserProfileEvent.UpdateNyutagProfile -> if (nyutagProfileOriginal != null) nyutagProfileEdited = event.info
                 EditUserProfileEvent.Exit -> {
                     when (saveAction.value) {
                         is AsyncAction.Confirming -> {
@@ -180,6 +192,7 @@ class EditUserProfilePresenter(
             cameraPermissionState = cameraPermissionState,
             canChangeDisplayName = canChangeDisplayName.value,
             canChangeAvatarUrl = canChangeAvatar.value,
+            nyutagProfile = nyutagProfile,
             eventSink = ::handleEvent,
         )
     }
@@ -194,6 +207,7 @@ class EditUserProfilePresenter(
         name: String?,
         avatarUri: Uri?,
         currentUser: MatrixUser,
+        nyutagProfile: Pair<NyutagProfileInfo, NyutagProfileInfo>?,
         action: MutableState<AsyncAction<Unit>>,
     ) = launch {
         val results = mutableListOf<Result<Unit>>()
@@ -207,6 +221,9 @@ class EditUserProfilePresenter(
                 results.add(updateAvatar(avatarUri).onFailure {
                     Timber.e(it, "Failed to update user's avatar")
                 })
+            }
+            if (nyutagProfile != null && nyutagProfile.first.normalized() != nyutagProfile.second.normalized()) {
+                results.add(nyutagProfileFields.update(matrixClient.sessionId, nyutagProfile.first, nyutagProfile.second))
             }
             if (results.all { it.isSuccess }) Unit else results.first { it.isFailure }.getOrThrow()
         }.runCatchingUpdatingState(action)

@@ -13,10 +13,12 @@ import com.google.common.truth.Truth.assertThat
 import io.element.android.libraries.androidutils.file.TemporaryUriDeleter
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.matrix.api.MatrixClient
+import io.element.android.libraries.matrix.api.nyutag.NyutagProfileInfo
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.AN_AVATAR_URL
 import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.FakeMatrixClient
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagProfileFields
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 import io.element.android.libraries.matrix.ui.media.AvatarAction
 import io.element.android.libraries.mediapickers.test.FakePickerProvider
@@ -80,6 +82,8 @@ class EditUserProfilePresenterTest {
         permissionsPresenter: PermissionsPresenter = FakePermissionsPresenter(),
         temporaryUriDeleter: TemporaryUriDeleter = FakeTemporaryUriDeleter(),
         mediaOptimizationConfigProvider: FakeMediaOptimizationConfigProvider = FakeMediaOptimizationConfigProvider(),
+        // Нютаг: по умолчанию поля не загружаются — так старые тесты не видят лишнего состояния.
+        nyutagProfileFields: FakeNyutagProfileFields = FakeNyutagProfileFields(available = false),
     ): EditUserProfilePresenter {
         return EditUserProfilePresenter(
             matrixClient = matrixClient,
@@ -90,6 +94,7 @@ class EditUserProfilePresenterTest {
             temporaryUriDeleter = temporaryUriDeleter,
             permissionsPresenterFactory = FakePermissionsPresenterFactory(permissionsPresenter),
             mediaOptimizationConfigProvider = mediaOptimizationConfigProvider,
+            nyutagProfileFields = nyutagProfileFields,
         )
     }
 
@@ -109,6 +114,42 @@ class EditUserProfilePresenterTest {
             )
             assertThat(initialState.saveButtonEnabled).isFalse()
             assertThat(initialState.saveAction).isInstanceOf(AsyncAction.Uninitialized::class.java)
+        }
+    }
+
+    @Test
+    fun `present - nyutag profile fields are loaded, edited and saved`() = runTest {
+        val user = aMatrixUser(avatarUrl = AN_AVATAR_URL)
+        val original = NyutagProfileInfo(toonto = "Хори", eastYear = "metal-horse")
+        val fields = FakeNyutagProfileFields(profiles = mutableMapOf(user.userId to original))
+        val presenter = createEditUserProfilePresenter(matrixUser = user, nyutagProfileFields = fields)
+        presenter.test {
+            assertThat(awaitItem().nyutagProfile).isNull()
+            val loaded = awaitItem()
+            assertThat(loaded.nyutagProfile).isEqualTo(original)
+            assertThat(loaded.saveButtonEnabled).isFalse()
+
+            val edited = original.copy(ug = "  Хуасай ", eastYear = "")
+            loaded.eventSink(EditUserProfileEvent.UpdateNyutagProfile(edited))
+            val changed = awaitItem()
+            assertThat(changed.nyutagProfile).isEqualTo(edited)
+            assertThat(changed.saveButtonEnabled).isTrue()
+
+            changed.eventSink(EditUserProfileEvent.Save)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertThat(fields.updates).containsExactly(original to original.copy(ug = "  Хуасай ", eastYear = ""))
+        assertThat(fields.profiles[user.userId]).isEqualTo(NyutagProfileInfo(toonto = "Хори", ug = "Хуасай"))
+    }
+
+    @Test
+    fun `present - nyutag profile fields can't be edited until loaded`() = runTest {
+        val presenter = createEditUserProfilePresenter()
+        presenter.test {
+            val initialState = awaitItem()
+            initialState.eventSink(EditUserProfileEvent.UpdateNyutagProfile(NyutagProfileInfo(about = "x")))
+            expectNoEvents()
+            assertThat(initialState.nyutagProfile).isNull()
         }
     }
 
