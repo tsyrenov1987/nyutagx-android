@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -105,6 +106,7 @@ internal fun CallScreenView(
     } else {
         var webViewAudioManager by remember { mutableStateOf<WebViewAudioManager?>(null) }
         val coroutineScope = rememberCoroutineScope()
+        val useBuryatStrings = isBuryatLanguageTag(LocalConfiguration.current.locales.get(0)?.toLanguageTag())
 
         var invalidAudioDeviceReason by remember { mutableStateOf<InvalidAudioDeviceReason?>(null) }
         invalidAudioDeviceReason?.let {
@@ -141,6 +143,7 @@ internal fun CallScreenView(
                             }
                         },
                         onError = { state.eventSink(CallScreenEvent.OnWebViewError(it)) },
+                        useBuryatStrings = useBuryatStrings,
                     )
                     webViewAudioManager = WebViewAudioManager(
                         webView = webView,

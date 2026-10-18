@@ -9,6 +9,7 @@
 package io.element.android.features.call.impl.utils
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.net.http.SslError
 import android.webkit.HttpAuthHandler
 import android.webkit.JavascriptInterface
@@ -31,6 +32,7 @@ class WebViewWidgetMessageInterceptor(
     private val webView: WebView,
     private val onUrlLoaded: (String) -> Unit,
     private val onError: (String?) -> Unit,
+    private val useBuryatStrings: Boolean = false,
 ) : WidgetMessageInterceptor {
     companion object {
         // We call both the WebMessageListener and the JavascriptInterface objects in JS with this
@@ -198,12 +200,23 @@ class WebViewWidgetMessageInterceptor(
             }
 
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest): WebResourceResponse? {
-                return assetLoader.shouldInterceptRequest(request.url)
+                return buryatStrings(request.url) ?: assetLoader.shouldInterceptRequest(request.url)
             }
 
             @Suppress("OVERRIDE_DEPRECATION")
             override fun shouldInterceptRequest(view: WebView?, url: String): WebResourceResponse? {
-                return assetLoader.shouldInterceptRequest(url.toUri())
+                return buryatStrings(url.toUri()) ?: assetLoader.shouldInterceptRequest(url.toUri())
+            }
+
+            // Нютаг: при бурятском интерфейсе русские строки звонка — с бурятским переводом поверх.
+            private fun buryatStrings(url: Uri): WebResourceResponse? {
+                if (!useBuryatStrings || !NyutagCallStrings.isRussianStrings(url.path)) return null
+                val russian = assetLoader.shouldInterceptRequest(url)?.data ?: return null
+                return runCatching {
+                    val overrides = webView.context.assets.open(NyutagCallStrings.BURYAT_ASSET).use { it.reader().readText() }
+                    val merged = NyutagCallStrings.merge(russian.use { it.reader().readText() }, overrides)
+                    WebResourceResponse("application/json", "utf-8", merged.byteInputStream())
+                }.onFailure { Timber.w(it, "Nyutag: Buryat call strings not applied") }.getOrNull()
             }
         }
 

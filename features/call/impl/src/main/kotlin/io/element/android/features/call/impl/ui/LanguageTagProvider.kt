@@ -27,7 +27,11 @@ class DefaultLanguageTagProvider : LanguageTagProvider {
 }
 
 /**
- * Нютаг: бурятского в Element Call нет, и он открывался по-английски — даём ему русский, который бурятскоязычные читают.
+ * Нютаг: бурятского в Element Call нет, и он открывался по-английски — даём ему русский,
+ * поверх которого кладётся бурятский перевод (см. NyutagCallStrings).
  */
 internal fun nyutagCallLanguageTag(languageTag: String?): String? =
-    if (languageTag == "bxr" || languageTag?.startsWith("bxr-") == true) "ru-RU" else languageTag
+    if (isBuryatLanguageTag(languageTag)) "ru-RU" else languageTag
+
+internal fun isBuryatLanguageTag(languageTag: String?): Boolean =
+    languageTag == "bxr" || languageTag?.startsWith("bxr-") == true
