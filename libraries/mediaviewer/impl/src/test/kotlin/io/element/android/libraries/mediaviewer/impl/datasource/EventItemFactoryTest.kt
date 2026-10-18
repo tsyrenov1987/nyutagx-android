@@ -50,6 +50,7 @@ import io.element.android.libraries.matrix.test.timeline.aPollContent
 import io.element.android.libraries.matrix.test.timeline.aProfileChangeMessageContent
 import io.element.android.libraries.matrix.test.timeline.aRedactedContent
 import io.element.android.libraries.matrix.test.timeline.aStickerContent
+import io.element.android.libraries.matrix.test.timeline.aTimelineItemDebugInfo
 import io.element.android.libraries.matrix.test.timeline.anEventTimelineItem
 import io.element.android.libraries.matrix.test.timeline.item.event.aRoomMembershipContent
 import io.element.android.libraries.matrix.ui.media.contentvalidation.NoopContentValidationState
@@ -238,6 +239,31 @@ class EventItemFactoryTest {
                 validationState = noopValidationState,
             )
         )
+    }
+
+    @Test
+    fun `nyutag view once image is not shown in the media gallery`() {
+        val factory = createEventItemFactory()
+        val result = factory.create(
+            MatrixTimelineItem.Event(
+                uniqueId = A_UNIQUE_ID,
+                event = anEventTimelineItem(
+                    content = aMessageContent(
+                        messageType = ImageMessageType(
+                            filename = "filename.jpg",
+                            caption = null,
+                            formattedCaption = null,
+                            source = MediaSource(""),
+                            info = null,
+                        )
+                    ),
+                    debugInfoProvider = {
+                        aTimelineItemDebugInfo(originalJson = """{"type":"m.room.message","content":{"msgtype":"m.image","chat.nyutag.view_once":true}}""")
+                    },
+                )
+            )
+        )
+        assertThat(result).isEmpty()
     }
 
     @Test

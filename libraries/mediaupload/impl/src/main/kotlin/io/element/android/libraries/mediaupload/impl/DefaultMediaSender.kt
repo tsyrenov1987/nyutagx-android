@@ -98,6 +98,7 @@ class DefaultMediaSender(
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        extraContentJson: String?,
     ): Result<Unit> {
         val mediaLogId = mediaId(mediaUploadInfo.file)
         return withTimeline { timeline ->
@@ -107,6 +108,7 @@ class DefaultMediaSender(
                 caption = caption,
                 formattedCaption = formattedCaption,
                 inReplyToEventId = inReplyToEventId,
+                extraContentJson = extraContentJson,
             )
         }
             .handleSendResult(mediaLogId)
@@ -213,6 +215,7 @@ class DefaultMediaSender(
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        extraContentJson: String? = null,
     ): Result<Unit> {
         val handler = when (uploadInfo) {
             is MediaUploadInfo.Image -> {
@@ -223,6 +226,7 @@ class DefaultMediaSender(
                     caption = caption,
                     formattedCaption = formattedCaption,
                     inReplyToEventId = inReplyToEventId,
+                    extraContentJson = extraContentJson,
                 )
             }
             is MediaUploadInfo.Video -> {

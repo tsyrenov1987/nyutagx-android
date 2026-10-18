@@ -56,8 +56,9 @@ fun TimelineItemEventContent.canBeCopied(): Boolean =
  */
 fun TimelineItemEventContent.canBeForwarded(): Boolean =
     when (this) {
+        // Нютаг: исчезающее фото не пересылается.
+        is TimelineItemImageContent -> nyutagViewOnce == NyutagViewOnceState.None
         is TimelineItemTextBasedContent,
-        is TimelineItemImageContent,
         is TimelineItemFileContent,
         is TimelineItemAudioContent,
         is TimelineItemVideoContent,

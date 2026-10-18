@@ -40,7 +40,9 @@ import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes.isMimeTypeVideo
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.core.EventId
+import io.element.android.libraries.matrix.api.nyutag.NyutagViewOnce
 import io.element.android.libraries.matrix.api.permalink.PermalinkBuilder
+import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.mediaupload.api.MediaOptimizationConfig
 import io.element.android.libraries.mediaupload.api.MediaOptimizationConfigProvider
@@ -75,6 +77,7 @@ class AttachmentsPreviewPresenter(
     @SessionCoroutineScope private val sessionCoroutineScope: CoroutineScope,
     private val dispatchers: CoroutineDispatchers,
     private val mediaOptimizationConfigProvider: MediaOptimizationConfigProvider,
+    private val room: JoinedRoom,
 ) : Presenter<AttachmentsPreviewState> {
     @AssistedFactory
     interface Factory {
@@ -114,6 +117,11 @@ class AttachmentsPreviewPresenter(
         val ongoingSendAttachmentJob = remember { mutableStateOf<Job?>(null) }
 
         var currentIndex by remember { mutableIntStateOf(0) }
+        var nyutagViewOnce by remember { mutableStateOf(false) }
+        val canNyutagViewOnce = remember {
+            room.isDm() && attachments.size == 1 &&
+                (attachments.first() as? Attachment.Media)?.localMedia?.info?.isImageAttachment() == true
+        }
 
         var attachmentsAndEdits by remember {
             mutableStateOf(
@@ -270,6 +278,7 @@ class AttachmentsPreviewPresenter(
                                 caption = caption,
                                 sendActionState = sendActionState,
                                 inReplyToEventId = inReplyToEventId,
+                                extraContentJson = NyutagViewOnce.EXTRA_CONTENT_JSON.takeIf { canNyutagViewOnce && nyutagViewOnce },
                             )
 
                             // Clean up the pre-processed media after it's been sent
@@ -278,6 +287,7 @@ class AttachmentsPreviewPresenter(
                         }
                     }
                 }
+                is AttachmentsPreviewEvent.SetNyutagViewOnce -> nyutagViewOnce = event.enabled && canNyutagViewOnce
                 AttachmentsPreviewEvent.CancelAndDismiss -> {
                     displayFileTooLargeError = false
                     displayImageEditError = false
@@ -424,6 +434,8 @@ class AttachmentsPreviewPresenter(
             mediaOptimizationSelectorState = mediaOptimizationSelectorStates[currentIndex],
             displayFileTooLargeError = displayFileTooLargeError,
             currentIndex = currentIndex,
+            canNyutagViewOnce = canNyutagViewOnce,
+            nyutagViewOnce = nyutagViewOnce,
             eventSink = ::handleEvent,
         )
     }
@@ -528,6 +540,7 @@ class AttachmentsPreviewPresenter(
         caption: String?,
         sendActionState: MutableState<SendActionState>,
         inReplyToEventId: EventId?,
+        extraContentJson: String?,
     ) = runCatchingExceptions {
         if (mediaUploadInfos.size == 1) {
             sendActionState.value = SendActionState.Sending.Uploading(mediaUploadInfos)
@@ -536,6 +549,7 @@ class AttachmentsPreviewPresenter(
                 caption = caption,
                 formattedCaption = null,
                 inReplyToEventId = inReplyToEventId,
+                extraContentJson = extraContentJson,
             ).getOrThrow()
         } else {
             mediaSender.sendGallery(

@@ -24,4 +24,5 @@ sealed interface AttachmentsPreviewEvent {
     data class UpdateImageCropRect(val cropRect: NormalizedCropRect) : AttachmentsPreviewEvent
     data object ClearImageEditError : AttachmentsPreviewEvent
     data class SetCurrentCarouselIndex(val index: Int) : AttachmentsPreviewEvent
+    data class SetNyutagViewOnce(val enabled: Boolean) : AttachmentsPreviewEvent
 }

@@ -36,13 +36,16 @@ import io.element.android.libraries.matrix.api.media.FileInfo
 import io.element.android.libraries.matrix.api.media.GalleryItemInfo
 import io.element.android.libraries.matrix.api.media.ImageInfo
 import io.element.android.libraries.matrix.api.media.VideoInfo
+import io.element.android.libraries.matrix.api.nyutag.NyutagViewOnce
 import io.element.android.libraries.matrix.api.permalink.PermalinkBuilder
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.matrix.test.A_CAPTION
 import io.element.android.libraries.matrix.test.media.FakeMediaUploadHandler
 import io.element.android.libraries.matrix.test.permalink.FakePermalinkBuilder
+import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
+import io.element.android.libraries.matrix.test.room.aRoomInfo
 import io.element.android.libraries.matrix.test.timeline.FakeTimeline
 import io.element.android.libraries.mediaupload.api.MediaOptimizationConfig
 import io.element.android.libraries.mediaupload.api.MediaPreProcessor
@@ -317,6 +320,50 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
                 any(),
             )
             onDoneListener.assertions().isCalledOnce()
+        }
+    }
+
+    @Test
+    fun `present - nyutag view once image in a DM is sent with the marker`() = runTest {
+        val timeline = FakeTimeline().apply {
+            sendImageLambda = { _, _, _, _, _, _ -> Result.success(FakeMediaUploadHandler()) }
+        }
+        val mediaPreProcessor = FakeMediaPreProcessor().apply { givenImageResult() }
+        val room = FakeJoinedRoom(
+            baseRoom = FakeBaseRoom(initialRoomInfo = aRoomInfo(isDm = true)),
+            liveTimeline = timeline,
+        )
+        val presenter = createAttachmentsPreviewPresenter(
+            attachments = listOf(aMediaAttachment(aLocalMedia(mockMediaUrl, anImageMediaInfo()))),
+            room = room,
+            mediaPreProcessor = mediaPreProcessor,
+            onDoneListener = {},
+        )
+        presenter.test {
+            skipItems(1)
+            val initialState = awaitItem()
+            assertThat(initialState.canNyutagViewOnce).isTrue()
+            initialState.eventSink(AttachmentsPreviewEvent.SetNyutagViewOnce(true))
+            assertThat(awaitItem().nyutagViewOnce).isTrue()
+            initialState.eventSink(AttachmentsPreviewEvent.SendAttachment)
+            while (awaitItem().sendActionState != SendActionState.Done) Unit
+        }
+        assertThat(timeline.sendImageExtraContentJson).isEqualTo(NyutagViewOnce.EXTRA_CONTENT_JSON)
+    }
+
+    @Test
+    fun `present - nyutag view once is not offered outside a DM`() = runTest {
+        val presenter = createAttachmentsPreviewPresenter(
+            attachments = listOf(aMediaAttachment(aLocalMedia(mockMediaUrl, anImageMediaInfo()))),
+            room = FakeJoinedRoom(baseRoom = FakeBaseRoom(initialRoomInfo = aRoomInfo(isDm = false))),
+        )
+        presenter.test {
+            skipItems(1)
+            val initialState = awaitItem()
+            assertThat(initialState.canNyutagViewOnce).isFalse()
+            initialState.eventSink(AttachmentsPreviewEvent.SetNyutagViewOnce(true))
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -1000,6 +1047,7 @@ class AttachmentsPreviewPresenterTest : RobolectricTest() {
             timelineMode = timelineMode,
             inReplyToEventId = null,
             mediaOptimizationConfigProvider = mediaOptimizationConfigProvider,
+            room = room,
         )
     }
 

@@ -387,6 +387,7 @@ class RustTimeline(
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        extraContentJson: String?,
     ): Result<MediaUploadHandler> {
         Timber.tag(loggerTag).d("Sending image ${file.path.hash()}")
         return sendAttachment(listOfNotNull(file, thumbnailFile)) {
@@ -399,6 +400,7 @@ class RustTimeline(
                     },
                     mentions = null,
                     inReplyTo = inReplyToEventId?.value,
+                    extraContentJson = extraContentJson,
                 ),
                 thumbnailSource = thumbnailFile?.path?.let(UploadSource::File),
                 imageInfo = imageInfo.map(),

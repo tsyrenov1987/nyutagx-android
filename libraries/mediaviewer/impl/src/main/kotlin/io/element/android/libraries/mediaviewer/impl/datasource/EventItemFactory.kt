@@ -14,6 +14,7 @@ import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.dateformatter.api.DateFormatterMode
 import io.element.android.libraries.dateformatter.api.toHumanReadableDuration
 import io.element.android.libraries.matrix.api.core.UniqueId
+import io.element.android.libraries.matrix.api.nyutag.NyutagViewOnce
 import io.element.android.libraries.matrix.api.timeline.MatrixTimelineItem
 import io.element.android.libraries.matrix.api.timeline.item.event.AudioMessageType
 import io.element.android.libraries.matrix.api.timeline.item.event.CallNotifyContent
@@ -234,6 +235,8 @@ class EventItemFactory(
                         validationState = validationState,
                         // TODO We may want to add a thumbnailSource and set it to type.info?.thumbnailSource
                     ))
+                    // Нютаг: исчезающее фото в галерею чата не попадает.
+                    is ImageMessageType if NyutagViewOnce.isMarked(event.timelineItemDebugInfoProvider().originalJson) -> emptyList()
                     is ImageMessageType -> listOf(MediaItem.Image(
                         id = currentTimelineItem.uniqueId,
                         eventId = currentTimelineItem.eventId,

@@ -10,8 +10,10 @@ package io.element.android.features.messages.impl.timeline.factories.event
 
 import dev.zacsweers.metro.Inject
 import io.element.android.features.location.api.Location
+import io.element.android.features.messages.impl.timeline.model.event.NyutagViewOnceState
 import io.element.android.features.messages.impl.timeline.model.event.RtcNotificationState
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemEventContent
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemImageContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemLegacyCallInviteContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemLocationContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemRtcNotificationContent
@@ -21,6 +23,7 @@ import io.element.android.libraries.dateformatter.api.DateFormatterMode
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.nyutag.NyutagViewOnce
 import io.element.android.libraries.matrix.api.room.RoomMember
 import io.element.android.libraries.matrix.api.room.toMatrixUser
 import io.element.android.libraries.matrix.api.timeline.item.event.CallNotifyContent
@@ -62,7 +65,7 @@ class TimelineItemContentFactory(
     private val stringProvider: StringProvider,
 ) {
     suspend fun create(eventTimelineItem: EventTimelineItem, roomMembers: List<RoomMember>): TimelineItemEventContent {
-        return create(
+        val content = create(
             itemContent = eventTimelineItem.content,
             eventId = eventTimelineItem.eventId,
             isEditable = eventTimelineItem.isEditable,
@@ -70,6 +73,11 @@ class TimelineItemContentFactory(
             senderProfile = eventTimelineItem.senderProfile,
             roomMembers = roomMembers,
         )
+        // Нютаг: метку «исчезающее фото» SDK в модель не переносит — читаем её из исходного события.
+        if (content is TimelineItemImageContent && NyutagViewOnce.isMarked(eventTimelineItem.timelineItemDebugInfoProvider().originalJson)) {
+            return content.copy(nyutagViewOnce = if (eventTimelineItem.isOwn) NyutagViewOnceState.Sent else NyutagViewOnceState.Received)
+        }
+        return content
     }
 
     suspend fun create(

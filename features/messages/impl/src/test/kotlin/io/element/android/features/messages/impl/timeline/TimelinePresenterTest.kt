@@ -8,10 +8,6 @@
 
 package io.element.android.features.messages.impl.timeline
 
-import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
-import io.element.android.services.toolbox.test.systemclock.FakeSystemClock
-import io.element.android.libraries.matrix.test.nyutag.FakeNyutagAutoDelete
-import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.location.test.FakeActiveLiveLocationShareManager
@@ -25,6 +21,9 @@ import io.element.android.features.messages.impl.timeline.components.MessageShie
 import io.element.android.features.messages.impl.timeline.components.aCriticalShield
 import io.element.android.features.messages.impl.timeline.model.NewEventState
 import io.element.android.features.messages.impl.timeline.model.TimelineItem
+import io.element.android.features.messages.impl.timeline.model.event.NyutagViewOnceState
+import io.element.android.features.messages.impl.timeline.model.event.TimelineItemImageContent
+import io.element.android.features.messages.impl.timeline.model.event.canBeForwarded
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
 import io.element.android.features.messages.impl.timeline.protection.aTimelineProtectionState
 import io.element.android.features.messages.impl.timeline.sendfailure.SendFailureDialogState
@@ -45,13 +44,18 @@ import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.ThreadId
 import io.element.android.libraries.matrix.api.core.UniqueId
 import io.element.android.libraries.matrix.api.core.asEventId
+import io.element.android.libraries.matrix.api.media.MediaSource
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
+import io.element.android.libraries.matrix.api.nyutag.NyutagViewOnce
 import io.element.android.libraries.matrix.api.room.MessageEventType
 import io.element.android.libraries.matrix.api.room.RoomMembersState
 import io.element.android.libraries.matrix.api.room.tombstone.PredecessorRoom
 import io.element.android.libraries.matrix.api.timeline.MatrixTimelineItem
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
 import io.element.android.libraries.matrix.api.timeline.Timeline
+import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
 import io.element.android.libraries.matrix.api.timeline.item.event.EventReaction
+import io.element.android.libraries.matrix.api.timeline.item.event.ImageMessageType
 import io.element.android.libraries.matrix.api.timeline.item.event.LocalEventSendState
 import io.element.android.libraries.matrix.api.timeline.item.event.ReactionSender
 import io.element.android.libraries.matrix.api.timeline.item.event.Receipt
@@ -65,6 +69,7 @@ import io.element.android.libraries.matrix.test.A_THREAD_ID_2
 import io.element.android.libraries.matrix.test.A_UNIQUE_ID
 import io.element.android.libraries.matrix.test.A_UNIQUE_ID_2
 import io.element.android.libraries.matrix.test.A_USER_ID
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagAutoDelete
 import io.element.android.libraries.matrix.test.room.FakeBaseRoom
 import io.element.android.libraries.matrix.test.room.FakeJoinedRoom
 import io.element.android.libraries.matrix.test.room.aRoomInfo
@@ -73,11 +78,13 @@ import io.element.android.libraries.matrix.test.room.powerlevels.FakeRoomPermiss
 import io.element.android.libraries.matrix.test.timeline.FakeTimeline
 import io.element.android.libraries.matrix.test.timeline.aMessageContent
 import io.element.android.libraries.matrix.test.timeline.aRedactedContent
+import io.element.android.libraries.matrix.test.timeline.aTimelineItemDebugInfo
 import io.element.android.libraries.matrix.test.timeline.anEventTimelineItem
 import io.element.android.libraries.matrix.test.timeline.item.event.aRoomMembershipContent
 import io.element.android.libraries.matrix.ui.components.aMatrixUserList
 import io.element.android.libraries.preferences.test.InMemorySessionPreferencesStore
 import io.element.android.services.analytics.test.FakeAnalyticsService
+import io.element.android.services.toolbox.test.systemclock.FakeSystemClock
 import io.element.android.tests.testutils.WarmUpRule
 import io.element.android.tests.testutils.awaitLastSequentialItem
 import io.element.android.tests.testutils.consumeItemsUntilPredicate
@@ -1922,6 +1929,47 @@ class TimelinePresenterTest {
             consumeItemsUntilPredicate { it.timelineItems.size == 1 }
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `present - nyutag view once image is marked and redacted after viewing`() = runTest {
+        val viewOnceJson = """{"type":"m.room.message","content":{"msgtype":"m.image","chat.nyutag.view_once":true}}"""
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(
+                listOf(
+                    MatrixTimelineItem.Event(
+                        UniqueId("0"),
+                        anEventTimelineItem(
+                            eventId = AN_EVENT_ID,
+                            content = aMessageContent(messageType = ImageMessageType("photo.jpg", "photo.jpg", null, MediaSource("mxc://a/b"), null)),
+                            debugInfoProvider = { aTimelineItemDebugInfo(originalJson = viewOnceJson) },
+                        ),
+                    ),
+                )
+            ),
+        )
+        val redactLambda = lambdaRecorder<EventOrTransactionId, String?, Result<Unit>> { _, _ -> Result.success(Unit) }
+        timeline.redactEventLambda = redactLambda
+        val presenter = createTimelinePresenter(timeline = timeline)
+        presenter.test {
+            val state = consumeItemsUntilPredicate { it.timelineItems.size == 1 }.last()
+            val content = (state.timelineItems.single() as TimelineItem.Event).content as TimelineItemImageContent
+            assertThat(content.nyutagViewOnce).isEqualTo(NyutagViewOnceState.Received)
+            assertThat(content.canBeForwarded()).isFalse()
+            state.eventSink(TimelineEvent.NyutagViewOnceOpened(AN_EVENT_ID))
+            cancelAndIgnoreRemainingEvents()
+        }
+        delay(1)
+        assert(redactLambda).isCalledOnce().with(value(EventOrTransactionId.Event(AN_EVENT_ID)), value(null))
+    }
+
+    @Test
+    fun `nyutag view once marker is read only from the event content`() {
+        assertThat(NyutagViewOnce.isMarked("""{"content":{"chat.nyutag.view_once":true}}""")).isTrue()
+        assertThat(NyutagViewOnce.isMarked("""{"content":{"chat.nyutag.view_once":false}}""")).isFalse()
+        assertThat(NyutagViewOnce.isMarked("""{"chat.nyutag.view_once":true,"content":{}}""")).isFalse()
+        assertThat(NyutagViewOnce.isMarked("not json")).isFalse()
+        assertThat(NyutagViewOnce.isMarked(null)).isFalse()
     }
 
     private fun TestScope.createTimelinePresenter(

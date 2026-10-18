@@ -47,6 +47,9 @@ sealed interface TimelineEvent {
      */
     data class NavigateToPredecessorOrSuccessorRoom(val roomId: RoomId) : TimelineItemEvent
 
+    /** Нютаг: получатель посмотрел исчезающее фото — событие удаляется. */
+    data class NyutagViewOnceOpened(val eventId: EventId) : TimelineItemEvent
+
     /**
      * Events coming from a poll item.
      */

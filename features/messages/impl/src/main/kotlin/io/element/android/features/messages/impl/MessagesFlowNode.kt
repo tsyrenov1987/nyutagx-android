@@ -48,6 +48,7 @@ import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.timeline.debug.EventDebugInfoNode
 import io.element.android.features.messages.impl.timeline.model.TimelineItem
 import io.element.android.features.messages.impl.timeline.model.event.GalleryItem
+import io.element.android.features.messages.impl.timeline.model.event.NyutagViewOnceState
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAttachmentsContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAudioContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemEventContentWithAttachment
@@ -723,6 +724,8 @@ class MessagesFlowNode(
         canUseOverlay: Boolean,
     ): Boolean {
         val navTarget = when (event.content) {
+            // Нютаг: исчезающее фото открывается только своим одноразовым просмотром, не в галерее.
+            is TimelineItemImageContent if event.content.nyutagViewOnce != NyutagViewOnceState.None -> return false
             is TimelineItemImageContent -> {
                 buildMediaViewerNavTarget(
                     mode = MediaViewerEntryPoint.MediaViewerMode.TimelineImagesAndVideos(timelineMode),

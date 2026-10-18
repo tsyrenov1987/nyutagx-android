@@ -26,6 +26,7 @@ import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.messages.impl.timeline.TimelineEvent
 import io.element.android.features.messages.impl.timeline.di.LocalTimelineItemPresenterFactories
 import io.element.android.features.messages.impl.timeline.di.rememberPresenter
+import io.element.android.features.messages.impl.timeline.model.event.NyutagViewOnceState
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAttachmentsContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAudioContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemEncryptedContent
@@ -155,7 +156,13 @@ fun TimelineItemEventContentView(
                         onStopLiveLocationClick = { eventSink(TimelineEvent.StopLiveLocationShare) },
                     )
                 }
-                is TimelineItemImageContent -> {
+                is TimelineItemImageContent -> if (content.nyutagViewOnce != NyutagViewOnceState.None) {
+                    NyutagViewOnceView(
+                        content = content,
+                        onLongClick = onLongClick,
+                        onOpened = { eventId?.let { eventSink(TimelineEvent.NyutagViewOnceOpened(it)) } },
+                    )
+                } else {
                     TimelineItemImageView(
                         content = content,
                         hideMediaContent = hideMediaContent,

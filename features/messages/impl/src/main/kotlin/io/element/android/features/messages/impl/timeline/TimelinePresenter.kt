@@ -319,6 +319,12 @@ class TimelinePresenter(
                 is TimelineEvent.ComputeVerifiedUserSendFailure -> {
                     resolveVerifiedUserSendFailureState.eventSink(ResolveVerifiedUserSendFailureEvent.ComputeForMessage(event.event))
                 }
+                is TimelineEvent.NyutagViewOnceOpened -> sessionCoroutineScope.launch {
+                    timelineController.invokeOnCurrentTimeline {
+                        redactEvent(EventOrTransactionId.Event(event.eventId), reason = null)
+                            .onFailure { Timber.tag(tag).w("Nyutag view once: redaction of ${event.eventId} failed") }
+                    }
+                }
                 is TimelineEvent.NavigateToPredecessorOrSuccessorRoom -> {
                     // Navigate to the predecessor or successor room
                     val serverNames = calculateServerNamesForRoom(room)

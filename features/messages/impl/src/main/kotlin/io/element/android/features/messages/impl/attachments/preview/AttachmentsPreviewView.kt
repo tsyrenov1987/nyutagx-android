@@ -349,6 +349,9 @@ private fun AttachmentPreviewContent(
         val mediaInfo = (state.attachments[state.currentIndex] as? Attachment.Media)?.localMedia?.info
         if (mediaInfo?.isImageAttachment() == true) {
             ImageOptimizationSelector(state.mediaOptimizationSelectorState)
+            if (state.canNyutagViewOnce) {
+                NyutagViewOnceSelector(state)
+            }
         } else if (mediaInfo?.mimeType?.isMimeTypeVideo() == true) {
             VideoPresetSelector(state = state.mediaOptimizationSelectorState)
         }
@@ -374,6 +377,29 @@ private fun AttachmentPreviewContent(
                 .background(ElementTheme.colors.bgCanvasDefault)
                 .height(IntrinsicSize.Min)
                 .imePadding(),
+        )
+    }
+}
+
+@Composable
+private fun NyutagViewOnceSelector(state: AttachmentsPreviewState) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .niceClickable { state.eventSink(AttachmentsPreviewEvent.SetNyutagViewOnce(!state.nyutagViewOnce)) }
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+    ) {
+        Text(
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically),
+            text = stringResource(CommonStrings.nyutag_view_once_toggle),
+            style = ElementTheme.typography.fontBodyLgRegular,
+        )
+        Switch(
+            modifier = Modifier.height(32.dp),
+            checked = state.nyutagViewOnce,
+            onCheckedChange = { value -> state.eventSink(AttachmentsPreviewEvent.SetNyutagViewOnce(value)) },
         )
     }
 }

@@ -30,12 +30,16 @@ class FakeMediaSender(
         return preProcessMediaResult()
     }
 
+    var sendPreProcessedMediaExtraContentJson: String? = null
+
     override suspend fun sendPreProcessedMedia(
         mediaUploadInfo: MediaUploadInfo,
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        extraContentJson: String?,
     ): Result<Unit> {
+        sendPreProcessedMediaExtraContentJson = extraContentJson
         return sendPreProcessedMediaResult()
     }
 

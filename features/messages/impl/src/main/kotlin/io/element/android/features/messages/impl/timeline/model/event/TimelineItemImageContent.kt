@@ -31,7 +31,8 @@ data class TimelineItemImageContent(
     val height: Int?,
     val thumbnailWidth: Int?,
     val thumbnailHeight: Int?,
-    val aspectRatio: Float?
+    val aspectRatio: Float?,
+    val nyutagViewOnce: NyutagViewOnceState = NyutagViewOnceState.None,
 ) : TimelineItemEventContentWithAttachment {
     override val type: String = "TimelineItemImageContent"
 

@@ -74,6 +74,8 @@ interface MediaSender {
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        // Нютаг: дополнительные поля content (только для картинок), например «исчезающее фото».
+        extraContentJson: String? = null,
     ): Result<Unit>
 
     /**

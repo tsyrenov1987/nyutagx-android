@@ -192,6 +192,8 @@ interface Timeline : AutoCloseable {
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        // Нютаг: дополнительные поля в content события, например метка «исчезающее фото».
+        extraContentJson: String? = null,
     ): Result<MediaUploadHandler>
 
     /**

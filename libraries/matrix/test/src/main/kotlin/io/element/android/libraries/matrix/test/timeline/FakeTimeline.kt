@@ -172,6 +172,8 @@ class FakeTimeline(
         Result.success(FakeMediaUploadHandler())
     }
 
+    var sendImageExtraContentJson: String? = null
+
     override suspend fun sendImage(
         file: File,
         thumbnailFile: File?,
@@ -179,7 +181,9 @@ class FakeTimeline(
         caption: String?,
         formattedCaption: String?,
         inReplyToEventId: EventId?,
+        extraContentJson: String?,
     ): Result<MediaUploadHandler> = simulateLongTask {
+        sendImageExtraContentJson = extraContentJson
         sendImageLambda(
             file,
             thumbnailFile,

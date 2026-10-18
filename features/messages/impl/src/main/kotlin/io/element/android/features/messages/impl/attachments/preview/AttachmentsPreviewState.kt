@@ -27,6 +27,9 @@ data class AttachmentsPreviewState(
     val mediaOptimizationSelectorState: MediaOptimizationSelectorState,
     val displayFileTooLargeError: Boolean,
     val currentIndex: Int,
+    // Нютаг: «исчезающее фото» — только одна картинка в личном чате.
+    val canNyutagViewOnce: Boolean = false,
+    val nyutagViewOnce: Boolean = false,
     val eventSink: (AttachmentsPreviewEvent) -> Unit,
 ) {
     val isGallery: Boolean get() = attachments.size > 1
