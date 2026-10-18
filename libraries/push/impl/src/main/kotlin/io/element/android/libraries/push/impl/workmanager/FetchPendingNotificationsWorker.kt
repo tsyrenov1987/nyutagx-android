@@ -43,7 +43,9 @@ import io.element.android.services.analyticsproviders.api.AnalyticsTransaction
 import io.element.android.services.toolbox.api.sdk.BuildVersionSdkIntProvider
 import io.element.android.services.toolbox.api.systemclock.SystemClock
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
@@ -115,21 +117,40 @@ class FetchPendingNotificationsWorker(
             // Нютаг: пуш, пришедший пока разбирались эти, ставится в очередь за этой работой и ждёт попутную синхронизацию ниже (~10 с) —
             // звонок за пушем call.member показывался на 10 с позже. Поэтому дочитываем такие пуши сразу (не больше MAX_REQUESTS_PER_RUN за работу).
             if (processedRequests.size >= MAX_REQUESTS_PER_RUN) break
-            val processedIds = processedRequests.mapTo(HashSet()) { it.eventId }
-            batch = pushHistoryService.getPendingPushRequests(sessionId, fetchSince).getOrNull().orEmpty()
-                .filter { it.eventId !in processedIds }
-            if (batch.isNotEmpty()) Timber.d("${batch.size} push requests arrived while fetching, fetching them too")
+            batch = newPendingRequests(sessionId, fetchSince, processedRequests)
         }
 
         // The results have been handed over, so release the foreground service before the opportunistic sync, which deliberately takes a while
         // in the background. This keeps the service short-lived in the common case, so its notification is normally never displayed.
         releaseForegroundService()
 
-        analyticsService.recordTransaction("Opportunistic sync", "opportunistic_sync") {
-            performOpportunisticSyncIfNeeded(mapOf(sessionId to processedRequests))
+        val syncedRequests = processedRequests.toList()
+        var failure: Result? = null
+        coroutineScope {
+            val sync = launch {
+                analyticsService.recordTransaction("Opportunistic sync", "opportunistic_sync") {
+                    performOpportunisticSyncIfNeeded(mapOf(sessionId to syncedRequests))
+                }
+            }
+            // Нютаг: и пуш, пришедший во время самой синхронизации (в фоне она ждёт 10 с), не ждёт её конца — проверяем очередь раз в секунду.
+            while (failure == null && processedRequests.size < MAX_REQUESTS_PER_RUN && withTimeoutOrNull(POLL_DURING_SYNC) { sync.join() } == null) {
+                val newRequests = newPendingRequests(sessionId, fetchSince, processedRequests)
+                if (newRequests.isEmpty()) continue
+                failure = resolveRequests(sessionId, newRequests, updatedRequests)
+                processedRequests += newRequests
+            }
         }
+        failure?.let { return it }
 
         return if (updatedRequests.any { it.status == PushRequestStatus.PENDING.value }) Result.retry() else Result.success()
+    }
+
+    private suspend fun newPendingRequests(sessionId: SessionId, since: Instant, processedRequests: List<PushRequest>): List<PushRequest> {
+        val processedIds = processedRequests.mapTo(HashSet()) { it.eventId }
+        val requests = pushHistoryService.getPendingPushRequests(sessionId, since).getOrNull().orEmpty()
+            .filter { it.eventId !in processedIds }
+        if (requests.isNotEmpty()) Timber.d("${requests.size} push requests arrived while fetching, fetching them too")
+        return requests
     }
 
     /**
@@ -300,6 +321,7 @@ class FetchPendingNotificationsWorker(
 
     private companion object {
         const val MAX_REQUESTS_PER_RUN = 50
+        val POLL_DURING_SYNC = 1.seconds
     }
 
     @ContributesIntoMap(AppScope::class, binding = binding<MetroWorkerFactory.WorkerInstanceFactory<*>>())

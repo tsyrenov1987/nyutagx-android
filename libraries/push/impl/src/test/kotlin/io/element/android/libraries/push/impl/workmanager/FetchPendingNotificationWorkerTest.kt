@@ -37,6 +37,7 @@ import io.element.android.services.toolbox.test.systemclock.FakeSystemClock
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
@@ -321,6 +322,46 @@ class FetchPendingNotificationWorkerTest : RobolectricTest() {
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
         // The second push doesn't wait for the opportunistic sync, and the first one is not fetched twice
         assertThat(callOrder).containsExactly("resolve \$first", "resolve \$second", "sync").inOrder()
+    }
+
+    @Test
+    fun `test - push requests received during the opportunistic sync don't wait for it to finish`() = runTest {
+        val callOrder = mutableListOf<String>()
+        val first = aPushRequest(eventId = EventId("\$first"))
+        val second = aPushRequest(eventId = EventId("\$second"))
+        val pushHistoryService = FakePushHistoryService(
+            getPendingPushRequests = { _, _ ->
+                // The second push arrives 3 seconds after the start, while the background sync is waiting
+                Result.success(if (testScheduler.currentTime < 3_000) listOf(first) else listOf(first, second))
+            },
+            replacePushRequests = { Result.success(Unit) },
+            removeOldPushRequests = { Result.success(Unit) },
+        )
+        val resolveEventsLambda = lambdaRecorder<SessionId, List<PushRequest>, Result<Map<PushRequest, Result<ResolvedPushEvent>>>> { _, requests ->
+            callOrder += "resolve ${requests.joinToString { it.eventId }} at ${testScheduler.currentTime}"
+            Result.success(emptyMap())
+        }
+        val worker = createWorker(
+            input = "@alice:matrix.org",
+            pushHistoryService = pushHistoryService,
+            eventResolver = FakeNotifiableEventResolver(resolveEventsResult = resolveEventsLambda),
+            resultProcessor = FakeNotificationResultProcessor(emit = {}),
+            syncOnNotifiableEvent = SyncOnNotifiableEvent {
+                callOrder += "sync start"
+                delay(10.seconds)
+                callOrder += "sync end at ${testScheduler.currentTime}"
+            },
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+        assertThat(callOrder).containsExactly(
+            "resolve \$first at 0",
+            "sync start",
+            "resolve \$second at 3000",
+            "sync end at 10000",
+        ).inOrder()
     }
 
     private fun TestScope.createWorker(
