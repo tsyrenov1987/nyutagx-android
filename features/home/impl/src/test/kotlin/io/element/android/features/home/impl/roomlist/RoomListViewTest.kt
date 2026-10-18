@@ -11,8 +11,14 @@
 package io.element.android.features.home.impl.roomlist
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.AndroidComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -22,10 +28,12 @@ import androidx.compose.ui.test.v2.runAndroidComposeUiTest
 import io.element.android.features.home.impl.HomeView
 import io.element.android.features.home.impl.R
 import io.element.android.features.home.impl.aHomeState
+import io.element.android.features.home.impl.components.NyutagDrawerAction
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.model.RoomSummaryDisplayType
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.testtags.TestTags
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.tests.testutils.EnsureNeverCalled
 import io.element.android.tests.testutils.EnsureNeverCalledWithParam
@@ -33,6 +41,7 @@ import io.element.android.tests.testutils.EventsRecorder
 import io.element.android.tests.testutils.clickOn
 import io.element.android.tests.testutils.ensureCalledOnce
 import io.element.android.tests.testutils.ensureCalledOnceWithParam
+import io.element.android.tests.testutils.pressTag
 import io.element.android.tests.testutils.robolectric.RobolectricTest
 import io.element.android.tests.testutils.setSafeContent
 import org.junit.Test
@@ -148,6 +157,32 @@ class RoomListViewTest : RobolectricTest() {
     }
 
     @Test
+    fun `Nyutag - clicking on own avatar opens the side menu, its settings item opens settings`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<RoomListEvent>(expectEvents = false)
+        ensureCalledOnce { callback ->
+            setRoomListView(
+                state = aRoomListState(eventSink = eventsRecorder, contentState = anEmptyContentState()),
+                onSettingsClick = callback,
+            )
+            pressTag(TestTags.homeScreenSettings.value)
+            clickOn(R.string.nyutag_drawer_settings)
+        }
+    }
+
+    @Test
+    fun `Nyutag - side menu my profile item sends the drawer action`() = runAndroidComposeUiTest {
+        val eventsRecorder = EventsRecorder<RoomListEvent>(expectEvents = false)
+        ensureCalledOnceWithParam(NyutagDrawerAction.MyProfile) { callback ->
+            setRoomListView(
+                state = aRoomListState(eventSink = eventsRecorder, contentState = anEmptyContentState()),
+                onDrawerAction = callback,
+            )
+            pressTag(TestTags.homeScreenSettings.value)
+            clickOn(R.string.nyutag_drawer_my_profile)
+        }
+    }
+
+    @Test
     fun `Nyutag - clicking on invite a friend when the session has no room invokes the menu action`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<RoomListEvent>(expectEvents = false)
         ensureCalledOnceWithParam(RoomListMenuAction.InviteFriends) { callback ->
@@ -245,7 +280,11 @@ class RoomListViewTest : RobolectricTest() {
             // Remove automatic initial events
             eventsRecorder.clear()
 
-            clickOn(CommonStrings.common_settings)
+            // Нютаг: «Настройки» есть и в закрытом боковом меню (Role.Tab) — жмём пункт меню комнаты.
+            val settings = activity!!.getString(CommonStrings.common_settings)
+            onAllNodes(hasText(settings) and hasClickAction())
+                .filterToOne(!SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+                .performClick()
         }
 
         eventsRecorder.assertSingle(RoomListEvent.HideContextMenu)
@@ -288,6 +327,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
     onMenuActionClick: (RoomListMenuAction) -> Unit = EnsureNeverCalledWithParam(),
     onReportRoomClick: (RoomId) -> Unit = EnsureNeverCalledWithParam(),
     onDeclineInviteAndBlockUser: (RoomListRoomSummary) -> Unit = EnsureNeverCalledWithParam(),
+    onDrawerAction: (NyutagDrawerAction) -> Unit = EnsureNeverCalledWithParam(),
 ) {
     setSafeContent {
         HomeView(
@@ -303,6 +343,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setRoomListView(
             onDeclineInviteAndBlockUser = onDeclineInviteAndBlockUser,
             onReportRoomClick = onReportRoomClick,
             acceptDeclineInviteView = {},
+            onDrawerAction = onDrawerAction,
             leaveRoomView = {},
         )
     }

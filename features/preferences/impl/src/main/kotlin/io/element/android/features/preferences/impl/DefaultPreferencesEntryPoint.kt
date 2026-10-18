@@ -47,4 +47,6 @@ internal fun PreferencesEntryPoint.InitialTarget.toNavTarget() = when (this) {
     is PreferencesEntryPoint.InitialTarget.NotificationSettings -> PreferencesFlowNode.NavTarget.NotificationSettings
     PreferencesEntryPoint.InitialTarget.NotificationTroubleshoot -> PreferencesFlowNode.NavTarget.TroubleshootNotifications
     PreferencesEntryPoint.InitialTarget.DeveloperSettings -> PreferencesFlowNode.NavTarget.DeveloperSettings
+    is PreferencesEntryPoint.InitialTarget.EditProfile -> PreferencesFlowNode.NavTarget.UserProfile(matrixUser)
+    is PreferencesEntryPoint.InitialTarget.AvatarPreview -> PreferencesFlowNode.NavTarget.AvatarPreview(name, avatarUrl)
 }

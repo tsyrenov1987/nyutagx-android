@@ -16,6 +16,7 @@ import io.element.android.libraries.architecture.FeatureEntryPoint
 import io.element.android.libraries.architecture.NodeInputs
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import kotlinx.parcelize.Parcelize
 
 interface PreferencesEntryPoint : FeatureEntryPoint {
@@ -31,6 +32,14 @@ interface PreferencesEntryPoint : FeatureEntryPoint {
 
         @Parcelize
         data object DeveloperSettings : InitialTarget
+
+        /** Нютаг: «Мой профиль» из бокового меню — сразу редактирование профиля. */
+        @Parcelize
+        data class EditProfile(val matrixUser: MatrixUser) : InitialTarget
+
+        /** Нютаг: свой аватар во весь экран из бокового меню. */
+        @Parcelize
+        data class AvatarPreview(val name: String, val avatarUrl: String) : InitialTarget
     }
 
     data class Params(val initialElement: InitialTarget) : NodeInputs

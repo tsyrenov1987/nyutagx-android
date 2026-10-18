@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -502,15 +501,12 @@ private fun StandardLayout(
                         },
                     ) {
                         if (voiceMessageState is VoiceMessageState.Idle) {
+                            // Нютаг: скрепка вместо «+», как в Telegram.
                             Icon(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(30.dp)
-                                    .background(ElementTheme.colors.iconPrimary)
-                                    .padding(3.dp),
-                                imageVector = CompoundIcons.Plus(),
+                                modifier = Modifier.size(26.dp),
+                                imageVector = CompoundIcons.Attachment(),
                                 contentDescription = stringResource(R.string.rich_text_editor_a11y_add_attachment),
-                                tint = ElementTheme.colors.iconOnSolidPrimary
+                                tint = ElementTheme.colors.iconSecondary
                             )
                         } else {
                             when (voiceMessageState) {

@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
@@ -33,6 +34,7 @@ import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.MobileScreen
 import io.element.android.annotations.ContributesNode
 import io.element.android.features.home.api.HomeEntryPoint
+import io.element.android.features.home.impl.components.NyutagDrawerAction
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.roomlist.RoomListEvent
@@ -58,6 +60,7 @@ import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
+import io.element.android.libraries.matrix.api.nyutag.nyutagSavedMessagesRoomId
 import io.element.android.services.analytics.api.AnalyticsService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -169,6 +172,7 @@ class HomeFlowNode(
             val state by stateFlow.collectAsState()
             val activity = requireNotNull(LocalActivity.current)
 
+            val drawerScope = rememberCoroutineScope()
             val loadingJoinedRoomJob = remember { mutableStateOf<AsyncData<Job>>(AsyncData.Uninitialized) }
             if (loadingJoinedRoomJob.value.isLoading()) {
                 DelayedVisibility(duration = 400.milliseconds) {
@@ -232,6 +236,18 @@ class HomeFlowNode(
                 onReportRoomClick = ::navigateToReportRoom,
                 onDeclineInviteAndBlockUser = ::navigateToDeclineInviteAndBlockUser,
                 modifier = modifier,
+                onDrawerAction = { action ->
+                    val user = state.currentUserAndNeighbors.let { if (it.size > 1) it[1] else it.first() }
+                    when (action) {
+                        NyutagDrawerAction.MyProfile -> callback.navigateToMyProfile(user)
+                        NyutagDrawerAction.OwnAvatar -> user.avatarUrl?.let { callback.navigateToOwnAvatar(user.displayName ?: user.userId.value, it) }
+                        // «Избранное» ещё не создано — экран нового чата, там оно первым пунктом.
+                        NyutagDrawerAction.SavedMessages -> drawerScope.launch {
+                            matrixClient.nyutagSavedMessagesRoomId()?.let { navigateToRoom(it, null) } ?: callback.navigateToCreateRoom()
+                        }
+                        else -> Unit
+                    }
+                },
                 acceptDeclineInviteView = {
                     acceptDeclineInviteView.Render(
                         state = state.roomListState.acceptDeclineInviteState,

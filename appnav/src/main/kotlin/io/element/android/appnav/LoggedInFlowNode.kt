@@ -95,6 +95,7 @@ import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.sync.SyncService
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.api.verification.SessionVerificationServiceListener
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
 import io.element.android.libraries.preferences.api.store.AppPreferencesStore
@@ -389,6 +390,14 @@ class LoggedInFlowNode(
 
                     override fun navigateToBugReport() {
                         callback.navigateToBugReport()
+                    }
+
+                    override fun navigateToMyProfile(matrixUser: MatrixUser) {
+                        backstack.push(NavTarget.Settings(PreferencesEntryPoint.InitialTarget.EditProfile(matrixUser)))
+                    }
+
+                    override fun navigateToOwnAvatar(name: String, avatarUrl: String) {
+                        backstack.push(NavTarget.Settings(PreferencesEntryPoint.InitialTarget.AvatarPreview(name, avatarUrl)))
                     }
                 }
                 homeEntryPoint.createNode(

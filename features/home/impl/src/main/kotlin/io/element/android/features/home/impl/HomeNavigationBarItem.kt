@@ -19,6 +19,11 @@ enum class HomeNavigationBarItem(
     Chats(
         labelRes = R.string.screen_home_tab_chats
     ),
+
+    /** Нютаг: телефонная книга, сверху те, кто уже в Нютаге. */
+    Contacts(
+        labelRes = R.string.nyutag_tab_contacts
+    ),
     Spaces(
         labelRes = R.string.screen_home_tab_spaces
     );
@@ -28,6 +33,7 @@ enum class HomeNavigationBarItem(
         isSelected: Boolean,
     ) = when (this) {
         Chats -> if (isSelected) CompoundIcons.ChatSolid() else CompoundIcons.Chat()
+        Contacts -> if (isSelected) CompoundIcons.UserProfileSolid() else CompoundIcons.UserProfile()
         Spaces -> if (isSelected) CompoundIcons.SpaceSolid() else CompoundIcons.Space()
     }
 

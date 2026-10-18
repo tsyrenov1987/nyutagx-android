@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
@@ -84,7 +85,6 @@ import io.element.android.libraries.designsystem.theme.components.DropdownMenuIt
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.IconButton
 import io.element.android.libraries.designsystem.theme.components.Text
-import io.element.android.libraries.designsystem.theme.components.TopAppBar
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.user.DisplayedStatus
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -120,7 +120,8 @@ fun HomeTopBar(
 ) {
     val contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
     Column(modifier) {
-        TopAppBar(
+        // Нютаг: заголовок по центру и мельче, как в Telegram для iOS.
+        CenterAlignedTopAppBar(
             modifier = Modifier
                 .backgroundVerticalGradient(
                     isVisible = !areSearchResultsDisplayed,
@@ -139,19 +140,14 @@ fun HomeTopBar(
                             else -> stringResource(selectedNavigationItem.labelRes)
                         }
                     }
+                    HomeNavigationBarItem.Contacts -> stringResource(selectedNavigationItem.labelRes)
                     HomeNavigationBarItem.Spaces -> null
                 }
                 displayTitle?.let {
-                    val style = when (spaceFiltersState) {
-                        // Space name
-                        is SpaceFiltersState.Selected -> ElementTheme.typography.fontHeadingSmMedium
-                        // "Chats"
-                        else -> ElementTheme.typography.fontHeadingLgBold
-                    }
                     AdaptativeTitle(
                         title = displayTitle,
-                        style = style,
-                        twoLinesStyle = ElementTheme.typography.fontHeadingSmMedium,
+                        style = ElementTheme.typography.fontHeadingSmMedium,
+                        twoLinesStyle = ElementTheme.typography.fontBodyLgMedium,
                     )
                 }
             },

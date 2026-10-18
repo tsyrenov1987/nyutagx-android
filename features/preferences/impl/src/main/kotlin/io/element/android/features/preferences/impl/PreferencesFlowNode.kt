@@ -352,7 +352,8 @@ class PreferencesFlowNode(
                 val inputs = EditUserProfileNode.Inputs(navTarget.matrixUser)
                 val callback = object : EditUserProfileNode.Callback {
                     override fun onDone() {
-                        backstack.pop()
+                        // Нютаг: из бокового меню профиль открывается первым экраном — тогда «Готово» закрывает настройки.
+                        if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
 
                     override fun openAvatarPreview(name: String, avatarUrl: String) {
@@ -362,10 +363,10 @@ class PreferencesFlowNode(
                 createNode<EditUserProfileNode>(buildContext, listOf(inputs, callback))
             }
             is NavTarget.AvatarPreview -> {
-                // Нютаг: свой аватар во весь экран из «Редактировать профиль».
+                // Нютаг: свой аватар во весь экран из «Редактировать профиль» или из бокового меню.
                 val callback = object : MediaViewerEntryPoint.Callback {
                     override fun onDone() {
-                        backstack.pop()
+                        if (backstack.canPop()) backstack.pop() else navigateUp()
                     }
 
                     override fun viewInTimeline(eventId: EventId) = Unit

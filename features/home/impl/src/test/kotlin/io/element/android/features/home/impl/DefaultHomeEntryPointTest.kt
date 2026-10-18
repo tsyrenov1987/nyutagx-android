@@ -15,6 +15,7 @@ import io.element.android.features.invite.test.declineandblock.FakeDeclineInvite
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
+import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.services.analytics.test.FakeAnalyticsService
 import io.element.android.tests.testutils.lambda.lambdaError
@@ -53,6 +54,8 @@ class DefaultHomeEntryPointTest : RobolectricTest() {
             override fun navigateToEnterRecoveryKey() = lambdaError()
             override fun navigateToRoomSettings(roomId: RoomId) = lambdaError()
             override fun navigateToBugReport() = lambdaError()
+            override fun navigateToMyProfile(matrixUser: MatrixUser) = lambdaError()
+            override fun navigateToOwnAvatar(name: String, avatarUrl: String) = lambdaError()
         }
         val result = entryPoint.createNode(
             parentNode = parentNode,

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: вкладка «Контакты» и боковое меню. -->
+<resources>
+    <string name="nyutag_tab_contacts">Контактнууд</string>
+    <string name="nyutag_contacts_on_nyutag">Нютаг соо</string>
+    <string name="nyutag_contacts_invite_section">Нютаг руу уриха</string>
+    <string name="nyutag_contacts_allow">Контактнуудһаа танилнуудаа олохо</string>
+    <string name="nyutag_contacts_allow_subtitle">Дугаарнууд сервер дээрэ зэргэсүүлэгдэнэ, хадагалагдахагүй.</string>
+    <string name="nyutag_contacts_empty">Танай контактнуудһаа Нютаг соо үшөө хэншье үгы. Утаһанай дугаараар уригты.</string>
+    <string name="nyutag_contacts_denied">Хэн Нютаг соо байһыень харахын тула утаһанайнгаа тохиргоодо контактнуудта хандаха зүбшөөл үгэгты.</string>
+    <string name="nyutag_contacts_syncing">Контактнуудые шалгажа байнабди…</string>
+    <string name="nyutag_contacts_error_network">Сервертэй холбоо үгы. Дахин оролдогты.</string>
+    <string name="nyutag_drawer_my_profile">Минии профиль</string>
+    <string name="nyutag_drawer_new_group">Бүлэг байгуулха</string>
+    <string name="nyutag_drawer_contacts">Контактнууд</string>
+    <string name="nyutag_drawer_saved_messages">Хадагалһан</string>
+    <string name="nyutag_drawer_settings">Тохируулганууд</string>
+    <string name="nyutag_drawer_invite">Нүхэдөө уриха</string>
+    <string name="nyutag_drawer_open">Меню нээхэ</string>
+</resources>

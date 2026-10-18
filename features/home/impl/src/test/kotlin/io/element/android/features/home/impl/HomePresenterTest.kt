@@ -9,6 +9,7 @@
 package io.element.android.features.home.impl
 
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.home.impl.contacts.aNyutagContactsState
 import io.element.android.features.home.impl.roomlist.aRoomListState
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.features.home.impl.spaces.aHomeSpacesState
@@ -19,6 +20,7 @@ import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatch
 import io.element.android.libraries.indicator.api.IndicatorService
 import io.element.android.libraries.indicator.test.FakeIndicatorService
 import io.element.android.libraries.matrix.api.MatrixClient
+import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.test.AN_AVATAR_URL
@@ -26,9 +28,8 @@ import io.element.android.libraries.matrix.test.AN_EXCEPTION
 import io.element.android.libraries.matrix.test.A_USER_ID
 import io.element.android.libraries.matrix.test.A_USER_NAME
 import io.element.android.libraries.matrix.test.FakeMatrixClient
-import io.element.android.libraries.matrix.test.sync.FakeSyncService
-import io.element.android.libraries.matrix.api.nyutag.NyutagInvites
 import io.element.android.libraries.matrix.test.nyutag.FakeNyutagInvites
+import io.element.android.libraries.matrix.test.sync.FakeSyncService
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.test.InMemorySessionStore
 import io.element.android.libraries.sessionstorage.test.aSessionData
@@ -165,6 +166,7 @@ internal fun createHomePresenter(
     indicatorService = indicatorService,
     roomListPresenter = { aRoomListState() },
     homeSpacesPresenter = homeSpacesPresenter,
+    contactsPresenter = { aNyutagContactsState() },
     logoutPresenter = { aDirectLogoutState() },
     rageshakeFeatureAvailability = rageshakeFeatureAvailability,
     sessionStore = sessionStore,

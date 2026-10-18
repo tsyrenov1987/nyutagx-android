@@ -24,10 +24,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -48,10 +51,12 @@ import dev.chrisbanes.haze.rememberHazeState
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.compound.tokens.generated.CompoundIcons
 import io.element.android.features.home.impl.components.HomeTopBar
-import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.NyutagAnnouncementDialog
-import io.element.android.libraries.donate.NyutagDonateDialog
+import io.element.android.features.home.impl.components.NyutagDrawerAction
+import io.element.android.features.home.impl.components.NyutagHomeDrawer
+import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
+import io.element.android.features.home.impl.contacts.NyutagContactsView
 import io.element.android.features.home.impl.model.RoomListRoomSummary
 import io.element.android.features.home.impl.roomlist.RoomListContextMenu
 import io.element.android.features.home.impl.roomlist.RoomListDeclineInviteMenu
@@ -77,6 +82,7 @@ import io.element.android.libraries.designsystem.utils.lazyColumnContentPadding
 import io.element.android.libraries.designsystem.utils.scaffoldScrollableContentInsets
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarHost
 import io.element.android.libraries.designsystem.utils.snackbar.rememberSnackbarHostState
+import io.element.android.libraries.donate.NyutagDonateDialog
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -97,6 +103,8 @@ fun HomeView(
     onDeclineInviteAndBlockUser: (roomSummary: RoomListRoomSummary) -> Unit,
     acceptDeclineInviteView: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    /** Нютаг: пункты бокового меню, кроме «Контактов» (это вкладка здесь же). */
+    onDrawerAction: (NyutagDrawerAction) -> Unit = {},
     leaveRoomView: @Composable () -> Unit,
 ) {
     val state: RoomListState = homeState.roomListState
@@ -130,16 +138,40 @@ fun HomeView(
             NyutagDonateDialog(onDismiss = { homeState.eventSink(HomeEvent.NyutagDonateDismiss) })
         }
 
-        HomeScaffold(
-            state = homeState,
-            onSetUpRecoveryClick = onSetUpRecoveryClick,
-            onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
-            onRoomClick = { roomId -> if (firstThrottler.canHandle()) onRoomClick(roomId, null) },
-            onOpenSettings = { if (firstThrottler.canHandle()) onSettingsClick() },
-            onStartChatClick = { if (firstThrottler.canHandle()) onStartChatClick() },
-            onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
-            onMenuActionClick = onMenuActionClick,
-        )
+        // Нютаг: тап по своему аватару открывает боковое меню (как в Telegram), настройки — пункт меню.
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val currentUser = homeState.currentUserAndNeighbors.let { if (it.size > 1) it[1] else it.first() }
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = drawerState.isOpen,
+            drawerContent = {
+                NyutagHomeDrawer(
+                    currentUser = currentUser,
+                    onAction = { action ->
+                        coroutineScope.launch { drawerState.close() }
+                        when (action) {
+                            NyutagDrawerAction.Contacts -> homeState.eventSink(HomeEvent.SelectHomeNavigationBarItem(HomeNavigationBarItem.Contacts))
+                            NyutagDrawerAction.Settings -> if (firstThrottler.canHandle()) onSettingsClick()
+                            NyutagDrawerAction.NewGroup -> if (firstThrottler.canHandle()) onStartChatClick()
+                            NyutagDrawerAction.Invite -> onMenuActionClick(RoomListMenuAction.InviteFriends)
+                            else -> if (firstThrottler.canHandle()) onDrawerAction(action)
+                        }
+                    },
+                )
+            },
+        ) {
+            HomeScaffold(
+                state = homeState,
+                onSetUpRecoveryClick = onSetUpRecoveryClick,
+                onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
+                onRoomClick = { roomId -> if (firstThrottler.canHandle()) onRoomClick(roomId, null) },
+                onOpenSettings = { coroutineScope.launch { drawerState.open() } },
+                onStartChatClick = { if (firstThrottler.canHandle()) onStartChatClick() },
+                onCreateSpaceClick = { if (firstThrottler.canHandle()) onCreateSpaceClick() },
+                onMenuActionClick = onMenuActionClick,
+            )
+        }
+        BackHandler(enabled = drawerState.isOpen) { coroutineScope.launch { drawerState.close() } }
 
         if (state.globalSearchState.isEnabled) {
             GlobalSearchView(
@@ -202,6 +234,7 @@ private fun HomeScaffold(
     val hazeState = rememberHazeState()
     val roomsLazyListState = rememberLazyListState()
     val spacesLazyListState = rememberLazyListState()
+    val contactsLazyListState = rememberLazyListState()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -250,6 +283,7 @@ private fun HomeScaffold(
                     if (item == state.currentHomeNavigationBarItem) {
                         val lazyListStateTarget = when (item) {
                             HomeNavigationBarItem.Chats -> roomsLazyListState
+                            HomeNavigationBarItem.Contacts -> contactsLazyListState
                             HomeNavigationBarItem.Spaces -> spacesLazyListState
                         }
                         coroutineScope.launch {
@@ -266,7 +300,8 @@ private fun HomeScaffold(
                 },
                 floatingActionButton = {
                     when (state.currentHomeNavigationBarItem) {
-                        HomeNavigationBarItem.Chats -> {
+                        HomeNavigationBarItem.Chats,
+                        HomeNavigationBarItem.Contacts -> {
                             HomeFloatingActionButton(onStartChatClick, CommonStrings.action_create_room)
                         }
                         HomeNavigationBarItem.Spaces -> {
@@ -310,6 +345,20 @@ private fun HomeScaffold(
                             .hazeSource(state = hazeState)
                     )
                     SpaceFiltersView(roomListState.spaceFiltersState)
+                }
+                HomeNavigationBarItem.Contacts -> {
+                    NyutagContactsView(
+                        state = state.contactsState,
+                        onRoomClick = onRoomClick,
+                        onInviteClick = { onMenuActionClick(RoomListMenuAction.InviteFriends) },
+                        contentPadding = lazyColumnContentPadding + contentPadding,
+                        lazyListState = contactsLazyListState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(outerPadding)
+                            .consumeWindowInsets(outerPadding)
+                            .hazeSource(state = hazeState),
+                    )
                 }
                 HomeNavigationBarItem.Spaces -> {
                     HomeSpacesView(

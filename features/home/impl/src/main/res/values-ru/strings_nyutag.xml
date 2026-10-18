@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Нютаг: вкладка «Контакты» и боковое меню. -->
+<resources>
+    <string name="nyutag_tab_contacts">Контакты</string>
+    <string name="nyutag_contacts_on_nyutag">В Нютаге</string>
+    <string name="nyutag_contacts_invite_section">Пригласить в Нютаг</string>
+    <string name="nyutag_contacts_allow">Найти знакомых из контактов</string>
+    <string name="nyutag_contacts_allow_subtitle">Номера сверяются на сервере и не сохраняются.</string>
+    <string name="nyutag_contacts_empty">Из ваших контактов в Нютаге пока никого нет. Пригласите их по номеру телефона.</string>
+    <string name="nyutag_contacts_denied">Разрешите доступ к контактам в настройках телефона, чтобы увидеть, кто уже в Нютаге.</string>
+    <string name="nyutag_contacts_syncing">Сверяем контакты…</string>
+    <string name="nyutag_contacts_error_network">Нет связи с сервером. Попробуйте ещё раз.</string>
+    <string name="nyutag_drawer_my_profile">Мой профиль</string>
+    <string name="nyutag_drawer_new_group">Создать группу</string>
+    <string name="nyutag_drawer_contacts">Контакты</string>
+    <string name="nyutag_drawer_saved_messages">Избранное</string>
+    <string name="nyutag_drawer_settings">Настройки</string>
+    <string name="nyutag_drawer_invite">Пригласить друзей</string>
+    <string name="nyutag_drawer_open">Открыть меню</string>
+</resources>

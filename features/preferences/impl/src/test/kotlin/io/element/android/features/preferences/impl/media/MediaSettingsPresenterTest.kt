@@ -26,7 +26,12 @@ class MediaSettingsPresenterTest {
 
     @Test
     fun `present - initial state`() = runTest {
-        createMediaSettingsPresenter().test {
+        // Нютаг: выбор качества включён по умолчанию — здесь проверяем старый общий переключатель.
+        createMediaSettingsPresenter(
+            featureFlagService = FakeFeatureFlagService().apply {
+                setFeatureEnabled(FeatureFlags.SelectableMediaQuality, false)
+            },
+        ).test {
             assertThat(awaitItem().mediaOptimizationState).isNull()
             // After the initial state, we expect the media optimization state to be set
             with(awaitItem()) {
@@ -37,7 +42,12 @@ class MediaSettingsPresenterTest {
 
     @Test
     fun `present - compress media off on`() = runTest {
-        createMediaSettingsPresenter().test {
+        // Нютаг: выбор качества включён по умолчанию — здесь проверяем старый общий переключатель.
+        createMediaSettingsPresenter(
+            featureFlagService = FakeFeatureFlagService().apply {
+                setFeatureEnabled(FeatureFlags.SelectableMediaQuality, false)
+            },
+        ).test {
             // Skip until the initial data is loaded
             skipItems(1)
 

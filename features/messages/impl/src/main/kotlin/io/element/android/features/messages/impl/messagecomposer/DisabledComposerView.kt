@@ -48,7 +48,7 @@ internal fun DisabledComposerView(
     ) {
         IconColorButton(
             onClick = {},
-            imageVector = CompoundIcons.Plus(),
+            imageVector = CompoundIcons.Attachment(),
             contentDescription = null,
             iconColorButtonStyle = IconColorButtonStyle.Disabled,
         )

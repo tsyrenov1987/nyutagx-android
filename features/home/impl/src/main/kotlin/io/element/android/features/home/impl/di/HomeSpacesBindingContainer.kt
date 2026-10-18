@@ -11,6 +11,8 @@ package io.element.android.features.home.impl.di
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.Binds
 import dev.zacsweers.metro.ContributesTo
+import io.element.android.features.home.impl.contacts.NyutagContactsPresenter
+import io.element.android.features.home.impl.contacts.NyutagContactsState
 import io.element.android.features.home.impl.spaces.HomeSpacesPresenter
 import io.element.android.features.home.impl.spaces.HomeSpacesState
 import io.element.android.libraries.architecture.Presenter
@@ -21,4 +23,7 @@ import io.element.android.libraries.di.SessionScope
 interface HomeSpacesBindingContainer {
     @Binds
     fun bindHomeSpacesPresenter(presenter: HomeSpacesPresenter): Presenter<HomeSpacesState>
+
+    @Binds
+    fun bindNyutagContactsPresenter(presenter: NyutagContactsPresenter): Presenter<NyutagContactsState>
 }
