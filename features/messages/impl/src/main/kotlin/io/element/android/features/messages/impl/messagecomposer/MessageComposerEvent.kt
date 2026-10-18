@@ -37,4 +37,9 @@ sealed interface MessageComposerEvent {
     data class InsertSuggestion(val resolvedSuggestion: ResolvedSuggestion) : MessageComposerEvent
     data object SaveDraft : MessageComposerEvent
     data object ClearSlashError : MessageComposerEvent
+
+    // Нютаг: отложенные сообщения.
+    data class NyutagSchedule(val sendAtMs: Long) : MessageComposerEvent
+    data class NyutagScheduledSendNow(val id: String) : MessageComposerEvent
+    data class NyutagScheduledDelete(val id: String) : MessageComposerEvent
 }

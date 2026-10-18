@@ -27,6 +27,9 @@ import io.element.android.features.messages.impl.attachments.Attachment
 import io.element.android.features.messages.impl.draft.ComposerDraftService
 import io.element.android.features.messages.impl.draft.FakeComposerDraftService
 import io.element.android.features.messages.impl.messagecomposer.suggestions.SuggestionsProcessor
+import io.element.android.features.messages.impl.scheduled.FakeNyutagScheduledMessages
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessage
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessages
 import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.utils.FakeMentionSpanFormatter
 import io.element.android.features.messages.impl.utils.FakeTextPillificationHelper
@@ -61,6 +64,7 @@ import io.element.android.libraries.matrix.test.A_CAPTION
 import io.element.android.libraries.matrix.test.A_MESSAGE
 import io.element.android.libraries.matrix.test.A_REPLY
 import io.element.android.libraries.matrix.test.A_ROOM_ID
+import io.element.android.libraries.matrix.test.A_SESSION_ID
 import io.element.android.libraries.matrix.test.A_THREAD_ID
 import io.element.android.libraries.matrix.test.A_TRANSACTION_ID
 import io.element.android.libraries.matrix.test.A_USER_ID
@@ -119,6 +123,7 @@ import io.mockk.mockk
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -423,6 +428,82 @@ class MessageComposerPresenterTest : RobolectricTest() {
                     messageType = Composer.MessageType.Text,
                 )
             )
+        }
+    }
+
+    @Test
+    fun `present - nyutag schedule puts the message in the queue`() = runTest {
+        val scheduled = FakeNyutagScheduledMessages()
+        val presenter = createPresenter(nyutagScheduledMessages = scheduled)
+        moleculeFlow(RecompositionMode.Immediate) {
+            val state = presenter.present()
+            remember(state, state.textEditorState.messageHtml()) { state }
+        }.test {
+            val initialState = awaitFirstItem()
+            initialState.textEditorState.setHtml(A_MESSAGE)
+            val withMessageState = awaitItem()
+            val sendAt = System.currentTimeMillis() + 3_600_000
+            withMessageState.eventSink.invoke(MessageComposerEvent.NyutagSchedule(sendAt))
+            waitForPredicate { scheduled.items.value.size == 1 }
+            val message = scheduled.items.value.single()
+            assertThat(message.body).isEqualTo(A_MESSAGE)
+            assertThat(message.sendAtMs).isEqualTo(sendAt)
+            assertThat(message.roomId).isEqualTo(A_ROOM_ID.value)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - nyutag schedule in the past shows an error and queues nothing`() = runTest {
+        val scheduled = FakeNyutagScheduledMessages()
+        val presenter = createPresenter(nyutagScheduledMessages = scheduled)
+        presenter.test {
+            val state = awaitFirstItem()
+            state.textEditorState.setHtml(A_MESSAGE)
+            state.eventSink.invoke(MessageComposerEvent.NyutagSchedule(System.currentTimeMillis() - 1_000))
+            advanceUntilIdle()
+            assertThat(snackbarDispatcher.snackbarMessage.first()).isNotNull()
+            assertThat(scheduled.items.value).isEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - nyutag schedule is ignored while replying`() = runTest {
+        val scheduled = FakeNyutagScheduledMessages()
+        val presenter = createPresenter(nyutagScheduledMessages = scheduled)
+        presenter.test {
+            var state = awaitFirstItem()
+            state.eventSink.invoke(MessageComposerEvent.SetMode(aReplyMode()))
+            state = awaitItem()
+            state.textEditorState.setHtml(A_REPLY)
+            state.eventSink.invoke(MessageComposerEvent.NyutagSchedule(System.currentTimeMillis() + 3_600_000))
+            advanceUntilIdle()
+            assertThat(scheduled.items.value).isEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - nyutag scheduled queue is exposed in the state`() = runTest {
+        val scheduled = FakeNyutagScheduledMessages()
+        val presenter = createPresenter(nyutagScheduledMessages = scheduled)
+        presenter.test {
+            awaitFirstItem()
+            scheduled.schedule(
+                NyutagScheduledMessage(
+                    id = "q",
+                    sessionId = A_SESSION_ID.value,
+                    roomId = A_ROOM_ID.value,
+                    body = A_MESSAGE,
+                    sendAtMs = 1,
+                )
+            )
+            val state = awaitItem()
+            assertThat(state.nyutagScheduled.map { it.id }).containsExactly("q")
+            state.eventSink.invoke(MessageComposerEvent.NyutagScheduledSendNow("q"))
+            waitForPredicate { scheduled.sentNow == listOf("q") }
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -1677,6 +1758,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
         threadRoot: ThreadId? = null,
         slashCommandService: SlashCommandService = FakeSlashCommandService(),
         featureFlagService: FakeFeatureFlagService = FakeFeatureFlagService(),
+        nyutagScheduledMessages: NyutagScheduledMessages = FakeNyutagScheduledMessages(),
     ) = MessageComposerPresenter(
         navigator = navigator,
         sessionCoroutineScope = this,
@@ -1723,6 +1805,7 @@ class MessageComposerPresenterTest : RobolectricTest() {
         featureFlagService = featureFlagService,
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
+        nyutagScheduledMessages = nyutagScheduledMessages,
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

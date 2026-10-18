@@ -13,7 +13,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -22,10 +26,12 @@ import io.element.android.features.messages.api.timeline.voicemessages.composer.
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerState
 import io.element.android.features.messages.api.timeline.voicemessages.composer.VoiceMessageComposerStatePreviewParam
 import io.element.android.features.messages.api.timeline.voicemessages.composer.aVoiceMessageComposerState
+import io.element.android.features.messages.impl.scheduled.NyutagSchedulePicker
 import io.element.android.libraries.designsystem.components.async.AsyncActionView
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.textcomposer.TextComposer
+import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.textcomposer.model.Suggestion
 import io.element.android.libraries.textcomposer.model.VoiceMessagePlayerEvent
 import io.element.android.libraries.textcomposer.model.VoiceMessageRecorderEvent
@@ -95,6 +101,19 @@ internal fun MessageComposerView(
         voiceMessageState.eventSink(VoiceMessageComposerEvent.PlayerEvent(event))
     }
 
+    // Нютаг: «Отправить позже» — только для обычного сообщения в основной ленте.
+    var showSchedulePicker by rememberSaveable { mutableStateOf(false) }
+    val canSchedule = state.mode is MessageComposerMode.Normal && !state.isInThreadTimeline
+    if (showSchedulePicker) {
+        NyutagSchedulePicker(
+            onDismiss = { showSchedulePicker = false },
+            onPick = { sendAtMs ->
+                showSchedulePicker = false
+                state.eventSink(MessageComposerEvent.NyutagSchedule(sendAtMs))
+            },
+        )
+    }
+
     TextComposer(
         modifier = modifier,
         state = state.textEditorState,
@@ -117,6 +136,11 @@ internal fun MessageComposerView(
         onError = ::onError,
         onTyping = ::onTyping,
         onSelectRichContent = ::sendUri,
+        onScheduleMessage = if (canSchedule) {
+            { showSchedulePicker = true }
+        } else {
+            null
+        },
     )
 
     AsyncActionView(

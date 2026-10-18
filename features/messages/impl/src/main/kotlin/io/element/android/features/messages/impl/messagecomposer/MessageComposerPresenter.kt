@@ -39,12 +39,15 @@ import io.element.android.features.messages.impl.attachments.preview.error.sendA
 import io.element.android.features.messages.impl.draft.ComposerDraftService
 import io.element.android.features.messages.impl.messagecomposer.suggestions.RoomAliasSuggestionsDataSource
 import io.element.android.features.messages.impl.messagecomposer.suggestions.SuggestionsProcessor
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessage
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessages
 import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.utils.TextPillificationHelper
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes
+import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
@@ -89,6 +92,7 @@ import io.element.android.libraries.textcomposer.model.Suggestion
 import io.element.android.libraries.textcomposer.model.SuggestionType
 import io.element.android.libraries.textcomposer.model.TextEditorState
 import io.element.android.libraries.textcomposer.model.rememberMarkdownTextEditorState
+import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analyticsproviders.api.trackers.captureInteraction
 import io.element.android.wysiwyg.compose.RichTextEditorState
@@ -106,13 +110,14 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
-import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 
 @Suppress("LargeClass")
 @AssistedInject
@@ -145,6 +150,7 @@ class MessageComposerPresenter(
     private val featureFlagService: FeatureFlagService,
     private val contentScannerService: ContentScannerService,
     private val contentValidationCache: EventContentValidationCache,
+    private val nyutagScheduledMessages: NyutagScheduledMessages,
 ) : Presenter<MessageComposerState> {
     @AssistedFactory
     interface Factory {
@@ -175,6 +181,9 @@ class MessageComposerPresenter(
         val localCoroutineScope = rememberCoroutineScope()
 
         val roomInfo by room.roomInfoFlow.collectAsState()
+        val nyutagScheduled by remember {
+            if (isInThread) flowOf(emptyList()) else nyutagScheduledMessages.observe(room.sessionId, room.roomId)
+        }.collectAsState(initial = emptyList())
 
         val richTextEditorState = richTextEditorStateFactory.remember()
         if (isTesting) {
@@ -403,6 +412,13 @@ class MessageComposerPresenter(
                 MessageComposerEvent.ClearSlashError -> {
                     slashCommandAction.value = AsyncAction.Uninitialized
                 }
+                is MessageComposerEvent.NyutagSchedule -> sessionCoroutineScope.nyutagSchedule(
+                    sendAtMs = event.sendAtMs,
+                    markdownTextEditorState = markdownTextEditorState,
+                    richTextEditorState = richTextEditorState,
+                )
+                is MessageComposerEvent.NyutagScheduledSendNow -> sessionCoroutineScope.launch { nyutagScheduledMessages.sendNow(event.id) }
+                is MessageComposerEvent.NyutagScheduledDelete -> sessionCoroutineScope.launch { nyutagScheduledMessages.delete(event.id) }
             }
         }
 
@@ -436,6 +452,7 @@ class MessageComposerPresenter(
             resolveMentionDisplay = resolveMentionDisplay,
             resolveAtRoomMentionDisplay = resolveAtRoomMentionDisplay,
             slashCommandAction = slashCommandAction.value,
+            nyutagScheduled = nyutagScheduled.toImmutableList(),
             eventSink = ::handleEvent,
         )
     }
@@ -488,6 +505,33 @@ class MessageComposerPresenter(
             }
                 .collect()
         }
+    }
+
+    /** Нютаг: как в Telegram, откладывается обычное сообщение — не ответ, не правка и не сообщение в ветке. */
+    private fun CoroutineScope.nyutagSchedule(
+        sendAtMs: Long,
+        markdownTextEditorState: MarkdownTextEditorState,
+        richTextEditorState: RichTextEditorState,
+    ) = launch {
+        if (isInThread || messageComposerContext.composerMode !is MessageComposerMode.Normal) return@launch
+        if (sendAtMs <= System.currentTimeMillis()) {
+            snackbarDispatcher.post(SnackbarMessage(CommonStrings.nyutag_schedule_error_past))
+            return@launch
+        }
+        val message = currentComposerMessage(markdownTextEditorState, richTextEditorState, withMentions = true)
+        if (message.markdown.isBlank()) return@launch
+        resetComposer(markdownTextEditorState, richTextEditorState, fromEdit = false)
+        nyutagScheduledMessages.schedule(
+            NyutagScheduledMessage(
+                id = UUID.randomUUID().toString(),
+                sessionId = room.sessionId.value,
+                roomId = room.roomId.value,
+                body = message.markdown,
+                html = message.html,
+                mentions = NyutagScheduledMessage.mentionsOf(message.intentionalMentions),
+                sendAtMs = sendAtMs,
+            )
+        )
     }
 
     private fun CoroutineScope.sendMessage(

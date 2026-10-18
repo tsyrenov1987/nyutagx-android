@@ -9,12 +9,14 @@
 package io.element.android.features.messages.impl.messagecomposer
 
 import androidx.compose.runtime.Stable
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessage
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.textcomposer.mentions.ResolvedSuggestion
 import io.element.android.libraries.textcomposer.model.MessageComposerMode
 import io.element.android.libraries.textcomposer.model.TextEditorState
 import io.element.android.wysiwyg.display.TextDisplay
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Stable
 data class MessageComposerState(
@@ -29,5 +31,7 @@ data class MessageComposerState(
     val resolveMentionDisplay: (String, String) -> TextDisplay,
     val resolveAtRoomMentionDisplay: () -> TextDisplay,
     val slashCommandAction: AsyncAction<Unit>,
+    /** Нютаг: очередь отложенных сообщений чата (в ветке обсуждения не показывается). */
+    val nyutagScheduled: ImmutableList<NyutagScheduledMessage> = persistentListOf(),
     val eventSink: (MessageComposerEvent) -> Unit,
 )

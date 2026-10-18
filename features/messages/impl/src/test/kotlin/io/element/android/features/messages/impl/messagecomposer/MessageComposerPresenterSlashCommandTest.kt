@@ -19,6 +19,8 @@ import io.element.android.features.messages.impl.MessagesNavigator
 import io.element.android.features.messages.impl.draft.ComposerDraftService
 import io.element.android.features.messages.impl.draft.FakeComposerDraftService
 import io.element.android.features.messages.impl.messagecomposer.suggestions.SuggestionsProcessor
+import io.element.android.features.messages.impl.scheduled.FakeNyutagScheduledMessages
+import io.element.android.features.messages.impl.scheduled.NyutagScheduledMessages
 import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.utils.FakeMentionSpanFormatter
 import io.element.android.features.messages.impl.utils.FakeTextPillificationHelper
@@ -278,6 +280,7 @@ class MessageComposerPresenterSlashCommandTest {
         threadRoot: ThreadId? = null,
         slashCommandService: SlashCommandService = FakeSlashCommandService(),
         featureFlagService: FakeFeatureFlagService = FakeFeatureFlagService(),
+        nyutagScheduledMessages: NyutagScheduledMessages = FakeNyutagScheduledMessages(),
     ) = MessageComposerPresenter(
         navigator = navigator,
         sessionCoroutineScope = this,
@@ -324,6 +327,7 @@ class MessageComposerPresenterSlashCommandTest {
         featureFlagService = featureFlagService,
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
+        nyutagScheduledMessages = nyutagScheduledMessages,
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

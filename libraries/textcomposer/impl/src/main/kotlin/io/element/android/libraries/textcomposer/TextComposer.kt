@@ -13,6 +13,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +51,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -131,7 +134,11 @@ fun TextComposer(
     modifier: Modifier = Modifier,
     showTextFormatting: Boolean = false,
     isInThreadTimeline: Boolean = false,
+    // Нютаг: долгое нажатие на «Отправить» — «Отправить позже», как в Telegram. null — недоступно.
+    onScheduleMessage: (() -> Unit)? = null,
 ) {
+    val latestOnScheduleMessage by rememberUpdatedState(onScheduleMessage)
+    val canScheduleMessage = onScheduleMessage != null
     val markdown = when (state) {
         is TextEditorState.Markdown -> state.state.text.value()
         is TextEditorState.Rich -> state.richTextEditorState.messageMarkdown
@@ -242,6 +249,7 @@ fun TextComposer(
         composerMode.isEditing,
         voiceMessageState.endButtonKey(),
         canSendTextMessage,
+        canScheduleMessage,
     ) {
         when {
             composerMode.isEditing -> EndButtonParams(
@@ -319,6 +327,14 @@ fun TextComposer(
                         canSendMessage = true,
                         isEditing = false,
                     )
+                },
+                endButtonLongClick = if (canScheduleMessage) {
+                    {
+                        performHapticFeedback()
+                        latestOnScheduleMessage?.invoke()
+                    }
+                } else {
+                    null
                 },
             )
         }
@@ -449,6 +465,7 @@ private data class EndButtonParams(
     val endButtonContentDescriptionResId: Int,
     val endButtonClick: () -> Unit,
     val endButtonContent: @Composable () -> Unit,
+    val endButtonLongClick: (() -> Unit)? = null,
 )
 
 @Composable
@@ -541,17 +558,41 @@ private fun StandardLayout(
             }
             // To avoid loosing keyboard focus, the IconButton has to be defined here and has to be always enabled.
             val endButtonContentDescription = stringResource(endButtonParams.endButtonContentDescriptionResId)
-            IconButton(
-                modifier = Modifier
-                    .padding(bottom = 5.dp, top = 5.dp, end = 6.dp, start = 6.dp)
-                    .size(48.dp)
-                    .clearAndSetSemantics {
-                        contentDescription = endButtonContentDescription
-                        onClick(null, null)
-                    },
-                onClick = endButtonParams.endButtonClick,
-                content = endButtonParams.endButtonContent,
-            )
+            val endButtonLongClick = endButtonParams.endButtonLongClick
+            if (endButtonLongClick != null) {
+                // Нютаг: у IconButton нет долгого нажатия.
+                val scheduleLabel = stringResource(CommonStrings.nyutag_schedule_send)
+                Box(
+                    modifier = Modifier
+                        .padding(bottom = 5.dp, top = 5.dp, end = 6.dp, start = 6.dp)
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .combinedClickable(
+                            onClick = endButtonParams.endButtonClick,
+                            onLongClick = endButtonLongClick,
+                        )
+                        .clearAndSetSemantics {
+                            contentDescription = endButtonContentDescription
+                            onClick(null, null)
+                            onLongClick(scheduleLabel, null)
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    endButtonParams.endButtonContent()
+                }
+            } else {
+                IconButton(
+                    modifier = Modifier
+                        .padding(bottom = 5.dp, top = 5.dp, end = 6.dp, start = 6.dp)
+                        .size(48.dp)
+                        .clearAndSetSemantics {
+                            contentDescription = endButtonContentDescription
+                            onClick(null, null)
+                        },
+                    onClick = endButtonParams.endButtonClick,
+                    content = endButtonParams.endButtonContent,
+                )
+            }
         }
     }
 }

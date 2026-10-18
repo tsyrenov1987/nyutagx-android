@@ -12,6 +12,7 @@ import extension.testCommonDependencies
 plugins {
     id("io.element.android-compose-library")
     id("kotlin-parcelize")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -64,6 +65,7 @@ dependencies {
     implementation(projects.libraries.uiUtils)
     implementation(projects.libraries.testtags)
     implementation(projects.libraries.wellknown.api)
+    implementation(projects.libraries.workmanager.api)
     implementation(projects.features.networkmonitor.api)
     implementation(projects.features.contentscanner.api)
     implementation(projects.services.analytics.compose)
@@ -72,6 +74,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.datetime)
     implementation(libs.jsoup)
+    implementation(libs.serialization.json)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.exifinterface)
