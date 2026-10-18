@@ -239,7 +239,13 @@ private fun RoomsViewList(
         modifier = modifier,
         contentPadding = contentPadding,
     ) {
-        when (state.securityBannerState) {
+        // Нютаг: без разрешения входящий звонок не встаёт поверх других приложений (Android 15 режет запуск из фона) —
+        // этот баннер важнее баннеров ключа восстановления, иначе за ними его не видно.
+        if (state.fullScreenIntentPermissionsState.shouldDisplayBanner) {
+            item {
+                FullScreenIntentPermissionBanner(state = state.fullScreenIntentPermissionsState)
+            }
+        } else when (state.securityBannerState) {
             SecurityBannerState.SetUpRecovery -> {
                 item {
                     SetUpRecoveryKeyBanner(
@@ -256,14 +262,9 @@ private fun RoomsViewList(
                     )
                 }
             }
-            // Banner precedence (top-to-bottom): full-screen-intent > battery-optimization >
+            // Banner precedence (top-to-bottom): full-screen-intent (above, Нютаг) > battery-optimization >
             // new-notification-sound > sound-unavailable. At most one renders at a time.
             SecurityBannerState.None -> when {
-                state.fullScreenIntentPermissionsState.shouldDisplayBanner -> {
-                    item {
-                        FullScreenIntentPermissionBanner(state = state.fullScreenIntentPermissionsState)
-                    }
-                }
                 state.batteryOptimizationState.shouldDisplayBanner -> {
                     item {
                         BatteryOptimizationBanner(state = state.batteryOptimizationState)
