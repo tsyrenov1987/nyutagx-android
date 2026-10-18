@@ -14,21 +14,28 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.MobileScreen
 import io.element.android.features.call.api.CallData
+import io.element.android.features.call.api.NyutagOngoingCall
 import io.element.android.features.call.impl.ui.CallScreenEvent
 import io.element.android.features.call.impl.ui.CallScreenNavigator
 import io.element.android.features.call.impl.ui.CallScreenPresenter
+import io.element.android.features.call.impl.utils.NyutagOngoingCallPublisher
 import io.element.android.features.call.impl.utils.WidgetMessageSerializer
 import io.element.android.features.call.utils.FakeActiveCallManager
 import io.element.android.features.call.utils.FakeCallWidgetProvider
+import io.element.android.features.call.utils.FakeNyutagOngoingCallPublisher
 import io.element.android.features.call.utils.FakeWidgetMessageInterceptor
 import io.element.android.libraries.androidutils.json.DefaultJsonProvider
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.core.coroutine.CoroutineDispatchers
+import io.element.android.libraries.matrix.api.room.RoomInfo
 import io.element.android.libraries.matrix.api.sync.SyncState
 import io.element.android.libraries.matrix.test.A_ROOM_ID
+import io.element.android.libraries.matrix.test.A_ROOM_NAME
 import io.element.android.libraries.matrix.test.A_SESSION_ID
+import io.element.android.libraries.matrix.test.A_USER_ID_2
 import io.element.android.libraries.matrix.test.FakeMatrixClient
 import io.element.android.libraries.matrix.test.FakeMatrixClientProvider
+import io.element.android.libraries.matrix.test.room.aRoomInfo
 import io.element.android.libraries.matrix.test.sync.FakeSyncService
 import io.element.android.libraries.matrix.test.widget.FakeMatrixWidgetDriver
 import io.element.android.libraries.network.useragent.UserAgentProvider
@@ -43,6 +50,8 @@ import io.element.android.tests.testutils.test
 import io.element.android.tests.testutils.testCoroutineDispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.TestScope
@@ -52,6 +61,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import java.util.Optional
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -253,6 +263,31 @@ class CallScreenPresenterTest {
     }
 
     @Test
+    fun `present - the load timeout counts from the moment the call URL is ready`() = runTest {
+        val widgetDriver = FakeMatrixWidgetDriver()
+        val presenter = createCallScreenPresenter(
+            callData = CallData(A_SESSION_ID, A_ROOM_ID, false),
+            widgetDriver = widgetDriver,
+            // Нютаг: до адреса звонка идут запуск прокси туннеля и замер UDP.
+            widgetProvider = FakeCallWidgetProvider(widgetDriver, beforeResult = { delay(8.seconds) }),
+            dispatchers = testCoroutineDispatchers(useUnconfinedTestDispatcher = true),
+            screenTracker = FakeScreenTracker {},
+        )
+        presenter.test {
+            awaitItem().eventSink(CallScreenEvent.SetupMessageChannels(FakeWidgetMessageInterceptor()))
+            // The URL is ready at 8 s. Counting from the WebView creation would have displayed the error at 10 s.
+            advanceTimeBy(12.seconds)
+            assertThat(expectMostRecentItem().webViewError).isNull()
+
+            // 10 s after the URL is ready: the error is displayed.
+            assertThat(awaitItem().webViewError).isEmpty()
+            assertThat(testScheduler.currentTime).isAtLeast(18.seconds.inWholeMilliseconds)
+            assertThat(testScheduler.currentTime).isLessThan(19.seconds.inWholeMilliseconds)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - automatically sets the isInCall state when starting the call and disposing the screen`() = runTest {
         val navigator = FakeCallScreenNavigator()
         val widgetDriver = FakeMatrixWidgetDriver()
@@ -301,6 +336,63 @@ class CallScreenPresenterTest {
         }
     }
 
+    @Test
+    fun `present - the timer waits for the other party to answer and freezes on hang up, the in-app call bar follows`() = runTest {
+        var now = 1_000L
+        val roomInfoFlow = MutableStateFlow<Optional<RoomInfo>>(
+            Optional.of(aRoomInfo(activeRoomCallParticipants = listOf(A_SESSION_ID)))
+        )
+        val matrixClient = FakeMatrixClient().apply { getRoomInfoFlowLambda = { roomInfoFlow } }
+        val ongoingCallPublisher = FakeNyutagOngoingCallPublisher()
+        val presenter = createCallScreenPresenter(
+            callData = CallData(A_SESSION_ID, A_ROOM_ID, true),
+            matrixClientsProvider = FakeMatrixClientProvider(getClient = { Result.success(matrixClient) }),
+            dispatchers = testCoroutineDispatchers(useUnconfinedTestDispatcher = true),
+            screenTracker = FakeScreenTracker {},
+            clock = SystemClock { now },
+            ongoingCallPublisher = ongoingCallPublisher,
+        )
+        val messageInterceptor = FakeWidgetMessageInterceptor()
+        presenter.test {
+            advanceTimeBy(1.seconds)
+            awaitItem().eventSink(CallScreenEvent.SetupMessageChannels(messageInterceptor))
+            messageInterceptor.givenInterceptedMessage(
+                """{"action":"content_loaded","api":"fromWidget","widgetId":"1","requestId":"1"}"""
+            )
+            // We joined the call, but nobody answered yet: still "Calling…", no timer.
+            messageInterceptor.givenInterceptedMessage(
+                """{"action":"io.element.join","api":"fromWidget","widgetId":"1","requestId":"2"}"""
+            )
+            now = 5_000L
+            runCurrent()
+            assertThat(expectMostRecentItem().joinedAtMillis).isNull()
+            assertThat(ongoingCallPublisher.lastCall).isEqualTo(
+                NyutagOngoingCall(roomId = A_ROOM_ID, title = A_ROOM_NAME, joinedAtMillis = null, endedAtMillis = null, isMicrophoneEnabled = true)
+            )
+
+            // The other party answers: the timer starts from this moment.
+            now = 16_000L
+            roomInfoFlow.value = Optional.of(aRoomInfo(activeRoomCallParticipants = listOf(A_SESSION_ID, A_USER_ID_2)))
+            runCurrent()
+            val talking = expectMostRecentItem()
+            assertThat(talking.joinedAtMillis).isEqualTo(16_000L)
+            assertThat(talking.endedAtMillis).isNull()
+            assertThat(ongoingCallPublisher.lastCall?.joinedAtMillis).isEqualTo(16_000L)
+
+            // Hang up: the timer stops right away, not when the screen closes.
+            now = 58_000L
+            talking.eventSink(CallScreenEvent.Hangup)
+            runCurrent()
+            val ended = expectMostRecentItem()
+            assertThat(ended.joinedAtMillis).isEqualTo(16_000L)
+            assertThat(ended.endedAtMillis).isEqualTo(58_000L)
+            // The call bar in the app goes away as soon as we hang up.
+            assertThat(ongoingCallPublisher.lastCall).isNull()
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun TestScope.createCallScreenPresenter(
         callData: CallData,
         navigator: CallScreenNavigator = FakeCallScreenNavigator(),
@@ -311,13 +403,14 @@ class CallScreenPresenterTest {
         activeCallManager: FakeActiveCallManager = FakeActiveCallManager(),
         screenTracker: ScreenTracker = FakeScreenTracker(),
         appForegroundStateService: FakeAppForegroundStateService = FakeAppForegroundStateService(),
+        clock: SystemClock = SystemClock { 0 },
+        ongoingCallPublisher: NyutagOngoingCallPublisher = FakeNyutagOngoingCallPublisher(),
     ): CallScreenPresenter {
         val userAgentProvider = object : UserAgentProvider {
             override fun provide(): String {
                 return "Test"
             }
         }
-        val clock = SystemClock { 0 }
         return CallScreenPresenter(
             callData = callData,
             navigator = navigator,
@@ -332,6 +425,7 @@ class CallScreenPresenterTest {
             appForegroundStateService = appForegroundStateService,
             appCoroutineScope = backgroundScope,
             widgetMessageSerializer = WidgetMessageSerializer(DefaultJsonProvider()),
+            ongoingCallPublisher = ongoingCallPublisher,
         )
     }
 }

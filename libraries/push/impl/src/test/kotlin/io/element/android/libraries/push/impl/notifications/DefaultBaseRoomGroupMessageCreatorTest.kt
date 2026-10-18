@@ -246,6 +246,6 @@ fun createRoomGroupMessageCreator(
             enterpriseService = enterpriseService,
         ),
         bitmapLoader = bitmapLoader,
-        stringProvider = AndroidStringProvider(context.resources)
+        stringProvider = AndroidStringProvider(context)
     )
 }

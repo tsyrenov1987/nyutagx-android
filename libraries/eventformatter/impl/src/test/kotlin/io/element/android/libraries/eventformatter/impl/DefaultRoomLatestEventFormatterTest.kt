@@ -67,9 +67,9 @@ class DefaultRoomLatestEventFormatterTest : RobolectricTest() {
     fun setup() {
         context = RuntimeEnvironment.getApplication() as Context
         fakeMatrixClient = FakeMatrixClient()
-        val stringProvider = AndroidStringProvider(context.resources)
+        val stringProvider = AndroidStringProvider(context)
         formatter = DefaultRoomLatestEventFormatter(
-            sp = AndroidStringProvider(context.resources),
+            sp = AndroidStringProvider(context),
             roomMembershipContentFormatter = RoomMembershipContentFormatter(fakeMatrixClient, stringProvider),
             profileChangeContentFormatter = ProfileChangeContentFormatter(stringProvider),
             stateContentFormatter = StateContentFormatter(stringProvider),

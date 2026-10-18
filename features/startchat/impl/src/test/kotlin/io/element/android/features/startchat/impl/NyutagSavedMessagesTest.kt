@@ -9,6 +9,7 @@ package io.element.android.features.startchat.impl
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.enterprise.test.FakeSessionEnterpriseService
 import io.element.android.libraries.matrix.api.createroom.CreateRoomParameters
+import io.element.android.libraries.matrix.api.nyutag.NYUTAG_SAVED_MESSAGES_TYPE
 import io.element.android.libraries.matrix.test.AN_AVATAR_URL
 import io.element.android.libraries.matrix.test.A_ROOM_ID
 import io.element.android.libraries.matrix.test.A_ROOM_ID_2

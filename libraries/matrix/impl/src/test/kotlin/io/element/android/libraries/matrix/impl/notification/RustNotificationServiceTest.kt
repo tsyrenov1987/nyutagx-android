@@ -33,6 +33,7 @@ import org.junit.Test
 import org.matrix.rustcomponents.sdk.NotificationClient
 import org.matrix.rustcomponents.sdk.NotificationStatus
 import org.matrix.rustcomponents.sdk.TimelineEventContent
+import org.matrix.rustcomponents.sdk.ClientException as RustClientException
 
 class RustNotificationServiceTest {
     @Test
@@ -54,6 +55,27 @@ class RustNotificationServiceTest {
                 )
             )
         )
+    }
+
+    @Test
+    fun `the Nyutag ring signal is filtered out instead of falling back to a generic notification`() = runTest {
+        val ringEvent = object : FakeFfiTimelineEvent() {
+            override fun content(): TimelineEventContent {
+                throw RustClientException.Generic("Unsupported Event Type: \"chat.nyutag.ring\"", null)
+            }
+        }
+        val notificationClient = FakeFfiNotificationClient(
+            notificationItemResult = mapOf(
+                AN_EVENT_ID.value to aRustBatchNotificationResultOk(
+                    notificationStatus = NotificationStatus.Event(aRustNotificationItem(aRustNotificationEventTimeline(ringEvent)))
+                ),
+            ),
+        )
+        val sut = createRustNotificationService(
+            notificationClient = notificationClient,
+        )
+        val result = sut.getNotifications(mapOf(A_ROOM_ID to listOf(AN_EVENT_ID))).getOrThrow()
+        assertThat(result[AN_EVENT_ID]!!.exceptionOrNull()).isEqualTo(NotificationResolverException.EventFilteredOut)
     }
 
     @Test

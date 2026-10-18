@@ -56,6 +56,7 @@ dependencies {
 
     implementation(projects.services.apperror.api)
     implementation(projects.services.appnavstate.api)
+    implementation(projects.services.toolbox.api)
     implementation(projects.services.analytics.api)
 
     testCommonDependencies(libs)
@@ -71,6 +72,7 @@ dependencies {
     testImplementation(projects.libraries.push.test)
     testImplementation(projects.libraries.pushproviders.test)
     testImplementation(projects.libraries.sessionStorage.test)
+    testImplementation(projects.services.toolbox.test)
     testImplementation(projects.features.announcement.test)
     testImplementation(projects.features.forward.test)
     testImplementation(projects.features.messages.test)

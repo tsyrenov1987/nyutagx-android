@@ -58,8 +58,9 @@ import io.element.android.features.call.impl.pip.PictureInPictureEvent
 import io.element.android.features.call.impl.pip.PictureInPicturePresenter
 import io.element.android.features.call.impl.pip.PictureInPictureState
 import io.element.android.features.call.impl.pip.PipView
-import io.element.android.features.call.impl.utils.WebViewAudioManager
 import io.element.android.features.call.impl.services.CallForegroundService
+import io.element.android.features.call.impl.utils.NyutagCallActions
+import io.element.android.features.call.impl.utils.WebViewAudioManager
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.libraries.androidutils.browser.ConsoleMessageLogger
 import io.element.android.libraries.androidutils.media.setAspectRatioFromOrientation
@@ -67,6 +68,7 @@ import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.audio.api.AudioFocus
 import io.element.android.libraries.audio.api.AudioFocusRequester
+import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.designsystem.components.dialogs.ConfirmationDialog
@@ -224,7 +226,8 @@ class ElementCallActivity :
                             requestPermissionCallback = callback
                             requestPermissionsLauncher.launch(permissions)
                         },
-                        onAudioManagerChanged = { webViewAudioManager = it },
+                        onAudioManagerChange = { webViewAudioManager = it },
+                        onMinimizeToApp = ::minimizeToApp,
                     )
                     if (isMicrophoneDenied) {
                         ConfirmationDialog(
@@ -431,10 +434,21 @@ class ElementCallActivity :
         eventSink?.invoke(CallScreenEvent.Hangup)
     }
 
-    companion object {
-        private const val ACTION_PIP_HANG_UP = "chat.nyutag.messenger.call.PIP_HANG_UP"
-        private const val ACTION_PIP_TOGGLE_MICROPHONE = "chat.nyutag.messenger.call.PIP_TOGGLE_MICROPHONE"
-        private const val ACTION_PIP_TOGGLE_SPEAKER = "chat.nyutag.messenger.call.PIP_TOGGLE_SPEAKER"
+    /**
+     * Нютаг: свернуть звонок в приложение, как в Telegram, — дальше им управляет полоса сверху (NyutagOngoingCallService).
+     * NO_USER_ACTION: без него сработает onUserLeaveHint, и звонок уйдёт в окно поверх.
+     */
+    private fun minimizeToApp() {
+        val launchIntent = packageManager.getLaunchIntentForPackage(packageName) ?: return
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NO_USER_ACTION)
+        runCatchingExceptions { startActivity(launchIntent) }
+            .onFailure { Timber.tag(loggerTag.value).w(it, "Could not minimize the call to the app") }
+    }
+
+    private companion object {
+        const val ACTION_PIP_HANG_UP = NyutagCallActions.HANG_UP
+        const val ACTION_PIP_TOGGLE_MICROPHONE = NyutagCallActions.TOGGLE_MICROPHONE
+        const val ACTION_PIP_TOGGLE_SPEAKER = NyutagCallActions.TOGGLE_SPEAKER
     }
 }
 

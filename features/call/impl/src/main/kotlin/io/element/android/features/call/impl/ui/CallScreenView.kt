@@ -68,14 +68,23 @@ internal fun CallScreenView(
     onConsoleMessage: (ConsoleMessage) -> Unit,
     requestPermissions: (Array<String>, RequestPermissionCallback) -> Unit,
     modifier: Modifier = Modifier,
-    onAudioManagerChanged: (WebViewAudioManager?) -> Unit = {},
+    onAudioManagerChange: (WebViewAudioManager?) -> Unit = {},
+    onMinimizeToApp: () -> Unit = {},
 ) {
     var callWebView by remember { mutableStateOf<WebView?>(null) }
 
     fun handleBack(fromNative: Boolean = false) {
-        when (CallScreenBackPressPolicy.resolve(supportPip = pipState.supportPip, hasWebView = callWebView != null, fromNative)) {
+        when (
+            CallScreenBackPressPolicy.resolve(
+                supportPip = pipState.supportPip,
+                hasWebView = callWebView != null,
+                fromNative = fromNative,
+                isAudioCall = state.isAudioCall,
+            )
+        ) {
             CallScreenBackPressAction.EnterPictureInPicture ->
                 pipState.eventSink(PictureInPictureEvent.EnterPictureInPicture)
+            CallScreenBackPressAction.MinimizeToApp -> onMinimizeToApp()
             CallScreenBackPressAction.DispatchEscapeToWebView ->
                 callWebView?.dispatchEscKeyEvent()
             null -> Timber.d("Back press with unsupported pip is a no-op")
@@ -138,7 +147,7 @@ internal fun CallScreenView(
                         coroutineScope = coroutineScope,
                         onInvalidAudioDeviceAdded = { invalidAudioDeviceReason = it },
                     )
-                    onAudioManagerChanged(webViewAudioManager)
+                    onAudioManagerChange(webViewAudioManager)
                     state.eventSink(CallScreenEvent.SetupMessageChannels(interceptor))
                     val pipController = WebViewPipController(
                         webView = webView,
@@ -152,7 +161,7 @@ internal fun CallScreenView(
                     callWebView = null
                     // Reset audio mode
                     webViewAudioManager?.onCallStopped()
-                    onAudioManagerChanged(null)
+                    onAudioManagerChange(null)
                 }
             )
             // Нютаг: таймер разговора поверх Element Call, как в Telegram; в свёрнутом окне не нужен.
@@ -160,6 +169,7 @@ internal fun CallScreenView(
             state.joinedAtMillis?.takeIf { !pipState.isInPictureInPicture }?.let { joinedAt ->
                 NyutagCallDuration(
                     joinedAtMillis = joinedAt,
+                    endedAtMillis = state.endedAtMillis,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .windowInsetsPadding(WindowInsets.statusBars)
@@ -248,6 +258,10 @@ private fun WebView.setup(
         ViewGroup.LayoutParams.MATCH_PARENT,
         ViewGroup.LayoutParams.MATCH_PARENT
     )
+
+    // Нютаг: без этого при свёрнутом звонке (полоса в приложении, плашка поверх) система замораживает процесс
+    // страницы звонка — молчат кнопки плашки и не продлевается участие в звонке (через 10 минут звонок рвётся).
+    setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false)
 
     with(settings) {
         javaScriptEnabled = true

@@ -14,6 +14,8 @@ import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.createroom.CreateRoomParameters
 import io.element.android.libraries.matrix.api.createroom.RoomPreset
+import io.element.android.libraries.matrix.api.nyutag.NYUTAG_SAVED_MESSAGES_TYPE
+import io.element.android.libraries.matrix.api.nyutag.nyutagSavedMessagesRoomId
 import io.element.android.libraries.matrix.api.roomdirectory.RoomVisibility
 
 /** Комната «Избранного»: одна на аккаунт, id в account data — видна со всех устройств, в том числе с iOS. */
@@ -21,11 +23,7 @@ fun interface NyutagSavedMessages {
     suspend fun roomId(name: String, topic: String): Result<RoomId>
 }
 
-const val NYUTAG_SAVED_MESSAGES_TYPE = "chat.nyutag.saved_messages"
-
 private const val AVATAR_RESOURCE = "/nyutag/saved_avatar.png"
-
-private val ROOM_ID_REGEX = Regex("\"room_id\"\\s*:\\s*\"([^\"]+)\"")
 
 @ContributesBinding(SessionScope::class)
 class DefaultNyutagSavedMessages(
@@ -33,9 +31,7 @@ class DefaultNyutagSavedMessages(
     private val sessionEnterpriseService: SessionEnterpriseService,
 ) : NyutagSavedMessages {
     override suspend fun roomId(name: String, topic: String): Result<RoomId> {
-        val stored = matrixClient.getAccountData(NYUTAG_SAVED_MESSAGES_TYPE).getOrNull()
-            ?.let { ROOM_ID_REGEX.find(it)?.groupValues?.get(1) }
-            ?.let { runCatching { RoomId(it) }.getOrNull() }
+        val stored = matrixClient.nyutagSavedMessagesRoomId()
         if (stored != null && matrixClient.getJoinedRoomIds().getOrNull()?.contains(stored) == true) {
             return Result.success(stored)
         }

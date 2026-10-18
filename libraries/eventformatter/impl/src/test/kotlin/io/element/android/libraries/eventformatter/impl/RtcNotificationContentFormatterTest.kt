@@ -30,7 +30,7 @@ class RtcNotificationContentFormatterTest : RobolectricTest() {
     fun setup() {
         context = RuntimeEnvironment.getApplication() as Context
         fakeMatrixClient = FakeMatrixClient()
-        val stringProvider = AndroidStringProvider(context.resources)
+        val stringProvider = AndroidStringProvider(context)
         formatter = RtcNotificationContentFormatter(
             fakeMatrixClient,
             stringProvider

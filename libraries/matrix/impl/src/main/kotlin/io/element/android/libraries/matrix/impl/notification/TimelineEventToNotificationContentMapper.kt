@@ -11,11 +11,14 @@ package io.element.android.libraries.matrix.impl.notification
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.UserId
+import io.element.android.libraries.matrix.api.exception.NotificationResolverException
 import io.element.android.libraries.matrix.api.notification.CallIntent
 import io.element.android.libraries.matrix.api.notification.NotificationContent
 import io.element.android.libraries.matrix.api.notification.RtcNotificationType
+import io.element.android.libraries.matrix.impl.nyutag.DefaultNyutagCallStart
 import io.element.android.libraries.matrix.impl.room.member.RoomMemberMapper
 import io.element.android.libraries.matrix.impl.timeline.item.event.EventMessageMapper
+import org.matrix.rustcomponents.sdk.ClientException
 import org.matrix.rustcomponents.sdk.MessageLikeEventContent
 import org.matrix.rustcomponents.sdk.StateEventContent
 import org.matrix.rustcomponents.sdk.TimelineEvent
@@ -29,12 +32,23 @@ class TimelineEventToNotificationContentMapper {
         return runCatchingExceptions {
             timelineEvent.use {
                 val senderId = UserId(timelineEvent.senderId())
-                timelineEvent.content().use { eventContent ->
+                timelineEvent.nyutagContent().use { eventContent ->
                     eventContent.toContent(senderId = senderId)
                 }
             }
         }
     }
+}
+
+/**
+ * Нютаг: сигнал «звоню» нужен только iPhone (его несёт VoIP-пуш), звонок на Android показывает rtc.notification.
+ * SDK этот тип не знает и бросает ошибку — без фильтра рядом со звонком всплывало «У Вас 1 новое сообщение».
+ */
+private fun TimelineEvent.nyutagContent(): TimelineEventContent = try {
+    content()
+} catch (e: ClientException) {
+    if (e.message?.contains("\"${DefaultNyutagCallStart.RING_EVENT_TYPE}\"") == true) throw NotificationResolverException.EventFilteredOut
+    throw e
 }
 
 private fun TimelineEventContent.toContent(senderId: UserId): NotificationContent {

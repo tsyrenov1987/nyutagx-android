@@ -12,20 +12,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import im.vector.app.features.analytics.plan.MobileScreen
 import io.element.android.features.call.api.CallData
+import io.element.android.features.call.api.NyutagOngoingCall
 import io.element.android.features.call.impl.data.WidgetMessage
 import io.element.android.features.call.impl.utils.ActiveCallManager
 import io.element.android.features.call.impl.utils.CallWidgetProvider
+import io.element.android.features.call.impl.utils.NyutagOngoingCallPublisher
 import io.element.android.features.call.impl.utils.WidgetMessageInterceptor
 import io.element.android.features.call.impl.utils.WidgetMessageSerializer
 import io.element.android.libraries.architecture.AsyncData
@@ -42,7 +47,9 @@ import io.element.android.services.appnavstate.api.AppForegroundStateService
 import io.element.android.services.toolbox.api.systemclock.SystemClock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
@@ -52,6 +59,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import timber.log.Timber
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration.Companion.seconds
 
 @AssistedInject
@@ -70,6 +78,7 @@ class CallScreenPresenter(
     @AppCoroutineScope
     private val appCoroutineScope: CoroutineScope,
     private val widgetMessageSerializer: WidgetMessageSerializer,
+    private val ongoingCallPublisher: NyutagOngoingCallPublisher,
 ) : Presenter<CallScreenState> {
     @AssistedFactory
     interface Factory {
@@ -89,6 +98,10 @@ class CallScreenPresenter(
         var webViewError by remember { mutableStateOf<String?>(null) }
         var isMicrophoneEnabled by remember { mutableStateOf(true) }
         var joinedAtMillis by remember { mutableStateOf<Long?>(null) }
+        var endedAtMillis by remember { mutableStateOf<Long?>(null) }
+        var hasJoinedCall by remember { mutableStateOf(false) }
+        var hasHungUp by remember { mutableStateOf(false) }
+        val roomCallInfo by observeRoomCallInfo()
         val languageTag = languageTagProvider.provideLanguageTag()
         val theme = "dark"
 
@@ -140,8 +153,11 @@ class CallScreenPresenter(
                             } else if (parsedMessage.action == WidgetMessage.Action.ContentLoaded) {
                                 isWidgetLoaded = true
                             } else if (parsedMessage.action == WidgetMessage.Action.Join) {
-                                // Нютаг: Element Call сообщил о входе в разговор — с этого момента идёт таймер.
-                                if (joinedAtMillis == null) joinedAtMillis = clock.epochMillis()
+                                // Нютаг: мы вошли в звонок; таймер пойдёт, когда войдёт и собеседник (см. ниже).
+                                hasJoinedCall = true
+                            } else if (parsedMessage.action == WidgetMessage.Action.HangUp) {
+                                // Нютаг: трубку положили кнопкой Element Call — таймер замирает сразу, не ждём закрытия экрана.
+                                hasHungUp = true
                             } else if (parsedMessage.action == WidgetMessage.Action.DeviceMute) {
                                 // Нютаг: Element Call сообщает состояние микрофона — для кнопки в свёрнутом окне.
                                 (parsedMessage.data as? JsonObject)?.get("audio_enabled")?.jsonPrimitive?.booleanOrNull?.let { isMicrophoneEnabled = it }
@@ -151,7 +167,11 @@ class CallScreenPresenter(
                     .launchIn(this)
             }
 
-            LaunchedEffect(Unit) {
+            // Нютаг: отсчёт — с готового адреса звонка, а не с создания WebView: до адреса идут запуск прокси туннеля
+            // и замер UDP до SFU, а на медленном телефоне это секунды из тех же десяти.
+            val isUrlReady = urlState.value is AsyncData.Success
+            LaunchedEffect(isUrlReady) {
+                if (!isUrlReady) return@LaunchedEffect
                 // Wait for the call to be joined, if it takes too long, we display an error
                 delay(10.seconds)
 
@@ -164,9 +184,49 @@ class CallScreenPresenter(
             }
         }
 
+        // Нютаг: как в Telegram — время разговора идёт с ответа собеседника, а не с набора («Вызов…» без таймера),
+        // и замирает, когда трубку положили или собеседник вышел.
+        // snapshotFlow, а не ключи LaunchedEffect: свёрнутый без PiP экран остановлен и не перекомпонуется,
+        // а момент ответа нужен сразу — его показывает полоса звонка в приложении.
+        LaunchedEffect(Unit) {
+            snapshotFlow { Triple(hasJoinedCall, roomCallInfo.isOtherPartyInCall, hasHungUp) }
+                .collect { (joined, otherPartyInCall, hungUp) ->
+                    when {
+                        hungUp -> if (joinedAtMillis != null && endedAtMillis == null) endedAtMillis = clock.epochMillis()
+                        !joined -> Unit
+                        otherPartyInCall -> {
+                            if (joinedAtMillis == null) joinedAtMillis = clock.epochMillis()
+                            endedAtMillis = null
+                        }
+                        joinedAtMillis != null && endedAtMillis == null -> endedAtMillis = clock.epochMillis()
+                    }
+                }
+        }
+
+        // Нютаг: полоса «вернуться к звонку» в приложении (NyutagOngoingCallService). Трубку положили — полоса сразу уходит.
+        LaunchedEffect(Unit) {
+            snapshotFlow {
+                if (hasHungUp) {
+                    null
+                } else {
+                    NyutagOngoingCall(
+                        roomId = callData.roomId,
+                        title = roomCallInfo.title,
+                        joinedAtMillis = joinedAtMillis,
+                        endedAtMillis = endedAtMillis,
+                        isMicrophoneEnabled = isMicrophoneEnabled,
+                    )
+                }
+            }.collect { ongoingCallPublisher.publish(it) }
+        }
+        DisposableEffect(Unit) {
+            onDispose { ongoingCallPublisher.publish(null) }
+        }
+
         fun handleEvent(event: CallScreenEvent) {
             when (event) {
                 is CallScreenEvent.Hangup -> {
+                    hasHungUp = true
                     val widgetId = callWidgetDriver.value?.id
                     val interceptor = messageInterceptor.value
                     if (widgetId != null && interceptor != null && isWidgetLoaded) {
@@ -213,7 +273,9 @@ class CallScreenPresenter(
             userAgent = userAgent,
             isCallActive = isWidgetLoaded,
             isMicrophoneEnabled = isMicrophoneEnabled,
+            isAudioCall = callData.isAudioCall,
             joinedAtMillis = joinedAtMillis,
+            endedAtMillis = endedAtMillis,
             eventSink = ::handleEvent,
         )
     }
@@ -239,6 +301,29 @@ class CallScreenPresenter(
             result.url
         }
     }
+
+    /** Нютаг: имя собеседника или группы и есть ли в звонке кто-то кроме нас (участники звонка из состояния комнаты). */
+    @Composable
+    private fun observeRoomCallInfo(): State<NyutagRoomCallInfo> {
+        return produceState(initialValue = NyutagRoomCallInfo(title = null, isOtherPartyInCall = false)) {
+            val client = matrixClientsProvider.getOrNull(callData.sessionId) ?: return@produceState
+            client.getRoomInfoFlow(callData.roomId)
+                .map { roomInfo ->
+                    val info = roomInfo.getOrNull()
+                    NyutagRoomCallInfo(
+                        title = info?.name,
+                        isOtherPartyInCall = info?.activeRoomCallParticipants.orEmpty().any { it != callData.sessionId },
+                    )
+                }
+                .distinctUntilChanged()
+                .collect { value = it }
+        }
+    }
+
+    private data class NyutagRoomCallInfo(
+        val title: String?,
+        val isOtherPartyInCall: Boolean,
+    )
 
     @Composable
     private fun HandleMatrixClientSyncState() {

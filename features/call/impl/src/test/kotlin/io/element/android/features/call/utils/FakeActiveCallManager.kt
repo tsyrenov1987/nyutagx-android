@@ -37,4 +37,8 @@ class FakeActiveCallManager(
     fun setActiveCall(value: ActiveCall?) {
         this.activeCall.value = value
     }
+
+    override fun onIncomingCallScreenVisibilityChanged(visible: Boolean) = Unit
+
+    override fun onIncomingCallAnswering() = Unit
 }

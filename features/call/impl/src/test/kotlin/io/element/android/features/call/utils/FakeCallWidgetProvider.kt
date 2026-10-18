@@ -16,6 +16,7 @@ import io.element.android.libraries.matrix.test.widget.FakeMatrixWidgetDriver
 class FakeCallWidgetProvider(
     private val widgetDriver: FakeMatrixWidgetDriver = FakeMatrixWidgetDriver(),
     private val url: String = "https://call.element.io",
+    private val beforeResult: suspend () -> Unit = {},
 ) : CallWidgetProvider {
     var getWidgetCalled = false
         private set
@@ -29,6 +30,7 @@ class FakeCallWidgetProvider(
         theme: String?
     ): Result<CallWidgetProvider.GetWidgetResult> {
         getWidgetCalled = true
+        beforeResult()
         return Result.success(
             CallWidgetProvider.GetWidgetResult(
                 driver = widgetDriver,

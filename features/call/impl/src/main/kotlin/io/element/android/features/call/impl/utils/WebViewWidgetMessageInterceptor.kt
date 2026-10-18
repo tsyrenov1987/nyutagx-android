@@ -114,6 +114,37 @@ class WebViewWidgetMessageInterceptor(
                     """.trimIndent(),
                     null
                 )
+
+                // Нютаг: скрытую страницу без звука (собеседник молчит или выключил микрофон) Chromium через полминуты
+                // останавливает — молчат кнопки плашки, и через 10 минут звонок рвётся: участие не продлевается.
+                // Пока звонок свёрнут, страница играет неслышный сигнал (30 Гц, −66 дБ) — для Chromium она «звучит».
+                view.evaluateJavascript(
+                    """
+                        (function() {
+                            let keepAwake = null;
+                            document.addEventListener('visibilitychange', function() {
+                                if (document.visibilityState === 'hidden' && !keepAwake) {
+                                    try {
+                                        keepAwake = new AudioContext();
+                                        const oscillator = keepAwake.createOscillator();
+                                        oscillator.frequency.value = 30;
+                                        const gain = keepAwake.createGain();
+                                        gain.gain.value = 0.0005;
+                                        oscillator.connect(gain).connect(keepAwake.destination);
+                                        oscillator.start();
+                                        ${"console.log('Nyutag keep awake: ' + keepAwake.state);".takeIf { BuildConfig.DEBUG }}
+                                    } catch (e) {
+                                        keepAwake = null;
+                                    }
+                                } else if (document.visibilityState === 'visible' && keepAwake) {
+                                    keepAwake.close();
+                                    keepAwake = null;
+                                }
+                            });
+                        })();
+                    """.trimIndent(),
+                    null
+                )
             }
 
             override fun onPageFinished(view: WebView, url: String) {
@@ -146,7 +177,8 @@ class WebViewWidgetMessageInterceptor(
             // Нютаг: 407 от нашего локального прокси (туннель) — отвечаем его одноразовой учёткой, больше никому.
             override fun onReceivedHttpAuthRequest(view: WebView?, handler: HttpAuthHandler, host: String?, realm: String?) {
                 val proxy = NyutagWebProxy.current
-                if (proxy != null && realm == NyutagWebProxy.REALM && (host == "127.0.0.1" || host?.startsWith("127.0.0.1:") == true)) {
+                val isLocalProxyHost = host == "127.0.0.1" || host?.startsWith("127.0.0.1:") == true
+                if (proxy != null && realm == NyutagWebProxy.REALM && isLocalProxyHost) {
                     handler.proceed(proxy.user, proxy.password)
                 } else {
                     Timber.w("Nyutag: unexpected HTTP auth request, realm=$realm")

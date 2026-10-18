@@ -9,6 +9,7 @@
 package io.element.android.features.call.impl.utils
 
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.content.Context
 import android.os.PowerManager
 import androidx.annotation.VisibleForTesting
@@ -87,6 +88,16 @@ interface ActiveCallManager {
      * @param callData The data about the call.
      */
     suspend fun joinedCall(callData: CallData)
+
+    /**
+     * Нютаг: экран входящего на виду или ушёл. Пока на виду — уведомление тихое (без шторки поверх экрана), звонит сам экран;
+     * ушёл, а звонок ещё звонит, — снова звонит уведомление. Ушёл, потому что погасили экран, — как кнопка питания у обычного
+     * звонка: звонок замолкает.
+     */
+    fun onIncomingCallScreenVisibilityChanged(visible: Boolean)
+
+    /** Нютаг: на экране входящего нажали «Ответить» — замолчать, не дожидаясь входа в звонок. */
+    fun onIncomingCallAnswering()
 }
 
 @SingleIn(AppScope::class)
@@ -106,6 +117,11 @@ class DefaultActiveCallManager(
 ) : ActiveCallManager {
     private val tag = "ActiveCallManager"
     private var timedOutCallJob: Job? = null
+    private val ringer = NyutagIncomingCallRinger(context)
+
+    // Нютаг: уведомление входящего сейчас тихое (звонит экран входящего); звонок заглушён (кнопкой питания или ответом).
+    private var isRingingNotificationSilenced = false
+    private var isRingingStopped = false
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val activeWakeLock: PowerManager.WakeLock? = context.getSystemService<PowerManager>()
@@ -259,10 +275,54 @@ class DefaultActiveCallManager(
         )
     }
 
-    @SuppressLint("MissingPermission")
+    override fun onIncomingCallScreenVisibilityChanged(visible: Boolean) {
+        coroutineScope.launch {
+            mutex.withLock {
+                val notificationData = (activeCall.value?.callState as? CallState.Ringing)?.notificationData ?: return@withLock
+                if (visible) {
+                    if (isRingingNotificationSilenced || !ringer.canReplaceNotificationSound()) return@withLock
+                    val notification = createIncomingCallNotification(notificationData, silent = true) ?: return@withLock
+                    if (notifyIncomingCall(notification)) {
+                        Timber.tag(tag).d("Incoming call screen visible, ringing from the screen")
+                        isRingingNotificationSilenced = true
+                        if (!isRingingStopped) ringer.start(notificationData.notificationChannelId)
+                    }
+                } else if (isRingingNotificationSilenced) {
+                    ringer.stop()
+                    if (context.getSystemService<PowerManager>()?.isInteractive == false) {
+                        Timber.tag(tag).d("Incoming call screen turned off, stop ringing")
+                        isRingingStopped = true
+                    } else if (!isRingingStopped) {
+                        Timber.tag(tag).d("Incoming call screen hidden, ringing from the notification")
+                        val notification = createIncomingCallNotification(notificationData, silent = false) ?: return@withLock
+                        isRingingNotificationSilenced = false
+                        notifyIncomingCall(notification)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onIncomingCallAnswering() {
+        coroutineScope.launch {
+            mutex.withLock {
+                ringer.stop()
+                isRingingStopped = true
+            }
+        }
+    }
+
     private suspend fun showIncomingCallNotification(notificationData: CallNotificationData) {
         Timber.tag(tag).d("Displaying ringing call notification")
-        val notification = ringingCallNotificationCreator.createNotification(
+        val notification = createIncomingCallNotification(notificationData, silent = false) ?: return
+        notifyIncomingCall(notification)
+        // Нютаг: как в Telegram — экран входящего сразу поверх других приложений, не дожидаясь, пока система сама
+        // решит показать full-screen intent (на разблокированном телефоне она показывает лишь шторку).
+        NyutagIncomingCallLauncher.showOverOtherApps(context, notificationData)
+    }
+
+    private suspend fun createIncomingCallNotification(notificationData: CallNotificationData, silent: Boolean): Notification? =
+        ringingCallNotificationCreator.createNotification(
             sessionId = notificationData.sessionId,
             roomId = notificationData.roomId,
             eventId = notificationData.eventId,
@@ -275,7 +335,11 @@ class DefaultActiveCallManager(
             textContent = notificationData.textContent,
             expirationTimestamp = notificationData.expirationTimestamp,
             audioOnly = notificationData.audioOnly,
-        ) ?: return
+            silent = silent,
+        )
+
+    @SuppressLint("MissingPermission")
+    private fun notifyIncomingCall(notification: Notification): Boolean =
         runCatchingExceptions {
             notificationManagerCompat.notify(
                 NotificationIdProvider.getForegroundServiceNotificationId(ForegroundServiceType.INCOMING_CALL),
@@ -283,13 +347,12 @@ class DefaultActiveCallManager(
             )
         }.onFailure {
             Timber.e(it, "Failed to publish notification for incoming call")
-        }
-        // Нютаг: как в Telegram — экран входящего сразу поверх других приложений, не дожидаясь, пока система сама
-        // решит показать full-screen intent (на разблокированном телефоне она показывает лишь шторку).
-        NyutagIncomingCallLauncher.showOverOtherApps(context, notificationData)
-    }
+        }.isSuccess
 
     private fun cancelIncomingCallNotification() {
+        ringer.stop()
+        isRingingNotificationSilenced = false
+        isRingingStopped = false
         appForegroundStateService.updateHasRingingCall(false)
         Timber.tag(tag).d("Ringing call notification cancelled")
         notificationManagerCompat.cancel(NotificationIdProvider.getForegroundServiceNotificationId(ForegroundServiceType.INCOMING_CALL))

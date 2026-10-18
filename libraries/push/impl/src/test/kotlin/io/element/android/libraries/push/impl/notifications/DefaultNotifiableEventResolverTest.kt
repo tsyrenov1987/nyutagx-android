@@ -1107,7 +1107,7 @@ class DefaultNotifiableEventResolverTest : RobolectricTest() {
             FakeNotificationMediaRepo()
         }
         return DefaultNotifiableEventResolver(
-            stringProvider = AndroidStringProvider(context.resources),
+            stringProvider = AndroidStringProvider(context),
             matrixClientProvider = matrixClientProvider,
             notificationMediaRepoFactory = notificationMediaRepoFactory,
             context = context,

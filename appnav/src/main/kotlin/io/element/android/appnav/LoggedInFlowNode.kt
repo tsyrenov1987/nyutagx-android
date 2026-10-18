@@ -44,11 +44,13 @@ import io.element.android.annotations.ContributesNode
 import io.element.android.appnav.loggedin.LoggedInNode
 import io.element.android.appnav.loggedin.MediaPreviewConfigMigration
 import io.element.android.appnav.loggedin.NyutagKnockAutoJoin
+import io.element.android.appnav.loggedin.NyutagSavedMessagesName
 import io.element.android.appnav.loggedin.SendQueues
 import io.element.android.appnav.room.RoomFlowNode
 import io.element.android.appnav.room.RoomNavigationTarget
 import io.element.android.appnav.room.joined.JoinedRoomLoadedFlowNode
 import io.element.android.compound.colors.SemanticColorsLightDark
+import io.element.android.features.call.api.NyutagOngoingCallService
 import io.element.android.features.createroom.api.CreateRoomEntryPoint
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.enterprise.api.SessionEnterpriseService
@@ -162,6 +164,8 @@ class LoggedInFlowNode(
     private val createRoomEntryPoint: CreateRoomEntryPoint,
     private val activeLiveLocationShareManager: ActiveLiveLocationShareManager,
     private val customMapTilerConfigProvider: CustomMapTilerConfigProvider,
+    private val nyutagOngoingCallService: NyutagOngoingCallService,
+    private val nyutagSavedMessagesName: NyutagSavedMessagesName,
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = NavTarget.Placeholder,
@@ -268,6 +272,7 @@ class LoggedInFlowNode(
     private fun setupSendingQueue() {
         sendingQueue.launchIn(lifecycleScope)
         nyutagKnockAutoJoin.launchIn(lifecycleScope)
+        nyutagSavedMessagesName.launchIn(lifecycleScope)
     }
 
     sealed interface NavTarget : Parcelable {
@@ -704,15 +709,25 @@ class LoggedInFlowNode(
         ) {
             CompositionLocalProvider(LocalMapTilerConfig provides updatedMapTilerConfig) {
                 val isOnline by syncService.isOnline.collectAsState()
+                // Нютаг: свёрнутый звонок — зелёная полоса сверху, как в Telegram.
+                val ongoingCall by nyutagOngoingCallService.ongoingCall.collectAsState()
                 ConnectivityIndicatorContainer(
                     isOnline = isOnline,
                     modifier = modifier,
                 ) { contentModifier ->
-                    Box(modifier = contentModifier) {
-                        val ftueState by ftueService.state.collectAsState()
-                        BackstackView(transitionHandler = rememberLoggedInFlowTransitionHandler(backstack))
-                        if (ftueState is FtueState.Complete) {
-                            PermanentChild(permanentNavModel = permanentNavModel, navTarget = NavTarget.LoggedInPermanent)
+                    NyutagOngoingCallBarContainer(
+                        ongoingCall = ongoingCall,
+                        onReturnToCall = nyutagOngoingCallService::returnToCall,
+                        onToggleMicrophone = nyutagOngoingCallService::toggleMicrophone,
+                        onHangUp = nyutagOngoingCallService::hangUp,
+                        modifier = contentModifier,
+                    ) { callBarModifier ->
+                        Box(modifier = callBarModifier) {
+                            val ftueState by ftueService.state.collectAsState()
+                            BackstackView(transitionHandler = rememberLoggedInFlowTransitionHandler(backstack))
+                            if (ftueState is FtueState.Complete) {
+                                PermanentChild(permanentNavModel = permanentNavModel, navTarget = NavTarget.LoggedInPermanent)
+                            }
                         }
                     }
                 }

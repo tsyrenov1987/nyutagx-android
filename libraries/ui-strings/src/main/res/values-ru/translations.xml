@@ -40,7 +40,7 @@
   <string name="a11y_notifications_mentions_only">"Только упоминания"</string>
   <string name="a11y_notifications_muted">"Без звука"</string>
   <string name="a11y_notifications_new_mentions">"Новые упоминания"</string>
-  <string name="a11y_notifications_new_messages">"Новые сообшения"</string>
+  <string name="a11y_notifications_new_messages">"Новые сообщения"</string>
   <string name="a11y_notifications_ongoing_call">"Текущий вызов"</string>
   <string name="a11y_other_user_avatar">"Аватар другого пользователя"</string>
   <string name="a11y_page_n">"Страница %1$d"</string>

@@ -8,6 +8,8 @@
 
 package io.element.android.features.call.utils
 
+import android.app.Notification
+import android.app.NotificationManager
 import android.os.PowerManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
@@ -46,7 +48,10 @@ import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import io.element.android.tests.testutils.plantTestTimber
 import io.element.android.tests.testutils.robolectric.RobolectricTest
+import io.mockk.Runs
 import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -506,6 +511,83 @@ class DefaultActiveCallManagerTest : RobolectricTest() {
         assertThat(manager.activeWakeLock?.isHeld).isFalse()
         verify(exactly = 0) { notificationManagerCompat.notify(notificationId, any()) }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `incoming call screen - silences the notification while visible and rings from it again when hidden`() = runTest {
+        setupShadowPowerManager()
+        val notifications = mutableListOf<Notification>()
+        val notificationManagerCompat = mockk<NotificationManagerCompat>(relaxed = true) {
+            every { notify(notificationId, capture(notifications)) } just Runs
+        }
+        val manager = createActiveCallManager(notificationManagerCompat = notificationManagerCompat)
+        manager.registerIncomingCall(aCallNotificationData())
+        runCurrent()
+        assertThat(notifications.map { it.isRinging() }).containsExactly(true)
+
+        manager.onIncomingCallScreenVisibilityChanged(visible = true)
+        runCurrent()
+        assertThat(notifications.map { it.isRinging() }).containsExactly(true, false).inOrder()
+
+        // Повторный показ экрана (тот же звонок) не перевыпускает уведомление.
+        manager.onIncomingCallScreenVisibilityChanged(visible = true)
+        runCurrent()
+        assertThat(notifications).hasSize(2)
+
+        manager.onIncomingCallScreenVisibilityChanged(visible = false)
+        runCurrent()
+        assertThat(notifications.map { it.isRinging() }).containsExactly(true, false, true).inOrder()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `incoming call screen - turning the screen off or answering keeps the call quiet`() = runTest {
+        setupShadowPowerManager()
+        val powerManager = InstrumentationRegistry.getInstrumentation().targetContext.getSystemService<PowerManager>()
+        for (stopRinging in listOf<(DefaultActiveCallManager) -> Unit>(
+            { shadowOf(powerManager).setIsInteractive(false) },
+            { it.onIncomingCallAnswering() },
+        )) {
+            shadowOf(powerManager).setIsInteractive(true)
+            val notifications = mutableListOf<Notification>()
+            val notificationManagerCompat = mockk<NotificationManagerCompat>(relaxed = true) {
+                every { notify(notificationId, capture(notifications)) } just Runs
+            }
+            val manager = createActiveCallManager(notificationManagerCompat = notificationManagerCompat)
+            manager.registerIncomingCall(aCallNotificationData())
+            runCurrent()
+            manager.onIncomingCallScreenVisibilityChanged(visible = true)
+            runCurrent()
+
+            stopRinging(manager)
+            manager.onIncomingCallScreenVisibilityChanged(visible = false)
+            runCurrent()
+            assertThat(notifications.map { it.isRinging() }).containsExactly(true, false).inOrder()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `incoming call screen - with do not disturb the system keeps ringing the notification`() = runTest {
+        setupShadowPowerManager()
+        val notificationManager = InstrumentationRegistry.getInstrumentation().targetContext.getSystemService<NotificationManager>()!!
+        shadowOf(notificationManager).setNotificationPolicyAccessGranted(true)
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        val notifications = mutableListOf<Notification>()
+        val notificationManagerCompat = mockk<NotificationManagerCompat>(relaxed = true) {
+            every { notify(notificationId, capture(notifications)) } just Runs
+        }
+        val manager = createActiveCallManager(notificationManagerCompat = notificationManagerCompat)
+        manager.registerIncomingCall(aCallNotificationData())
+        runCurrent()
+
+        manager.onIncomingCallScreenVisibilityChanged(visible = true)
+        runCurrent()
+        assertThat(notifications.map { it.isRinging() }).containsExactly(true)
+        notificationManager.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+    }
+
+    private fun Notification.isRinging() = flags and Notification.FLAG_INSISTENT != 0 && groupAlertBehavior != Notification.GROUP_ALERT_SUMMARY
 
     private fun setupShadowPowerManager() {
         shadowOf(InstrumentationRegistry.getInstrumentation().targetContext.getSystemService<PowerManager>()).apply {

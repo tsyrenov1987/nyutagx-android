@@ -52,4 +52,8 @@
     <string name="nyutag_dm_delete_chat_subtitle">Чат танай жагсаалтаһаа үгы болохо. Дахин бэшэлсэбэл, шэнэ чат бии болохо.</string>
     <!-- Звонки — разрешение показывать поверх других приложений -->
     <string name="nyutag_call_permissions_banner_message">Орожо байһан дуудалга ондоо программануудай дээрэ болон түгжээтэй дэлгэсэ дээрэ харуулхын тула, тохиргоонууд соо зүбшөөгты.</string>
+    <string name="nyutag_call_bar_calling">Дуудажа байна…</string>
+    <string name="nyutag_call_bar_return">Дуудалга руу бусаха</string>
+    <string name="nyutag_call_bar_end">Дуудалга дүүргэхэ</string>
+    <string name="nyutag_incoming_call_answer">Харюусаха</string>
 </resources>

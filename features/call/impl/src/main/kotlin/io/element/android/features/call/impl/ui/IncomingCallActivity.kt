@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -19,6 +20,8 @@ import androidx.core.content.IntentCompat
 import androidx.lifecycle.lifecycleScope
 import dev.zacsweers.metro.Inject
 import io.element.android.compound.colors.SemanticColorsLightDark
+import io.element.android.compound.theme.ElementTheme
+import io.element.android.compound.theme.Theme
 import io.element.android.features.call.api.CallData
 import io.element.android.features.call.api.ElementCallEntryPoint
 import io.element.android.features.call.impl.di.CallBindings
@@ -28,10 +31,8 @@ import io.element.android.features.call.impl.utils.CallState
 import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.libraries.architecture.bindings
 import io.element.android.libraries.core.meta.BuildMeta
-import io.element.android.libraries.designsystem.theme.ElementThemeApp
+import io.element.android.libraries.designsystem.theme.LocalBuildMeta
 import io.element.android.libraries.di.annotations.AppCoroutineScope
-import io.element.android.libraries.featureflag.api.FeatureFlagService
-import io.element.android.libraries.preferences.api.store.AppPreferencesStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
@@ -56,12 +57,6 @@ class IncomingCallActivity : AppCompatActivity() {
     lateinit var activeCallManager: ActiveCallManager
 
     @Inject
-    lateinit var appPreferencesStore: AppPreferencesStore
-
-    @Inject
-    lateinit var featureFlagService: FeatureFlagService
-
-    @Inject
     lateinit var enterpriseService: EnterpriseService
 
     @Inject
@@ -69,6 +64,9 @@ class IncomingCallActivity : AppCompatActivity() {
 
     @AppCoroutineScope
     @Inject lateinit var appCoroutineScope: CoroutineScope
+
+    // Нютаг: после «Ответить» уход экрана не должен снова включать звонок уведомления.
+    private var isAnswering = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,18 +88,19 @@ class IncomingCallActivity : AppCompatActivity() {
                 val colors by remember {
                     enterpriseService.semanticColorsFlow(sessionId = notificationData.sessionId)
                 }.collectAsState(SemanticColorsLightDark.default)
-                ElementThemeApp(
-                    appPreferencesStore = appPreferencesStore,
-                    featureFlagService = featureFlagService,
-                    compoundLight = colors.light,
-                    compoundDark = colors.dark,
-                    buildMeta = buildMeta,
-                ) {
-                    IncomingCallScreen(
-                        notificationData = notificationData,
-                        onAnswer = ::onAnswer,
-                        onCancel = ::onCancel,
-                    )
+                // Нютаг: входящий всегда тёмный, как экран звонка по сотовой сети, — светлые значки строки состояния.
+                CompositionLocalProvider(LocalBuildMeta provides buildMeta) {
+                    ElementTheme(
+                        theme = Theme.Dark,
+                        compoundLight = colors.light,
+                        compoundDark = colors.dark,
+                    ) {
+                        IncomingCallScreen(
+                            notificationData = notificationData,
+                            onAnswer = ::onAnswer,
+                            onCancel = ::onCancel,
+                        )
+                    }
                 }
             }
         } else {
@@ -116,7 +115,19 @@ class IncomingCallActivity : AppCompatActivity() {
             .launchIn(lifecycleScope)
     }
 
+    override fun onStart() {
+        super.onStart()
+        activeCallManager.onIncomingCallScreenVisibilityChanged(visible = true)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (!isAnswering) activeCallManager.onIncomingCallScreenVisibilityChanged(visible = false)
+    }
+
     private fun onAnswer(notificationData: CallNotificationData) {
+        isAnswering = true
+        activeCallManager.onIncomingCallAnswering()
         elementCallEntryPoint.startCall(
             CallData(
                 sessionId = notificationData.sessionId,

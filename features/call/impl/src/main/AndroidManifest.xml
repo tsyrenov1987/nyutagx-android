@@ -26,6 +26,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Нютаг: входящий звонок и плашка свёрнутого звонка поверх других приложений (Android 10+ не даёт открыть экран из фона без этого). -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application>
         <activity

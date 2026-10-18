@@ -68,14 +68,26 @@ class CallScreenBackPressPolicyTest {
         assertThat(result).isEqualTo(CallScreenBackPressAction.EnterPictureInPicture)
     }
     @Test
-    fun `resolve hangs up if its not from native but from the webview and pip is not supported`() {
+    fun `resolve minimizes to the app if its not from native but from the webview and pip is not supported`() {
         val result = CallScreenBackPressPolicy.resolve(
             supportPip = false,
             hasWebView = true,
             fromNative = false,
         )
 
-        assertThat(result).isNull()
+        assertThat(result).isEqualTo(CallScreenBackPressAction.MinimizeToApp)
+    }
+
+    @Test
+    fun `resolve minimizes a voice call to the app even though pip is supported`() {
+        val result = CallScreenBackPressPolicy.resolve(
+            supportPip = true,
+            hasWebView = true,
+            fromNative = false,
+            isAudioCall = true,
+        )
+
+        assertThat(result).isEqualTo(CallScreenBackPressAction.MinimizeToApp)
     }
 
     @Test

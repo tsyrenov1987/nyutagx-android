@@ -85,6 +85,9 @@ class DateFormatters(
     }
 
     internal fun getRelativeDay(ts: Long, default: String = ""): String {
+        if (dateTimeFormatters.isBuryat) {
+            NyutagBuryatDates.relativeDay(ts, clock.now().toEpochMilliseconds(), timeZoneProvider.provide())?.let { return it }
+        }
         return DateUtils.getRelativeTimeSpanString(
             ts,
             clock.now().toEpochMilliseconds(),

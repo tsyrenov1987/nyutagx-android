@@ -25,17 +25,21 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import kotlinx.coroutines.delay
 import java.util.Locale
 
-/** Сколько длится разговор, начиная с [joinedAtMillis] (эпоха, мс); обновляется раз в секунду. */
+/**
+ * Сколько длится разговор, начиная с [joinedAtMillis] (эпоха, мс); обновляется раз в секунду.
+ * Если задан [endedAtMillis], разговор окончен — показываем итог и больше не считаем.
+ */
 @Composable
 internal fun NyutagCallDuration(
     joinedAtMillis: Long,
     modifier: Modifier = Modifier,
+    endedAtMillis: Long? = null,
 ) {
-    var seconds by remember(joinedAtMillis) { mutableLongStateOf(elapsedSeconds(joinedAtMillis)) }
-    LaunchedEffect(joinedAtMillis) {
-        while (true) {
+    var seconds by remember(joinedAtMillis, endedAtMillis) { mutableLongStateOf(elapsedSeconds(joinedAtMillis, endedAtMillis)) }
+    LaunchedEffect(joinedAtMillis, endedAtMillis) {
+        while (endedAtMillis == null) {
             delay(1_000L - (System.currentTimeMillis() - joinedAtMillis).mod(1_000L))
-            seconds = elapsedSeconds(joinedAtMillis)
+            seconds = elapsedSeconds(joinedAtMillis, null)
         }
     }
     Text(
@@ -48,7 +52,8 @@ internal fun NyutagCallDuration(
     )
 }
 
-private fun elapsedSeconds(joinedAtMillis: Long): Long = ((System.currentTimeMillis() - joinedAtMillis) / 1_000L).coerceAtLeast(0L)
+internal fun elapsedSeconds(joinedAtMillis: Long, endedAtMillis: Long?): Long =
+    (((endedAtMillis ?: System.currentTimeMillis()) - joinedAtMillis) / 1_000L).coerceAtLeast(0L)
 
 /** 0:05, 12:34, 1:02:03 — как в Telegram. */
 internal fun formatCallDuration(seconds: Long): String {

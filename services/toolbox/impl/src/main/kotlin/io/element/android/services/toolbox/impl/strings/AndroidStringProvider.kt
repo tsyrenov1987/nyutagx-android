@@ -8,15 +8,21 @@
 
 package io.element.android.services.toolbox.impl.strings
 
+import android.content.Context
 import android.content.res.Resources
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
+import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.services.toolbox.api.strings.StringProvider
 
 @ContributesBinding(AppScope::class)
-class AndroidStringProvider(private val resources: Resources) : StringProvider {
+class AndroidStringProvider(@ApplicationContext context: Context) : StringProvider {
+    // Нютаг: на языке, выбранном в приложении, а не системы — см. NyutagAppLocaleResources.
+    private val appLocaleResources = NyutagAppLocaleResources(context)
+    private val resources: Resources get() = appLocaleResources.get()
+
     override fun getString(@StringRes resId: Int): String {
         return resources.getString(resId)
     }

@@ -70,6 +70,8 @@ class RingingCallNotificationCreator(
         expirationTimestamp: Long,
         textContent: String?,
         audioOnly: Boolean,
+        // Нютаг: тихое — пока на виду экран входящего (звонит он сам), чтобы шторка уведомления не висела поверх экрана.
+        silent: Boolean = false,
     ): Notification? {
         val matrixClient = matrixClientProvider.getOrRestore(sessionId).getOrNull() ?: return null
         val imageLoader = imageLoaderHolder.get(matrixClient)
@@ -132,7 +134,7 @@ class RingingCallNotificationCreator(
             false
         )
 
-        return NotificationCompat.Builder(context, notificationChannelId)
+        val builder = NotificationCompat.Builder(context, notificationChannelId)
             .setSmallIcon(CommonDrawables.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)
@@ -152,7 +154,12 @@ class RingingCallNotificationCreator(
             .setTimeoutAfter(ElementCallConfig.RINGING_CALL_DURATION_SECONDS.seconds.inWholeMilliseconds)
             .setContentIntent(answerIntent)
             .setDeleteIntent(declineIntent)
+            // Android 13+ не принимает CallStyle без full-screen intent (или foreground-сервиса) — он нужен и тихому.
             .setFullScreenIntent(fullScreenIntent, true)
+        if (silent) {
+            return builder.setSilent(true).build()
+        }
+        return builder
             .build()
             .apply {
                 flags = flags.or(Notification.FLAG_INSISTENT)

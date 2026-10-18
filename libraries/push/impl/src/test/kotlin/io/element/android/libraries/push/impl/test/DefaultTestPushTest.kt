@@ -8,12 +8,15 @@
 
 package io.element.android.libraries.push.impl.test
 
+import io.element.android.libraries.matrix.api.nyutag.NyutagPushLoopback
+import io.element.android.libraries.push.api.gateway.PushGatewayFailure
 import io.element.android.libraries.push.impl.BuildConfig
 import io.element.android.libraries.push.impl.pushgateway.PushGatewayNotifyRequest
 import io.element.android.libraries.pushproviders.test.aSessionPushConfig
 import io.element.android.tests.testutils.lambda.lambdaRecorder
 import io.element.android.tests.testutils.lambda.value
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class DefaultTestPushTest {
@@ -23,7 +26,8 @@ class DefaultTestPushTest {
         val defaultTestPush = DefaultTestPush(
             pushGatewayNotifyRequest = FakePushGatewayNotifyRequest(
                 executeResult = executeResult,
-            )
+            ),
+            nyutagPushLoopback = FakeNyutagPushLoopback(),
         )
         val aConfig = aSessionPushConfig()
         defaultTestPush.execute(aConfig)
@@ -40,5 +44,42 @@ class DefaultTestPushTest {
                     )
                 )
             )
+    }
+
+    @Test
+    fun `test push to a gateway on the core loopback goes through the core`() = runTest {
+        val notifyResult = lambdaRecorder<String, String, Result<Boolean>> { _, _ -> Result.success(false) }
+        val defaultTestPush = DefaultTestPush(
+            pushGatewayNotifyRequest = FakePushGatewayNotifyRequest(),
+            nyutagPushLoopback = FakeNyutagPushLoopback(notifyResult),
+        )
+        defaultTestPush.execute(aSessionPushConfig(url = LOOPBACK_URL))
+        notifyResult.assertions().isCalledOnce().with(value(BuildConfig.PUSHER_APP_ID), value("aPushKey"))
+    }
+
+    @Test
+    fun `test push through the core reports a rejected pushkey`() {
+        val defaultTestPush = DefaultTestPush(
+            pushGatewayNotifyRequest = FakePushGatewayNotifyRequest(),
+            nyutagPushLoopback = FakeNyutagPushLoopback { _, _ -> Result.success(true) },
+        )
+        assertThrows(PushGatewayFailure.PusherRejected::class.java) {
+            runTest { defaultTestPush.execute(aSessionPushConfig(url = LOOPBACK_URL)) }
+        }
+    }
+
+    @Test
+    fun `test push through the core reports the rate limit`() {
+        val defaultTestPush = DefaultTestPush(
+            pushGatewayNotifyRequest = FakePushGatewayNotifyRequest(),
+            nyutagPushLoopback = FakeNyutagPushLoopback { _, _ -> Result.failure(NyutagPushLoopback.RateLimitedException()) },
+        )
+        assertThrows(PushGatewayFailure.RateLimited::class.java) {
+            runTest { defaultTestPush.execute(aSessionPushConfig(url = LOOPBACK_URL)) }
+        }
+    }
+
+    private companion object {
+        const val LOOPBACK_URL = "http://127.0.0.1:5000/_matrix/push/v1/notify"
     }
 }
