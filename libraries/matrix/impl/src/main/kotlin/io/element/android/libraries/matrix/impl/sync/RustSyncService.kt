@@ -12,6 +12,7 @@ import io.element.android.libraries.core.coroutine.mapState
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.sync.SyncService
 import io.element.android.libraries.matrix.api.sync.SyncState
+import io.element.android.libraries.matrix.impl.nyutag.NyutagTunnel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
@@ -40,6 +41,8 @@ class RustSyncService(
                 Timber.d("Can't start sync: service is not ready")
                 return@runCatchingExceptions
             }
+            // Нютаг: SDK ходит через SOCKS туннеля — сначала убеждаемся, что его порт жив после сна (как iOS перед resume).
+            NyutagTunnel.ensureListening()
             Timber.i("Start sync")
             inner.start()
         }.onFailure {

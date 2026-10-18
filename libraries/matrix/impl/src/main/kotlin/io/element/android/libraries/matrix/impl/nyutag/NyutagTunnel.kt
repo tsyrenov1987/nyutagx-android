@@ -150,6 +150,17 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
     }
 
     /**
+     * Порт SOCKS мог умереть, пока процесс спал (сокет закрыла система, а ждущий accept ядра этого не видит) —
+     * тогда каждый запрос SDK получает отказ. Перед запуском синхронизации ядро дозванивается до своего порта и,
+     * если тот молчит, слушает заново на том же порту с тем же логином (до 2 с); адрес прокси у SDK прежний.
+     */
+    fun ensureListening() {
+        if (port == 0 || !Mobile.running()) return
+        val alive = runCatching { Mobile.ensureListening() }.onFailure { Timber.w(it, "Nyutag tunnel: ensureListening failed") }.getOrDefault(true)
+        if (!alive) Timber.e("Nyutag tunnel: SOCKS port did not come back")
+    }
+
+    /**
      * Гасит ядро — после выхода из последнего аккаунта: возить нечего, а зонды путей зря тратят трафик.
      * Следующий [proxyUrl] поднимет его заново (память путей на диске остаётся).
      */
