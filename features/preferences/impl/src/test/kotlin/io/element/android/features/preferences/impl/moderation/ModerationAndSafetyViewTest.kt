@@ -60,16 +60,16 @@ class ModerationAndSafetyViewTest : RobolectricTest() {
 
     @Test
     @Config(qualifiers = "h1080dp")
-    fun `clicking on hide invite avatars emits the expected event`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<ModerationAndSafetyEvent>()
+    fun `hide invite avatars toggle is not shown`() = runAndroidComposeUiTest {
+        // Нютаг: раздел «Скрывать аватары в приглашениях» убран с экрана.
         setModerationAndSafetyView(
             state = aModerationAndSafetyState(
-                eventSink = eventsRecorder,
+                eventSink = EventsRecorder(expectEvents = false),
                 hideInviteAvatars = false
             ),
         )
-        clickOn(R.string.screen_advanced_settings_hide_invite_avatars_toggle_title)
-        eventsRecorder.assertSingle(ModerationAndSafetyEvent.SetHideInviteAvatars(true))
+        val activity = requireNotNull(activity)
+        onNodeWithText(activity.getString(R.string.screen_advanced_settings_hide_invite_avatars_toggle_title)).assertDoesNotExist()
     }
 
     @Test
@@ -112,21 +112,6 @@ class ModerationAndSafetyViewTest : RobolectricTest() {
         )
         clickOn(R.string.screen_advanced_settings_show_media_timeline_always_show)
         eventsRecorder.assertSingle(ModerationAndSafetyEvent.SetTimelineMediaPreviewValue(MediaPreviewValue.On))
-    }
-
-    @Test
-    @Config(qualifiers = "h1080dp")
-    fun `hide invite avatars toggle is disabled when action is loading`() = runAndroidComposeUiTest {
-        val eventsRecorder = EventsRecorder<ModerationAndSafetyEvent>(expectEvents = false)
-        setModerationAndSafetyView(
-            state = aModerationAndSafetyState(
-                eventSink = eventsRecorder,
-                hideInviteAvatars = false,
-                setHideInviteAvatarsAction = AsyncAction.Loading
-            ),
-        )
-        // The toggle should be disabled, so clicking should not emit any events
-        clickOn(R.string.screen_advanced_settings_hide_invite_avatars_toggle_title)
     }
 
     @Test

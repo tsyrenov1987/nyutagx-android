@@ -26,6 +26,7 @@ import io.element.android.features.lockscreen.api.LockScreenEntryPoint
 import io.element.android.features.logout.api.LogoutEntryPoint
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.preferences.impl.about.AboutNode
+import io.element.android.features.preferences.impl.advanced.AdvancedSettingsNode
 import io.element.android.features.preferences.impl.analytics.AnalyticsSettingsNode
 import io.element.android.features.preferences.impl.blockedusers.BlockedUsersNode
 import io.element.android.features.preferences.impl.developer.DeveloperSettingsNode
@@ -127,6 +128,9 @@ class PreferencesFlowNode(
         data object BlockedUsers : NavTarget
 
         @Parcelize
+        data object AdvancedSettings : NavTarget
+
+        @Parcelize
         data object SignOut : NavTarget
 
         @Parcelize
@@ -196,6 +200,10 @@ class PreferencesFlowNode(
 
                     override fun navigateToUserProfile(matrixUser: MatrixUser) {
                         backstack.push(NavTarget.UserProfile(matrixUser))
+                    }
+
+                    override fun navigateToAdvancedSettings() {
+                        backstack.push(NavTarget.AdvancedSettings)
                     }
 
                     override fun startSignOutFlow() {
@@ -389,6 +397,18 @@ class PreferencesFlowNode(
             }
             NavTarget.BlockedUsers -> {
                 createNode<BlockedUsersNode>(buildContext)
+            }
+            NavTarget.AdvancedSettings -> {
+                val callback = object : AdvancedSettingsNode.Callback {
+                    override fun startSignOutFlow() {
+                        backstack.push(NavTarget.SignOut)
+                    }
+
+                    override fun startAccountDeactivationFlow() {
+                        backstack.push(NavTarget.AccountDeactivation)
+                    }
+                }
+                createNode<AdvancedSettingsNode>(buildContext, listOf(callback))
             }
             NavTarget.SignOut -> {
                 val callBack: LogoutEntryPoint.Callback = object : LogoutEntryPoint.Callback {

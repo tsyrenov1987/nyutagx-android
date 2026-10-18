@@ -12,6 +12,7 @@
     <string name="nyutag_communities_empty">Сообществ пока нет. Создайте первое!</string>
     <string name="nyutag_community_requests">Заявки на вступление</string>
     <string name="nyutag_invite_friend">Пригласить друга</string>
+    <string name="nyutag_more_settings">Дополнительно</string>
     <string name="nyutag_donate_title">Поддержать Нютаг</string>
     <string name="nyutag_donate_body">Нютаг делает маленькая студия. Серверы, через которые идут переписка, звонки и уведомления, мы оплачиваем сами и пока работаем в минус. Рекламы в Нютаге нет и не будет. Если он вам нужен, поддержите его: любая сумма идёт на серверы.</string>
     <string name="nyutag_donate_thanks">Спасибо! Ваша поддержка держит серверы Нютага.</string>

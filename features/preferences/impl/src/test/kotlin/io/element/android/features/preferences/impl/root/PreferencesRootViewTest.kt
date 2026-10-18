@@ -407,8 +407,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onOpenRageShake: () -> Unit = EnsureNeverCalled(),
     onModerationAndSafetyClick: () -> Unit = EnsureNeverCalled(),
     onOpenNotificationSettings: () -> Unit = EnsureNeverCalled(),
-    onSignOutClick: () -> Unit = EnsureNeverCalled(),
-    onDeactivateClick: () -> Unit = EnsureNeverCalled(),
+    onOpenAdvancedSettings: () -> Unit = EnsureNeverCalled(),
     onInviteFriendClick: () -> Unit = EnsureNeverCalled(),
 ) {
     setContent {
@@ -431,8 +430,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onOpenRageShake = onOpenRageShake,
             onModerationAndSafetyClick = onModerationAndSafetyClick,
             onOpenNotificationSettings = onOpenNotificationSettings,
-            onSignOutClick = onSignOutClick,
-            onDeactivateClick = onDeactivateClick,
+            onOpenAdvancedSettings = onOpenAdvancedSettings,
             onInviteFriendClick = onInviteFriendClick,
         )
     }

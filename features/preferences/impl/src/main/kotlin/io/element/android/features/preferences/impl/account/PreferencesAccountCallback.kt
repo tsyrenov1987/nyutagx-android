@@ -16,6 +16,7 @@ interface PreferencesAccountCallback {
     fun navigateToNotificationSettings()
     fun navigateToLinkNewDevice()
     fun navigateToUserProfile(matrixUser: MatrixUser)
+    fun navigateToAdvancedSettings()
     fun startSignOutFlow()
     fun startAccountDeactivationFlow()
 }

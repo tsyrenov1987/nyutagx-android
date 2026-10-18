@@ -35,8 +35,7 @@ fun PreferencesAccountView(
     onOpenRageShake: () -> Unit,
     onModerationAndSafetyClick: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
-    onSignOutClick: () -> Unit,
-    onDeactivateClick: () -> Unit,
+    onOpenAdvancedSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -56,8 +55,7 @@ fun PreferencesAccountView(
             state = state,
             onModerationAndSafetyClick = onModerationAndSafetyClick,
             onOpenRageShake = onOpenRageShake,
-            onSignOutClick = onSignOutClick,
-            onDeactivateClick = onDeactivateClick,
+            onOpenAdvancedSettings = onOpenAdvancedSettings,
         )
     }
 }
@@ -116,8 +114,7 @@ private fun ColumnScope.GeneralSection(
     state: PreferencesAccountState,
     onModerationAndSafetyClick: () -> Unit,
     onOpenRageShake: () -> Unit,
-    onSignOutClick: () -> Unit,
-    onDeactivateClick: () -> Unit,
+    onOpenAdvancedSettings: () -> Unit,
 ) {
     HorizontalDivider()
     ListItem(
@@ -133,14 +130,27 @@ private fun ColumnScope.GeneralSection(
             onClick = onOpenRageShake,
         )
     }
-    HorizontalDivider()
+    // Нютаг: «Выйти» и «Удалить аккаунт» — в «Дополнительно», чтобы не нажать случайно (как на iOS).
+    ListItem(
+        content = { Text(stringResource(id = CommonStrings.nyutag_more_settings)) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Settings())),
+        onClick = onOpenAdvancedSettings,
+    )
+}
+
+@Composable
+fun ColumnScope.PreferencesSignOutItems(
+    canDeactivateAccount: Boolean,
+    onSignOutClick: () -> Unit,
+    onDeactivateClick: () -> Unit,
+) {
     ListItem(
         content = { Text(stringResource(id = CommonStrings.action_signout)) },
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Close())),
         style = ListItemStyle.Destructive,
         onClick = onSignOutClick,
     )
-    if (state.canDeactivateAccount) {
+    if (canDeactivateAccount) {
         ListItem(
             content = { Text(stringResource(id = CommonStrings.action_delete_account)) },
             leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Delete())),
@@ -162,7 +172,6 @@ internal fun PreferencesAccountViewPreview(@PreviewParameter(PreferencesAccountS
             onManageAccountClick = {},
             onLinkNewDeviceClick = {},
             onOpenNotificationSettings = {},
-            onSignOutClick = {},
-            onDeactivateClick = {},
+            onOpenAdvancedSettings = {},
         )
     }

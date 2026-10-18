@@ -98,8 +98,7 @@ fun PreferencesRootView(
     onOpenRageShake: () -> Unit,
     onModerationAndSafetyClick: () -> Unit,
     onOpenNotificationSettings: () -> Unit,
-    onSignOutClick: () -> Unit,
-    onDeactivateClick: () -> Unit,
+    onOpenAdvancedSettings: () -> Unit,
     onInviteFriendClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -168,8 +167,7 @@ fun PreferencesRootView(
                 onOpenRageShake = onOpenRageShake,
                 onModerationAndSafetyClick = onModerationAndSafetyClick,
                 onOpenNotificationSettings = onOpenNotificationSettings,
-                onSignOutClick = onSignOutClick,
-                onDeactivateClick = onDeactivateClick,
+                onOpenAdvancedSettings = onOpenAdvancedSettings,
             )
             // General section
             GeneralSection(
@@ -465,7 +463,6 @@ private fun ContentToPreview(state: PreferencesRootState) {
         onOpenRageShake = {},
         onModerationAndSafetyClick = {},
         onOpenNotificationSettings = {},
-        onSignOutClick = {},
-        onDeactivateClick = {},
+        onOpenAdvancedSettings = {},
     )
 }

@@ -19,8 +19,6 @@ import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedInject
 import io.element.android.annotations.ContributesNode
 import io.element.android.compound.theme.ElementTheme
-import io.element.android.features.logout.api.direct.DirectLogoutEvent
-import io.element.android.features.logout.api.direct.DirectLogoutView
 import io.element.android.features.preferences.impl.account.PreferencesAccountCallback
 import io.element.android.libraries.androidutils.browser.openUrlInChromeCustomTab
 import io.element.android.libraries.architecture.callback
@@ -35,7 +33,6 @@ class PreferencesRootNode(
     @Assisted plugins: List<Plugin>,
     private val presenter: PreferencesRootPresenter,
     private val emojiPickerRenderer: EmojiPickerRenderer,
-    private val directLogoutView: DirectLogoutView,
     private val inviteFriendsUseCase: InviteFriendsUseCase,
 ) : Node(buildContext, plugins = plugins) {
     interface Callback : PreferencesAccountCallback, Plugin {
@@ -92,16 +89,7 @@ class PreferencesRootNode(
             onOpenNotificationSettings = callback::navigateToNotificationSettings,
             onEditProfileClick = callback::navigateToUserProfile,
             onInviteFriendClick = { inviteFriendsUseCase.execute(activity) },
-            onSignOutClick = {
-                if (state.preferencesAccountState.directLogoutState.canDoDirectSignOut) {
-                    state.preferencesAccountState.directLogoutState.eventSink(DirectLogoutEvent.Logout(ignoreSdkError = false))
-                } else {
-                    callback.startSignOutFlow()
-                }
-            },
-            onDeactivateClick = callback::startAccountDeactivationFlow
+            onOpenAdvancedSettings = callback::navigateToAdvancedSettings,
         )
-
-        directLogoutView.Render(state = state.preferencesAccountState.directLogoutState)
     }
 }

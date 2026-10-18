@@ -122,33 +122,22 @@ class PreferencesAccountViewTest : RobolectricTest() {
     }
 
     @Test
-    fun `click on Remove this device invokes the expected callback`() = runAndroidComposeUiTest {
-        ensureCalledOnce { callback ->
-            setView(
-                aPreferencesAccountState(),
-                onSignOutClick = callback,
-            )
-            val text = activity!!.getString(CommonStrings.action_signout)
-            onNode(hasText(text) and hasClickAction()).performClick()
-        }
-    }
-
-    @Test
-    fun `click on Deactivate invokes the expected callback`() = runAndroidComposeUiTest {
+    fun `click on More invokes the expected callback`() = runAndroidComposeUiTest {
         ensureCalledOnce { callback ->
             setView(
                 aPreferencesAccountState(canDeactivateAccount = true),
-                onDeactivateClick = callback,
+                onOpenAdvancedSettings = callback,
             )
-            val text = activity!!.getString(CommonStrings.action_delete_account)
-            onNode(hasText(text) and hasClickAction()).performClick()
+            clickOn(CommonStrings.nyutag_more_settings)
         }
     }
 
     @Test
-    fun `when canDeactivateAccount is false, item is not shown`() = runAndroidComposeUiTest {
-        setView(aPreferencesAccountState(canDeactivateAccount = false))
-        onNodeWithText(activity!!.getString(CommonStrings.action_delete_account)).assertDoesNotExist()
+    fun `sign out and delete account are not on the main settings screen`() = runAndroidComposeUiTest {
+        setView(aPreferencesAccountState(canDeactivateAccount = true))
+        val activity = requireNotNull(activity)
+        onNodeWithText(activity.getString(CommonStrings.action_signout)).assertDoesNotExist()
+        onNodeWithText(activity.getString(CommonStrings.action_delete_account)).assertDoesNotExist()
     }
 }
 
@@ -160,8 +149,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
     onOpenRageShake: () -> Unit = EnsureNeverCalled(),
     onModerationAndSafetyClick: () -> Unit = EnsureNeverCalled(),
     onOpenNotificationSettings: () -> Unit = EnsureNeverCalled(),
-    onSignOutClick: () -> Unit = EnsureNeverCalled(),
-    onDeactivateClick: () -> Unit = EnsureNeverCalled(),
+    onOpenAdvancedSettings: () -> Unit = EnsureNeverCalled(),
 ) {
     setContent {
         PreferencesAccountView(
@@ -172,8 +160,7 @@ private fun AndroidComposeUiTest<ComponentActivity>.setView(
             onOpenRageShake = onOpenRageShake,
             onModerationAndSafetyClick = onModerationAndSafetyClick,
             onOpenNotificationSettings = onOpenNotificationSettings,
-            onSignOutClick = onSignOutClick,
-            onDeactivateClick = onDeactivateClick,
+            onOpenAdvancedSettings = onOpenAdvancedSettings,
         )
     }
 }
