@@ -198,6 +198,14 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
                 report()
             }
 
+            // Android 15 отрезает сеть приложению в фоне (и рвёт его сокеты) и возвращает её пушем. Без этого ядро
+            // принимает разрыв за блокировку путей и на полторы минуты обходит все — первый запрос за звонком
+            // уходит на разведку и ждёт таймаут, звонок показывается на 5–10 с позже.
+            override fun onBlockedStatusChanged(network: Network, blocked: Boolean) {
+                if (network != on || !Mobile.running()) return
+                runCatching { Mobile.setBlocked(blocked) }.onFailure { Timber.w(it, "Nyutag tunnel: setBlocked failed") }
+            }
+
             private fun report() {
                 val c = caps ?: return
                 val l = links ?: return

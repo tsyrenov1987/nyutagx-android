@@ -106,6 +106,36 @@ class FetchPendingNotificationsWorker(
 
         checkNetworkConnection(requests)?.let { failure -> return failure }
 
+        val processedRequests = mutableListOf<PushRequest>()
+        val updatedRequests = mutableListOf<PushRequest>()
+        var batch = requests
+        while (batch.isNotEmpty()) {
+            resolveRequests(sessionId, batch, updatedRequests)?.let { failure -> return failure }
+            processedRequests += batch
+            // Нютаг: пуш, пришедший пока разбирались эти, ставится в очередь за этой работой и ждёт попутную синхронизацию ниже (~10 с) —
+            // звонок за пушем call.member показывался на 10 с позже. Поэтому дочитываем такие пуши сразу (не больше MAX_REQUESTS_PER_RUN за работу).
+            if (processedRequests.size >= MAX_REQUESTS_PER_RUN) break
+            val processedIds = processedRequests.mapTo(HashSet()) { it.eventId }
+            batch = pushHistoryService.getPendingPushRequests(sessionId, fetchSince).getOrNull().orEmpty()
+                .filter { it.eventId !in processedIds }
+            if (batch.isNotEmpty()) Timber.d("${batch.size} push requests arrived while fetching, fetching them too")
+        }
+
+        // The results have been handed over, so release the foreground service before the opportunistic sync, which deliberately takes a while
+        // in the background. This keeps the service short-lived in the common case, so its notification is normally never displayed.
+        releaseForegroundService()
+
+        analyticsService.recordTransaction("Opportunistic sync", "opportunistic_sync") {
+            performOpportunisticSyncIfNeeded(mapOf(sessionId to processedRequests))
+        }
+
+        return if (updatedRequests.any { it.status == PushRequestStatus.PENDING.value }) Result.retry() else Result.success()
+    }
+
+    /**
+     * Resolve [requests] and append their new state to [updatedRequests]. Returns the result of the work if it has to end here.
+     */
+    private suspend fun resolveRequests(sessionId: SessionId, requests: List<PushRequest>, updatedRequests: MutableList<PushRequest>): Result? {
         Timber.d("Fetching ${requests.size} push requests")
 
         val pendingAnalyticTransactions = requests.mapNotNull { request ->
@@ -133,17 +163,17 @@ class FetchPendingNotificationsWorker(
                 }
             )
 
-        val updatedRequests = mutableListOf<PushRequest>()
+        val updated = mutableListOf<PushRequest>()
         for (request in requests) {
             val result = results[request] ?: continue
             result.fold(
-                onSuccess = { updatedRequests.add(request.copy(status = PushRequestStatus.SUCCESS.value)) },
+                onSuccess = { updated.add(request.copy(status = PushRequestStatus.SUCCESS.value)) },
                 onFailure = { exception ->
                     if (exception is ClientException && exception.isNetworkError()) {
                         // Reset to pending so we can retry it later
-                        updatedRequests.add(request.copy(status = PushRequestStatus.PENDING.value))
+                        updated.add(request.copy(status = PushRequestStatus.PENDING.value))
                     } else {
-                        updatedRequests.add(request.copy(status = PushRequestStatus.FAILED.value))
+                        updated.add(request.copy(status = PushRequestStatus.FAILED.value))
                     }
                 }
             )
@@ -151,17 +181,9 @@ class FetchPendingNotificationsWorker(
 
         Timber.d("Notifications processed successfully")
 
-        pushHistoryService.insertOrUpdatePushRequests(updatedRequests)
-
-        // The results have been handed over, so release the foreground service before the opportunistic sync, which deliberately takes a while
-        // in the background. This keeps the service short-lived in the common case, so its notification is normally never displayed.
-        releaseForegroundService()
-
-        analyticsService.recordTransaction("Opportunistic sync", "opportunistic_sync") {
-            performOpportunisticSyncIfNeeded(mapOf(sessionId to requests))
-        }
-
-        return if (updatedRequests.any { it.status == PushRequestStatus.PENDING.value }) Result.retry() else Result.success()
+        pushHistoryService.insertOrUpdatePushRequests(updated)
+        updatedRequests += updated
+        return null
     }
 
     /**
@@ -274,6 +296,10 @@ class FetchPendingNotificationsWorker(
         })
 
         return Result.retry()
+    }
+
+    private companion object {
+        const val MAX_REQUESTS_PER_RUN = 50
     }
 
     @ContributesIntoMap(AppScope::class, binding = binding<MetroWorkerFactory.WorkerInstanceFactory<*>>())

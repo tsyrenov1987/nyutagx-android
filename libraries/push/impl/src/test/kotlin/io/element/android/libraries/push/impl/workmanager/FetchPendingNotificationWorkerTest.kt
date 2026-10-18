@@ -18,6 +18,7 @@ import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.ListenableFuture
 import io.element.android.features.networkmonitor.api.NetworkStatus
 import io.element.android.features.networkmonitor.test.FakeNetworkMonitor
+import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.SessionId
 import io.element.android.libraries.matrix.api.exception.ClientException
 import io.element.android.libraries.push.impl.db.PushRequest
@@ -83,8 +84,8 @@ class FetchPendingNotificationWorkerTest : RobolectricTest() {
 
         val result = worker.doWork()
 
-        // The expected data is fetched and replaced from the service
-        getPendingResultsLambda.assertions().isCalledOnce()
+        // The expected data is fetched and replaced from the service, then checked again for pushes received meanwhile
+        getPendingResultsLambda.assertions().isCalledExactly(2)
         replacePushRequestsLambda.assertions().isCalledOnce()
         removeOldPushRequestsLambda.assertions().isCalledOnce()
 
@@ -286,6 +287,40 @@ class FetchPendingNotificationWorkerTest : RobolectricTest() {
             // We do save the updated events to the push DB
             emitResultLambda.assertions().isCalledOnce()
         }
+    }
+
+    @Test
+    fun `test - push requests received while fetching are fetched before the opportunistic sync`() = runTest {
+        val callOrder = mutableListOf<String>()
+        val first = aPushRequest(eventId = EventId("\$first"))
+        val second = aPushRequest(eventId = EventId("\$second"))
+        var pendingCalls = 0
+        val pushHistoryService = FakePushHistoryService(
+            getPendingPushRequests = { _, _ ->
+                pendingCalls++
+                // The second push arrives while the first one is being fetched
+                Result.success(if (pendingCalls == 1) listOf(first) else listOf(first, second))
+            },
+            replacePushRequests = { Result.success(Unit) },
+            removeOldPushRequests = { Result.success(Unit) },
+        )
+        val resolveEventsLambda = lambdaRecorder<SessionId, List<PushRequest>, Result<Map<PushRequest, Result<ResolvedPushEvent>>>> { _, requests ->
+            callOrder += "resolve ${requests.joinToString { it.eventId }}"
+            Result.success(emptyMap())
+        }
+        val worker = createWorker(
+            input = "@alice:matrix.org",
+            pushHistoryService = pushHistoryService,
+            eventResolver = FakeNotifiableEventResolver(resolveEventsResult = resolveEventsLambda),
+            resultProcessor = FakeNotificationResultProcessor(emit = {}),
+            syncOnNotifiableEvent = SyncOnNotifiableEvent { callOrder += "sync" },
+        )
+
+        val result = worker.doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+        // The second push doesn't wait for the opportunistic sync, and the first one is not fetched twice
+        assertThat(callOrder).containsExactly("resolve \$first", "resolve \$second", "sync").inOrder()
     }
 
     private fun TestScope.createWorker(
