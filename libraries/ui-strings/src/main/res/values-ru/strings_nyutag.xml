@@ -57,4 +57,22 @@
     <string name="nyutag_call_bar_return">Вернуться к звонку</string>
     <string name="nyutag_call_bar_end">Завершить звонок</string>
     <string name="nyutag_incoming_call_answer">Ответить</string>
+    <string name="nyutag_autodelete_title">Автоудаление сообщений</string>
+    <string name="nyutag_autodelete_subtitle">Новые сообщения в этом чате удалятся у всех через выбранное время.</string>
+    <string name="nyutag_autodelete_off">Выкл.</string>
+    <string name="nyutag_autodelete_day">1 день</string>
+    <string name="nyutag_autodelete_week">1 неделя</string>
+    <string name="nyutag_autodelete_month">1 месяц</string>
+    <string name="nyutag_autodelete_error">Не удалось изменить таймер. Попробуйте ещё раз.</string>
+    <string name="nyutag_view_once_toggle">Исчезающее: один просмотр</string>
+    <string name="nyutag_view_once_received">Исчезающее фото. Нажмите, чтобы открыть</string>
+    <string name="nyutag_view_once_sent">Исчезающее фото</string>
+    <string name="nyutag_view_once_opened">Просмотрено</string>
+    <string name="nyutag_schedule_send">Отправить позже</string>
+    <string name="nyutag_schedule_title">Отложенные сообщения</string>
+    <string name="nyutag_schedule_banner">Отложенных сообщений: %1$d</string>
+    <string name="nyutag_schedule_send_now">Отправить сейчас</string>
+    <string name="nyutag_schedule_at">Отправится %1$s</string>
+    <string name="nyutag_schedule_hint">Сообщение уйдёт в выбранное время, если телефон будет в сети.</string>
+    <string name="nyutag_schedule_error_past">Выберите время в будущем.</string>
 </resources>

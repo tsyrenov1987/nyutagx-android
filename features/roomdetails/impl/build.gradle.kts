@@ -53,6 +53,7 @@ dependencies {
     implementation(projects.features.leaveroom.api)
     implementation(projects.features.userprofile.shared)
     implementation(projects.services.analytics.compose)
+    implementation(projects.services.toolbox.api)
     implementation(projects.features.poll.api)
     implementation(projects.features.messages.api)
     implementation(projects.features.roomcall.api)
@@ -88,4 +89,5 @@ dependencies {
     testImplementation(projects.features.startchat.test)
     testImplementation(projects.features.verifysession.test)
     testImplementation(projects.services.analytics.test)
+    testImplementation(projects.services.toolbox.test)
 }

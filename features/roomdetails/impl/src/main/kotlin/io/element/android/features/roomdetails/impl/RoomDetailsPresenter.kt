@@ -8,6 +8,10 @@
 
 package io.element.android.features.roomdetails.impl
 
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableLongStateOf
+import io.element.android.services.toolbox.api.systemclock.SystemClock
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDelete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -77,6 +81,8 @@ class RoomDetailsPresenter(
     private val appPreferencesStore: AppPreferencesStore,
     private val sessionPreferencesStore: SessionPreferencesStore,
     private val notificationCleaner: NotificationCleaner,
+    private val nyutagAutoDelete: NyutagAutoDelete,
+    private val systemClock: SystemClock,
 ) : Presenter<RoomDetailsState> {
     @AssistedFactory
     interface Factory {
@@ -150,6 +156,11 @@ class RoomDetailsPresenter(
         val snackbarDispatcher = LocalSnackbarDispatcher.current
         val snackbarMessage by snackbarDispatcher.collectSnackbarMessageAsState()
 
+        var autoDeleteTtl by remember { mutableLongStateOf(0L) }
+        LaunchedEffect(Unit) {
+            nyutagAutoDelete.get(room.sessionId, room.roomId).onSuccess { autoDeleteTtl = it.ttlSeconds }
+        }
+
         fun handleEvent(event: RoomDetailsEvent) {
             when (event) {
                 is RoomDetailsEvent.LeaveRoom -> {
@@ -172,6 +183,11 @@ class RoomDetailsPresenter(
                 }
                 is RoomDetailsEvent.MarkAsRead -> scope.markAsRead()
                 is RoomDetailsEvent.MarkAsUnread -> scope.markAsUnread()
+                is RoomDetailsEvent.SetAutoDelete -> scope.launch {
+                    nyutagAutoDelete.set(room.sessionId, room.roomId, event.ttlSeconds, systemClock.epochMillis())
+                        .onSuccess { autoDeleteTtl = it.ttlSeconds }
+                        .onFailure { snackbarDispatcher.post(SnackbarMessage(CommonStrings.nyutag_autodelete_error)) }
+                }
             }
         }
 
@@ -216,6 +232,7 @@ class RoomDetailsPresenter(
             roomVersion = roomInfo.roomVersion,
             roomHistoryVisibility = roomInfo.historyVisibility,
             hasNewContent = hasNewContent,
+            nyutagAutoDeleteTtl = autoDeleteTtl,
             eventSink = ::handleEvent,
         )
     }

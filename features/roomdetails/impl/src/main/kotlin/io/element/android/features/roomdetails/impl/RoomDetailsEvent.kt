@@ -16,4 +16,7 @@ sealed interface RoomDetailsEvent {
     data class SetFavorite(val isFavorite: Boolean) : RoomDetailsEvent
     data object MarkAsRead : RoomDetailsEvent
     data object MarkAsUnread : RoomDetailsEvent
+
+    /** Нютаг: таймер автоудаления, [ttlSeconds] = 0 — выключить. */
+    data class SetAutoDelete(val ttlSeconds: Long) : RoomDetailsEvent
 }

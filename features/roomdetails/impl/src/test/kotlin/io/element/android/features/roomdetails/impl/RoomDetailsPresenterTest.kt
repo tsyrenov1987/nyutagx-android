@@ -8,6 +8,9 @@
 
 package io.element.android.features.roomdetails.impl
 
+import io.element.android.services.toolbox.test.systemclock.FakeSystemClock
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagAutoDelete
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
 import androidx.lifecycle.Lifecycle
 import com.google.common.truth.Truth.assertThat
 import im.vector.app.features.analytics.plan.Interaction
@@ -69,6 +72,8 @@ import org.junit.Test
 import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalCoroutinesApi
+private const val A_NOW = 1_700_000_000_000L
+
 class RoomDetailsPresenterTest {
     @get:Rule
     val warmUpRule = WarmUpRule()
@@ -89,6 +94,7 @@ class RoomDetailsPresenterTest {
         navigator: RoomDetailsNavigator = FakeRoomDetailsNavigator(),
         notificationCleaner: NotificationCleaner = FakeNotificationCleaner(),
         sessionPreferencesStore: SessionPreferencesStore = InMemorySessionPreferencesStore(),
+        nyutagAutoDelete: FakeNyutagAutoDelete = FakeNyutagAutoDelete(),
     ): RoomDetailsPresenter {
         val matrixClient = FakeMatrixClient(notificationSettingsService = notificationSettingsService)
         val roomMemberDetailsPresenterFactory = object : RoomMemberDetailsPresenter.Factory {
@@ -118,7 +124,23 @@ class RoomDetailsPresenterTest {
             appPreferencesStore = appPreferencesStore,
             notificationCleaner = notificationCleaner,
             sessionPreferencesStore = sessionPreferencesStore,
+            nyutagAutoDelete = nyutagAutoDelete,
+            systemClock = FakeSystemClock(A_NOW),
         )
+    }
+
+    @Test
+    fun `present - nyutag autodelete timer is loaded and can be changed`() = runTest {
+        val room = aJoinedRoom(roomPermissions = roomPermissions())
+        val autoDelete = FakeNyutagAutoDelete(rules = mutableMapOf(room.roomId to NyutagAutoDeleteRule(ttlSeconds = NyutagAutoDeleteRule.DAY, sinceMs = 1)))
+        val presenter = createRoomDetailsPresenter(room, nyutagAutoDelete = autoDelete)
+        presenter.testWithLifecycleOwner(lifecycleOwner = fakeLifecycleOwner) {
+            val loaded = consumeItemsUntilPredicate { it.nyutagAutoDeleteTtl == NyutagAutoDeleteRule.DAY }.last()
+            loaded.eventSink(RoomDetailsEvent.SetAutoDelete(NyutagAutoDeleteRule.WEEK))
+            consumeItemsUntilPredicate { it.nyutagAutoDeleteTtl == NyutagAutoDeleteRule.WEEK }
+            assertThat(autoDelete.rules[room.roomId]).isEqualTo(NyutagAutoDeleteRule(ttlSeconds = NyutagAutoDeleteRule.WEEK, sinceMs = A_NOW))
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test

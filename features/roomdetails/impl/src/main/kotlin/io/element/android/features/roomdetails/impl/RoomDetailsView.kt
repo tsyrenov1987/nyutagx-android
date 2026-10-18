@@ -8,6 +8,9 @@
 
 package io.element.android.features.roomdetails.impl
 
+import io.element.android.libraries.designsystem.components.dialogs.ListOption
+import io.element.android.libraries.designsystem.components.dialogs.SingleSelectionDialog
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -256,6 +259,10 @@ fun RoomDetailsView(
                 )
                 PollsItem(
                     openPollHistory = openPollHistory
+                )
+                NyutagAutoDeleteItem(
+                    ttlSeconds = state.nyutagAutoDeleteTtl,
+                    onSelect = { state.eventSink(RoomDetailsEvent.SetAutoDelete(it)) },
                 )
             }
             when (state.roomType) {
@@ -806,6 +813,42 @@ private fun PollsItem(
         leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Polls())),
         onClick = openPollHistory,
     )
+}
+
+@Composable
+private fun NyutagAutoDeleteItem(
+    ttlSeconds: Long,
+    onSelect: (Long) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    val labels = NyutagAutoDeleteRule.OPTIONS.map { stringResource(nyutagAutoDeleteLabel(it)) }
+    ListItem(
+        content = { Text(stringResource(CommonStrings.nyutag_autodelete_title)) },
+        leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Time())),
+        trailingContent = ListItemContent.Text(stringResource(nyutagAutoDeleteLabel(ttlSeconds))),
+        onClick = { showDialog = true },
+    )
+    if (showDialog) {
+        SingleSelectionDialog(
+            title = stringResource(CommonStrings.nyutag_autodelete_title),
+            subtitle = stringResource(CommonStrings.nyutag_autodelete_subtitle),
+            options = labels.map { ListOption(it) }.toImmutableList(),
+            initialSelection = NyutagAutoDeleteRule.OPTIONS.indexOf(ttlSeconds).takeIf { it >= 0 },
+            onSelectOption = { index ->
+                showDialog = false
+                onSelect(NyutagAutoDeleteRule.OPTIONS[index])
+            },
+            onDismissRequest = { showDialog = false },
+        )
+    }
+}
+
+/** Нестандартный срок (задан другим клиентом) показывается ближайшим из вариантов Telegram. */
+private fun nyutagAutoDeleteLabel(ttlSeconds: Long): Int = when {
+    ttlSeconds <= 0 -> CommonStrings.nyutag_autodelete_off
+    ttlSeconds <= NyutagAutoDeleteRule.DAY -> CommonStrings.nyutag_autodelete_day
+    ttlSeconds <= NyutagAutoDeleteRule.WEEK -> CommonStrings.nyutag_autodelete_week
+    else -> CommonStrings.nyutag_autodelete_month
 }
 
 @Composable

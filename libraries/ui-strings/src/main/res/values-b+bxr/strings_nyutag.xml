@@ -57,4 +57,22 @@
     <string name="nyutag_call_bar_return">Дуудалга руу бусаха</string>
     <string name="nyutag_call_bar_end">Дуудалга дүүргэхэ</string>
     <string name="nyutag_incoming_call_answer">Харюусаха</string>
+    <string name="nyutag_autodelete_title">Бэшэгүүдые автоматаар усадхаха</string>
+    <string name="nyutag_autodelete_subtitle">Энэ чат соохи шэнэ бэшэгүүд шэлэгдэһэн сагай һүүлээр бүгэдэдэ усадхагдаха.</string>
+    <string name="nyutag_autodelete_off">Үгы</string>
+    <string name="nyutag_autodelete_day">1 үдэр</string>
+    <string name="nyutag_autodelete_week">7 хоног</string>
+    <string name="nyutag_autodelete_month">1 һара</string>
+    <string name="nyutag_autodelete_error">Таймер хубилгажа шадабагүй. Дахин оролдогты.</string>
+    <string name="nyutag_view_once_toggle">Нэгэ удаа харах</string>
+    <string name="nyutag_view_once_received">Нэгэ удаа харах зураг. Нээхын тула дарагты</string>
+    <string name="nyutag_view_once_sent">Нэгэ удаа харах зураг</string>
+    <string name="nyutag_view_once_opened">Хараһан</string>
+    <string name="nyutag_schedule_send">Һүүлдэ эльгээхэ</string>
+    <string name="nyutag_schedule_title">Һүүлдэ эльгээхэ бэшэгүүд</string>
+    <string name="nyutag_schedule_banner">Һүүлдэ эльгээхэ бэшэг: %1$d</string>
+    <string name="nyutag_schedule_send_now">Мүнөө эльгээхэ</string>
+    <string name="nyutag_schedule_at">%1$s эльгээгдэхэ</string>
+    <string name="nyutag_schedule_hint">Утаһан сүлжээндэ байбал, бэшэг шэлэгдэһэн сагта эльгээгдэхэ.</string>
+    <string name="nyutag_schedule_error_past">Ерээдүйн саг шэлэгты.</string>
 </resources>

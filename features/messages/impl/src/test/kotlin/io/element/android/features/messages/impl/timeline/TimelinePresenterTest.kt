@@ -8,6 +8,10 @@
 
 package io.element.android.features.messages.impl.timeline
 
+import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
+import io.element.android.services.toolbox.test.systemclock.FakeSystemClock
+import io.element.android.libraries.matrix.test.nyutag.FakeNyutagAutoDelete
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
 import app.cash.turbine.ReceiveTurbine
 import com.google.common.truth.Truth.assertThat
 import io.element.android.features.location.test.FakeActiveLiveLocationShareManager
@@ -1878,6 +1882,48 @@ class TimelinePresenterTest {
         canPinUnpin = canPinUnpin,
     )
 
+    @Test
+    fun `present - nyutag autodelete hides expired messages and redacts own ones`() = runTest {
+        val now = 10 * NyutagAutoDeleteRule.DAY * 1000
+        val freshEventId = EventId("\$fresh")
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(
+                listOf(
+                    MatrixTimelineItem.Event(UniqueId("0"), anEventTimelineItem(eventId = AN_EVENT_ID, isOwn = true, timestamp = 1_000, content = aMessageContent())),
+                    MatrixTimelineItem.Event(UniqueId("1"), anEventTimelineItem(eventId = AN_EVENT_ID_2, timestamp = 1_000, content = aMessageContent())),
+                    MatrixTimelineItem.Event(UniqueId("2"), anEventTimelineItem(eventId = freshEventId, timestamp = now - 1_000, content = aMessageContent())),
+                )
+            ),
+        )
+        val redactLambda = lambdaRecorder<EventOrTransactionId, String?, Result<Unit>> { _, _ -> Result.success(Unit) }
+        timeline.redactEventLambda = redactLambda
+        val presenter = createTimelinePresenter(
+            timeline = timeline,
+            nyutagAutoDelete = FakeNyutagAutoDelete(rules = mutableMapOf(A_ROOM_ID to NyutagAutoDeleteRule(ttlSeconds = NyutagAutoDeleteRule.DAY))),
+            systemClock = FakeSystemClock(now),
+        )
+        presenter.test {
+            val state = consumeItemsUntilPredicate { it.timelineItems.size == 1 }.last()
+            assertThat((state.timelineItems.single() as TimelineItem.Event).eventId).isEqualTo(freshEventId)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assert(redactLambda).isCalledOnce().with(value(EventOrTransactionId.Event(AN_EVENT_ID)), value(null))
+    }
+
+    @Test
+    fun `present - nyutag autodelete off keeps old messages`() = runTest {
+        val timeline = FakeTimeline(
+            timelineItems = flowOf(
+                listOf(MatrixTimelineItem.Event(UniqueId("0"), anEventTimelineItem(isOwn = true, timestamp = 1_000, content = aMessageContent()))),
+            ),
+        )
+        val presenter = createTimelinePresenter(timeline = timeline, systemClock = FakeSystemClock(10 * NyutagAutoDeleteRule.DAY * 1000))
+        presenter.test {
+            consumeItemsUntilPredicate { it.timelineItems.size == 1 }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun TestScope.createTimelinePresenter(
         timeline: Timeline = FakeTimeline(),
         room: FakeJoinedRoom = FakeJoinedRoom(
@@ -1897,6 +1943,8 @@ class TimelinePresenterTest {
         markAsFullyRead: MarkAsFullyRead = FakeMarkAsFullyRead { _, _ -> },
         timelineProtectionPresenter: Presenter<TimelineProtectionState> = { aTimelineProtectionState() },
         resolveVerifiedUserSendFailurePresenter: Presenter<ResolveVerifiedUserSendFailureState> = { aResolveVerifiedUserSendFailureState() },
+        nyutagAutoDelete: FakeNyutagAutoDelete = FakeNyutagAutoDelete(),
+        systemClock: FakeSystemClock = FakeSystemClock(),
     ): TimelinePresenter {
         return TimelinePresenter(
             timelineItemsFactoryCreator = aTimelineItemsFactoryCreator(),
@@ -1923,6 +1971,8 @@ class TimelinePresenterTest {
             liveLocationShareManager = liveLocationShareManager,
             markAsFullyRead = markAsFullyRead,
             timelineProtectionPresenter = timelineProtectionPresenter,
+            nyutagAutoDelete = nyutagAutoDelete,
+            systemClock = systemClock,
         )
     }
 }

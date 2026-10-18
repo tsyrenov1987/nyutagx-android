@@ -57,4 +57,22 @@
     <string name="nyutag_call_bar_return">Return to the call</string>
     <string name="nyutag_call_bar_end">End call</string>
     <string name="nyutag_incoming_call_answer">Answer</string>
+    <string name="nyutag_autodelete_title">Auto-delete messages</string>
+    <string name="nyutag_autodelete_subtitle">New messages in this chat will be deleted for everyone after the chosen time.</string>
+    <string name="nyutag_autodelete_off">Off</string>
+    <string name="nyutag_autodelete_day">1 day</string>
+    <string name="nyutag_autodelete_week">1 week</string>
+    <string name="nyutag_autodelete_month">1 month</string>
+    <string name="nyutag_autodelete_error">Couldn’t change the timer. Try again.</string>
+    <string name="nyutag_view_once_toggle">View once</string>
+    <string name="nyutag_view_once_received">View-once photo. Tap to open</string>
+    <string name="nyutag_view_once_sent">View-once photo</string>
+    <string name="nyutag_view_once_opened">Opened</string>
+    <string name="nyutag_schedule_send">Send later</string>
+    <string name="nyutag_schedule_title">Scheduled messages</string>
+    <string name="nyutag_schedule_banner">Scheduled: %1$d</string>
+    <string name="nyutag_schedule_send_now">Send now</string>
+    <string name="nyutag_schedule_at">Will be sent %1$s</string>
+    <string name="nyutag_schedule_hint">The message is sent at the chosen time if the phone is online.</string>
+    <string name="nyutag_schedule_error_past">Pick a time in the future.</string>
 </resources>

@@ -52,6 +52,9 @@ import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.UniqueId
 import io.element.android.libraries.matrix.api.core.asEventId
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDelete
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
+import io.element.android.libraries.matrix.api.timeline.item.event.EventOrTransactionId
 import io.element.android.libraries.matrix.api.room.JoinedRoom
 import io.element.android.libraries.matrix.api.room.powerlevels.permissionsAsState
 import io.element.android.libraries.matrix.api.room.roomMembers
@@ -66,12 +69,20 @@ import io.element.android.services.analytics.api.AnalyticsLongRunningTransaction
 import io.element.android.services.analytics.api.AnalyticsService
 import io.element.android.services.analytics.api.finishLongRunningTransaction
 import io.element.android.services.analyticsproviders.api.AnalyticsUserData
+import io.element.android.services.toolbox.api.systemclock.SystemClock
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -81,6 +92,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 const val FOCUS_ON_PINNED_EVENT_DEBOUNCE_DURATION_IN_MILLIS = 200L
+private const val AUTO_DELETE_TICK_MS = 60_000L
 
 @AssistedInject
 class TimelinePresenter(
@@ -104,6 +116,8 @@ class TimelinePresenter(
     private val liveLocationShareManager: ActiveLiveLocationShareManager,
     private val markAsFullyRead: MarkAsFullyRead,
     private val timelineProtectionPresenter: Presenter<TimelineProtectionState>,
+    private val nyutagAutoDelete: NyutagAutoDelete,
+    private val systemClock: SystemClock,
 ) : Presenter<TimelineState> {
     private val tag = "TimelinePresenter"
 
@@ -124,6 +138,10 @@ class TimelinePresenter(
     private var timelineItems by mutableStateOf<ImmutableList<TimelineItem>>(persistentListOf())
 
     private val focusRequestState: MutableState<FocusRequestState> = mutableStateOf(FocusRequestState.None)
+
+    // Нютаг: таймер автоудаления этого чата и свои сообщения, уже отправленные на удаление.
+    private val autoDeleteRule = MutableStateFlow(NyutagAutoDeleteRule())
+    private val autoDeleteRedacted = mutableSetOf<EventId>()
 
     @Composable
     override fun present(): TimelineState {
@@ -331,11 +349,23 @@ class TimelinePresenter(
                 }
                 .launchIn(this)
 
+            timelineController.timelineItems()
+                .map { NyutagAutoDeleteTimeline.ruleChangeKey(it) }
+                .distinctUntilChanged()
+                .onEach {
+                    nyutagAutoDelete.get(room.sessionId, room.roomId).onSuccess { autoDeleteRule.value = it }
+                }
+                .launchIn(this)
+
             combine(
                 timelineController.timelineItems(),
                 room.membersStateFlow,
                 sessionPreferencesStore.isRenderReadReceiptsEnabled(),
-            ) { items, membersState, renderReadReceipts ->
+                autoDeleteTicks(),
+            ) { allItems, membersState, renderReadReceipts, autoDelete ->
+                val nowMs = systemClock.epochMillis()
+                val items = NyutagAutoDeleteTimeline.visibleItems(allItems, autoDelete, nowMs)
+                redactExpiredOwn(NyutagAutoDeleteTimeline.ownToRedact(allItems, autoDelete, nowMs))
                 val parent = analyticsService.getLongRunningTransaction(DisplayFirstTimelineItems)
                 val transaction = parent?.startChild("timelineItemsFactory.replaceWith", "Processing timeline items")
                 transaction?.putExtraData(AnalyticsUserData.TIMELINE_ITEM_COUNT, items.count().toString())
@@ -470,6 +500,35 @@ class TimelinePresenter(
             useNewTimelineEventRenderer = useNewTimelineEventRenderer,
             eventSink = ::handleEvent,
         )
+    }
+
+    /** Правило таймера; пока он включён — пересчёт раз в минуту, чтобы истёкшее пропадало без новых событий. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun autoDeleteTicks() = autoDeleteRule.flatMapLatest { rule ->
+        if (!rule.isEnabled) {
+            flowOf(rule)
+        } else {
+            flow {
+                while (true) {
+                    emit(rule)
+                    delay(AUTO_DELETE_TICK_MS)
+                }
+            }
+        }
+    }
+
+    /** Отправитель удаляет свои истёкшие сообщения на сервере, каждое — один раз за открытие чата. */
+    private fun redactExpiredOwn(eventIds: List<EventId>) {
+        val fresh = eventIds.filter { autoDeleteRedacted.add(it) }
+        if (fresh.isEmpty()) return
+        sessionCoroutineScope.launch {
+            timelineController.invokeOnCurrentTimeline {
+                fresh.forEach { eventId ->
+                    redactEvent(EventOrTransactionId.Event(eventId), reason = null)
+                        .onFailure { Timber.tag(tag).w("Nyutag autodelete: redaction of $eventId failed") }
+                }
+            }
+        }
     }
 
     private suspend fun focusOnEvent(

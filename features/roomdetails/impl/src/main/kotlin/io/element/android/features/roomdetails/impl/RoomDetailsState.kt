@@ -53,6 +53,8 @@ data class RoomDetailsState(
     val roomVersion: String?,
     val roomHistoryVisibility: RoomHistoryVisibility,
     val hasNewContent: Boolean,
+    /** Нютаг: таймер автоудаления в секундах, 0 — выключен. */
+    val nyutagAutoDeleteTtl: Long = 0,
     val eventSink: (RoomDetailsEvent) -> Unit
 ) {
     // Нютаг: у личного чата бейджей нет — как в Telegram.
