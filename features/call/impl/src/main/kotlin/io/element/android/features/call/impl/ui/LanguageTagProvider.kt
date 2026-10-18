@@ -22,6 +22,12 @@ interface LanguageTagProvider {
 class DefaultLanguageTagProvider : LanguageTagProvider {
     @Composable
     override fun provideLanguageTag(): String? {
-        return LocalConfiguration.current.locales.get(0)?.toLanguageTag()
+        return nyutagCallLanguageTag(LocalConfiguration.current.locales.get(0)?.toLanguageTag())
     }
 }
+
+/**
+ * Нютаг: бурятского в Element Call нет, и он открывался по-английски — даём ему русский, который бурятскоязычные читают.
+ */
+internal fun nyutagCallLanguageTag(languageTag: String?): String? =
+    if (languageTag == "bxr" || languageTag?.startsWith("bxr-") == true) "ru-RU" else languageTag
