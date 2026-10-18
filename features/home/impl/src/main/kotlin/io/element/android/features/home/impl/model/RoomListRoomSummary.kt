@@ -44,6 +44,8 @@ data class RoomListRoomSummary(
     val heroes: ImmutableList<AvatarData>,
     val isSpace: Boolean,
     val dmUserStatus: DisplayedStatus?,
+    // Нютаг: закреплён наверху списка.
+    val isPinned: Boolean = false,
 ) {
     val isHighlighted = userDefinedNotificationMode != RoomNotificationMode.MUTE &&
         (numberOfUnreadNotifications > 0 || numberOfUnreadMentions > 0) ||

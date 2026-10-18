@@ -30,4 +30,12 @@ sealed interface RoomListEvent {
     data class MarkAsRead(val roomId: RoomId) : ContextMenuEvent
     data class MarkAsUnread(val roomId: RoomId) : ContextMenuEvent
     data class SetRoomIsFavorite(val roomId: RoomId, val isFavorite: Boolean) : ContextMenuEvent
+
+    // Нютаг: закрепы и папки.
+    data class SetRoomIsPinned(val roomId: RoomId, val isPinned: Boolean) : ContextMenuEvent
+    data class SetRoomInFolder(val folderId: String, val roomId: RoomId, val inFolder: Boolean) : RoomListEvent
+    data class CreateFolder(val name: String, val roomId: RoomId?) : RoomListEvent
+    data class RenameFolder(val folderId: String, val name: String) : RoomListEvent
+    data class DeleteFolder(val folderId: String) : RoomListEvent
+    data class SelectFolder(val folderId: String?) : RoomListEvent
 }

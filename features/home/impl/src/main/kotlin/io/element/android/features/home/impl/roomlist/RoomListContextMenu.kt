@@ -41,7 +41,9 @@ fun RoomListContextMenu(
     canReportRoom: Boolean,
     eventSink: (RoomListEvent.ContextMenuEvent) -> Unit,
     onRoomSettingsClick: (roomId: RoomId) -> Unit,
-    onReportRoomClick: (roomId: RoomId) -> Unit
+    onReportRoomClick: (roomId: RoomId) -> Unit,
+    canPinMore: Boolean = true,
+    onAddToFolderClick: (roomId: RoomId) -> Unit = {},
 ) {
     ModalBottomSheet(
         onDismissRequest = { eventSink(RoomListEvent.HideContextMenu) },
@@ -69,6 +71,14 @@ fun RoomListContextMenu(
             onFavoriteChange = { isFavorite ->
                 eventSink(RoomListEvent.SetRoomIsFavorite(contextMenu.roomId, isFavorite))
             },
+            canPinMore = canPinMore,
+            onPinClick = {
+                eventSink(RoomListEvent.SetRoomIsPinned(contextMenu.roomId, !contextMenu.isPinned))
+            },
+            onAddToFolderClick = {
+                eventSink(RoomListEvent.HideContextMenu)
+                onAddToFolderClick(contextMenu.roomId)
+            },
             onReportRoomClick = {
                 eventSink(RoomListEvent.HideContextMenu)
                 onReportRoomClick(contextMenu.roomId)
@@ -87,6 +97,9 @@ private fun RoomListModalBottomSheetContent(
     onRoomMarkReadClick: () -> Unit,
     onRoomMarkUnreadClick: () -> Unit,
     onReportRoomClick: () -> Unit,
+    canPinMore: Boolean,
+    onPinClick: () -> Unit,
+    onAddToFolderClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -153,6 +166,12 @@ private fun RoomListModalBottomSheetContent(
                 onFavoriteChange(!contextMenu.isFavorite)
             },
         )
+        NyutagPinAndFolderItems(
+            isPinned = contextMenu.isPinned,
+            canPinMore = canPinMore,
+            onPinClick = onPinClick,
+            onAddToFolderClick = onAddToFolderClick,
+        )
         ListItem(
             content = {
                 Text(
@@ -194,6 +213,41 @@ private fun RoomListModalBottomSheetContent(
             style = ListItemStyle.Destructive,
         )
     }
+}
+
+/** Нютаг: «Закрепить/Открепить» (не больше 5) и «Добавить в папку», как в Telegram. */
+@Composable
+private fun NyutagPinAndFolderItems(
+    isPinned: Boolean,
+    canPinMore: Boolean,
+    onPinClick: () -> Unit,
+    onAddToFolderClick: () -> Unit,
+) {
+    val pinEnabled = isPinned || canPinMore
+    ListItem(
+        content = {
+            Text(text = stringResource(if (isPinned) CommonStrings.action_unpin else CommonStrings.action_pin))
+        },
+        supportingContent = if (pinEnabled) {
+            null
+        } else {
+            { Text(text = stringResource(R.string.nyutag_pin_limit)) }
+        },
+        leadingContent = ListItemContent.Icon(
+            iconSource = IconSource.Vector(if (isPinned) CompoundIcons.PinSolid() else CompoundIcons.Pin())
+        ),
+        enabled = pinEnabled,
+        onClick = onPinClick,
+    )
+    ListItem(
+        content = {
+            Text(text = stringResource(R.string.nyutag_folder_add))
+        },
+        leadingContent = ListItemContent.Icon(
+            iconSource = IconSource.Vector(CompoundIcons.Folder())
+        ),
+        onClick = onAddToFolderClick,
+    )
 }
 
 @PreviewsDayNight

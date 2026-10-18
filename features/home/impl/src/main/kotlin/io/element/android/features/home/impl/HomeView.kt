@@ -33,8 +33,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -58,6 +61,7 @@ import io.element.android.features.home.impl.components.RoomListContentView
 import io.element.android.features.home.impl.components.RoomListMenuAction
 import io.element.android.features.home.impl.contacts.NyutagContactsView
 import io.element.android.features.home.impl.model.RoomListRoomSummary
+import io.element.android.features.home.impl.nyutag.NyutagFolderPickerSheet
 import io.element.android.features.home.impl.roomlist.RoomListContextMenu
 import io.element.android.features.home.impl.roomlist.RoomListDeclineInviteMenu
 import io.element.android.features.home.impl.roomlist.RoomListEvent
@@ -110,6 +114,7 @@ fun HomeView(
     val state: RoomListState = homeState.roomListState
     val coroutineScope = rememberCoroutineScope()
     val firstThrottler = remember { FirstThrottler(300, coroutineScope) }
+    var folderPickerRoomId by remember { mutableStateOf<RoomId?>(null) }
     Box(modifier) {
         if (state.contextMenu is RoomListState.ContextMenu.Shown) {
             RoomListContextMenu(
@@ -118,6 +123,16 @@ fun HomeView(
                 eventSink = state.eventSink,
                 onRoomSettingsClick = onRoomSettingsClick,
                 onReportRoomClick = onReportRoomClick,
+                canPinMore = state.chatLayout.canPinMore,
+                onAddToFolderClick = { folderPickerRoomId = it },
+            )
+        }
+        folderPickerRoomId?.let { roomId ->
+            NyutagFolderPickerSheet(
+                roomId = roomId,
+                folders = state.chatLayout.folders,
+                eventSink = state.eventSink,
+                onDismiss = { folderPickerRoomId = null },
             )
         }
         if (state.declineInviteMenu is RoomListState.DeclineInviteMenu.Shown) {
@@ -264,6 +279,9 @@ private fun HomeScaffold(
                 displayFilters = state.displayRoomListFilters,
                 filtersState = roomListState.filtersState,
                 spaceFiltersState = roomListState.spaceFiltersState,
+                folders = roomListState.chatLayout.folders,
+                selectedFolderId = roomListState.selectedFolderId,
+                roomListEventSink = roomListState.eventSink,
                 canReportBug = state.canReportBug,
                 modifier = Modifier.hazeEffect(
                     state = hazeState,
@@ -332,6 +350,7 @@ private fun HomeScaffold(
                         spaceFiltersState = roomListState.spaceFiltersState,
                         lazyListState = roomsLazyListState,
                         hideInvitesAvatars = roomListState.hideInvitesAvatars,
+                        isFolderSelected = roomListState.selectedFolderId != null,
                         eventSink = roomListState.eventSink,
                         onSetUpRecoveryClick = onSetUpRecoveryClick,
                         onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,

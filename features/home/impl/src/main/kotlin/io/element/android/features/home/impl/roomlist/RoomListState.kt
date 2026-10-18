@@ -11,6 +11,7 @@ package io.element.android.features.home.impl.roomlist
 import androidx.compose.runtime.Immutable
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.model.RoomListRoomSummary
+import io.element.android.features.home.impl.nyutag.NyutagChatLayout
 import io.element.android.features.home.impl.search.GlobalSearchState
 import io.element.android.features.home.impl.search.RoomListSearchState
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
@@ -34,9 +35,13 @@ data class RoomListState(
     val acceptDeclineInviteState: AcceptDeclineInviteState,
     val hideInvitesAvatars: Boolean,
     val canReportRoom: Boolean,
+    // Нютаг: закрепы и папки чатов.
+    val chatLayout: NyutagChatLayout = NyutagChatLayout(),
+    val selectedFolderId: String? = null,
     val eventSink: (RoomListEvent) -> Unit,
 ) {
-    val displayFilters = contentState is RoomListContentState.Rooms
+    // В пустой папке фильтры и вкладки папок не прячем, иначе из неё не выйти.
+    val displayFilters = contentState is RoomListContentState.Rooms || selectedFolderId != null
 
     sealed interface ContextMenu {
         data object Hidden : ContextMenu
@@ -46,6 +51,7 @@ data class RoomListState(
             val isDm: Boolean,
             val isFavorite: Boolean,
             val hasNewContent: Boolean,
+            val isPinned: Boolean = false,
         ) : ContextMenu
     }
 

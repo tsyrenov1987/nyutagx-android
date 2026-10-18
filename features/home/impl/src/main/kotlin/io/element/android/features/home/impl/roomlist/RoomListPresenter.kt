@@ -30,6 +30,9 @@ import io.element.android.features.announcement.api.AnnouncementService
 import io.element.android.features.home.impl.datasource.RoomListDataSource
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.into
+import io.element.android.features.home.impl.nyutag.NyutagChatLayoutStore
+import io.element.android.features.home.impl.nyutag.NyutagPinnedRoomsDataSource
+import io.element.android.features.home.impl.nyutag.mergePinnedRooms
 import io.element.android.features.home.impl.search.GlobalSearchState
 import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
@@ -45,6 +48,7 @@ import io.element.android.features.leaveroom.api.LeaveRoomState
 import io.element.android.features.preferences.impl.tasks.MarkRoomAsRead
 import io.element.android.libraries.architecture.AsyncData
 import io.element.android.libraries.architecture.Presenter
+import io.element.android.libraries.core.data.tryOrNull
 import io.element.android.libraries.featureflag.api.FeatureFlagService
 import io.element.android.libraries.featureflag.api.FeatureFlags
 import io.element.android.libraries.fullscreenintent.api.FullScreenIntentPermissionsState
@@ -69,6 +73,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Inject
 class RoomListPresenter(
@@ -88,6 +93,8 @@ class RoomListPresenter(
     private val spaceFiltersPresenter: Presenter<SpaceFiltersState>,
     private val globalSearchPresenter: Presenter<GlobalSearchState>,
     private val featureFlagService: FeatureFlagService,
+    private val chatLayoutStore: NyutagChatLayoutStore,
+    private val pinnedRoomsDataSource: NyutagPinnedRoomsDataSource,
 ) : Presenter<RoomListState> {
     private val encryptionService = client.encryptionService
 
@@ -103,6 +110,16 @@ class RoomListPresenter(
 
         LaunchedEffect(Unit) {
             roomListDataSource.launchIn(this)
+        }
+        LaunchedEffect(Unit) {
+            chatLayoutStore.refresh()
+        }
+        val chatLayout by chatLayoutStore.layout.collectAsState()
+        var selectedFolderId by rememberSaveable { mutableStateOf<String?>(null) }
+        val selectedFolder = chatLayout.folders.firstOrNull { it.id == selectedFolderId }
+        if (selectedFolderId != null && selectedFolder == null) {
+            // Папку удалили (здесь или на другом устройстве) — назад во «Все».
+            selectedFolderId = null
         }
 
         var securityBannerDismissed by rememberSaveable { mutableStateOf(false) }
@@ -130,7 +147,7 @@ class RoomListPresenter(
                 }
                 RoomListEvent.ToggleSearchResults -> searchState.eventSink(RoomListSearchEvent.ToggleSearchVisibility)
                 is RoomListEvent.ShowContextMenu -> {
-                    coroutineScope.showContextMenu(event, contextMenu)
+                    coroutineScope.showContextMenu(event, contextMenu, isPinned = chatLayout.isPinned(event.roomSummary.roomId.value))
                 }
                 is RoomListEvent.HideContextMenu -> {
                     contextMenu.value = RoomListState.ContextMenu.Hidden
@@ -139,6 +156,23 @@ class RoomListPresenter(
                     leaveRoomState.eventSink(LeaveRoomEvent.LeaveRoom(event.roomId, needsConfirmation = event.needsConfirmation))
                 }
                 is RoomListEvent.SetRoomIsFavorite -> coroutineScope.setRoomIsFavorite(event.roomId, event.isFavorite)
+                is RoomListEvent.SetRoomIsPinned -> {
+                    contextMenu.value = RoomListState.ContextMenu.Hidden
+                    coroutineScope.launch { chatLayoutStore.update { it.withPinned(event.roomId.value, event.isPinned) } }
+                }
+                is RoomListEvent.SetRoomInFolder -> coroutineScope.launch {
+                    chatLayoutStore.update { it.withRoomInFolder(event.folderId, event.roomId.value, event.inFolder) }
+                }
+                is RoomListEvent.CreateFolder -> coroutineScope.launch {
+                    chatLayoutStore.update { it.withNewFolder(UUID.randomUUID().toString(), event.name, event.roomId?.value) }
+                }
+                is RoomListEvent.RenameFolder -> coroutineScope.launch {
+                    chatLayoutStore.update { it.withRenamedFolder(event.folderId, event.name) }
+                }
+                is RoomListEvent.DeleteFolder -> coroutineScope.launch {
+                    chatLayoutStore.update { it.withoutFolder(event.folderId) }
+                }
+                is RoomListEvent.SelectFolder -> selectedFolderId = event.folderId
                 is RoomListEvent.MarkAsRead -> coroutineScope.markAsRead(event.roomId)
                 is RoomListEvent.MarkAsUnread -> coroutineScope.markAsUnread(event.roomId)
                 is RoomListEvent.AcceptInvite -> {
@@ -156,11 +190,14 @@ class RoomListPresenter(
             }
         }
 
-        LaunchedEffect(filtersState.filterSelectionStates, spaceFiltersState.selectedFilter()) {
+        LaunchedEffect(filtersState.filterSelectionStates, spaceFiltersState.selectedFilter(), selectedFolder?.rooms, chatLayout.pins) {
             val selectedFilters = filtersState.selectedFilters().map { filter -> filter.into() }
             val selectedSpaceFilter = spaceFiltersState.selectedFilter().into()
-            val allFilters = RoomListFilter.All(selectedFilters + listOfNotNull(selectedSpaceFilter))
-            roomListDataSource.updateFilter(allFilters)
+            val folderFilter = selectedFolder?.let { folder -> RoomListFilter.Identifiers(folder.rooms.mapNotNull { tryOrNull { RoomId(it) } }) }
+            val baseFilters = selectedFilters + listOfNotNull(selectedSpaceFilter, folderFilter)
+            roomListDataSource.updateFilter(RoomListFilter.All(baseFilters))
+            val pinsFilter = RoomListFilter.Identifiers(chatLayout.pins.mapNotNull { tryOrNull { RoomId(it) } })
+            pinnedRoomsDataSource.updateFilter(RoomListFilter.All(baseFilters + pinsFilter))
         }
 
         val canReportRoom by produceState(false) { value = client.canReportRoom() }
@@ -172,6 +209,7 @@ class RoomListPresenter(
             securityBannerDismissed,
             showNewNotificationSoundBanner,
             showUnreadCount,
+            chatLayout.pins,
         )
 
         return RoomListState(
@@ -186,6 +224,8 @@ class RoomListPresenter(
             acceptDeclineInviteState = acceptDeclineInviteState,
             hideInvitesAvatars = hideInvitesAvatar,
             canReportRoom = canReportRoom,
+            chatLayout = chatLayout,
+            selectedFolderId = selectedFolder?.id,
             eventSink = ::handleEvent,
         )
     }
@@ -230,9 +270,13 @@ class RoomListPresenter(
         securityBannerDismissed: Boolean,
         showNewNotificationSoundBanner: Boolean,
         showUnreadCount: Boolean,
+        pins: List<String>,
     ): RoomListContentState {
         val roomSummaries by produceState(initialValue = AsyncData.Loading()) {
             roomListDataSource.roomSummariesFlow.collect { value = AsyncData.Success(it) }
+        }
+        val pinnedSummaries by produceState(initialValue = emptyList()) {
+            pinnedRoomsDataSource.summaries.collect { value = it }
         }
         val loadingState by roomListDataSource.loadingState.collectAsState()
         val showEmpty by remember {
@@ -261,7 +305,7 @@ class RoomListPresenter(
                     showUnreadCount = showUnreadCount,
                     fullScreenIntentPermissionsState = fullScreenIntentPermissionsPresenter.present(),
                     batteryOptimizationState = batteryOptimizationPresenter.present(),
-                    summaries = roomSummaries.dataOrNull().orEmpty().toImmutableList(),
+                    summaries = mergePinnedRooms(pins, pinnedSummaries, roomSummaries.dataOrNull().orEmpty()).toImmutableList(),
                     seenRoomInvites = seenRoomInvites.toImmutableSet(),
                 )
             }
@@ -269,13 +313,18 @@ class RoomListPresenter(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.showContextMenu(event: RoomListEvent.ShowContextMenu, contextMenuState: MutableState<RoomListState.ContextMenu>) = launch {
+    private fun CoroutineScope.showContextMenu(
+        event: RoomListEvent.ShowContextMenu,
+        contextMenuState: MutableState<RoomListState.ContextMenu>,
+        isPinned: Boolean,
+    ) = launch {
         val initialState = RoomListState.ContextMenu.Shown(
             roomId = event.roomSummary.roomId,
             roomName = event.roomSummary.name,
             isDm = event.roomSummary.isDm,
             isFavorite = event.roomSummary.isFavorite,
             hasNewContent = event.roomSummary.hasNewContent,
+            isPinned = isPinned,
         )
         contextMenuState.value = initialState
 

@@ -17,4 +17,16 @@
     <string name="nyutag_drawer_settings">Тохируулганууд</string>
     <string name="nyutag_drawer_invite">Нүхэдөө уриха</string>
     <string name="nyutag_drawer_open">Меню нээхэ</string>
+    <!-- Нютаг: закреплённые чаты и папки. -->
+    <string name="nyutag_pin_limit">5-һаа олон чат бэхилхэ аргагүй</string>
+    <string name="nyutag_folder_add">Папка руу нэмэхэ</string>
+    <string name="nyutag_folder_all">Бүгэдэ</string>
+    <string name="nyutag_folder_new">Шэнэ папка</string>
+    <string name="nyutag_folder_name">Папкын нэрэ</string>
+    <string name="nyutag_folder_rename">Папкын нэрые һэлгэхэ</string>
+    <string name="nyutag_folder_delete">Папка усадхаха</string>
+    <string name="nyutag_folder_delete_hint">Чатууд жагсаалтада үлэхэ, зүгөөр папка усадхагдаха.</string>
+    <string name="nyutag_folder_empty_title">Энд үшөө хооһон</string>
+    <string name="nyutag_folder_empty">Папкада үшөө чат үгы. Чат дээрэ удаан дарижа, «Папка руу нэмэхэ» шэлэгты.</string>
+    <string name="a11y_nyutag_pinned_chat">Бэхилэгдэһэн чат</string>
 </resources>

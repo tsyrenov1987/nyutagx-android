@@ -73,6 +73,7 @@ fun RoomListContentView(
     onInviteFriendClick: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    isFolderSelected: Boolean = false,
 ) {
     when (contentState) {
         is RoomListContentState.Skeleton -> {
@@ -100,6 +101,7 @@ fun RoomListContentView(
                 hideInvitesAvatars = hideInvitesAvatars,
                 filtersState = filtersState,
                 spaceFiltersState = spaceFiltersState,
+                isFolderSelected = isFolderSelected,
                 eventSink = eventSink,
                 onSetUpRecoveryClick = onSetUpRecoveryClick,
                 onConfirmRecoveryKeyClick = onConfirmRecoveryKeyClick,
@@ -188,6 +190,7 @@ private fun RoomsView(
     hideInvitesAvatars: Boolean,
     filtersState: RoomListFiltersState,
     spaceFiltersState: SpaceFiltersState,
+    isFolderSelected: Boolean,
     eventSink: (RoomListEvent) -> Unit,
     onSetUpRecoveryClick: () -> Unit,
     onConfirmRecoveryKeyClick: () -> Unit,
@@ -203,6 +206,12 @@ private fun RoomsView(
             selectedFilters = filtersState.selectedFilters(),
             isSpaceFilterSelected = isSpaceFilterSelected,
             modifier = modifier.fillMaxSize()
+        )
+    } else if (state.summaries.isEmpty() && isFolderSelected) {
+        EmptyScaffold(
+            title = R.string.nyutag_folder_empty_title,
+            subtitle = R.string.nyutag_folder_empty,
+            modifier = modifier.fillMaxSize(),
         )
     } else {
         RoomsViewList(

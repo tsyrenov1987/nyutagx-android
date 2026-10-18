@@ -66,6 +66,9 @@ import io.element.android.features.home.impl.R
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.RoomListFiltersView
 import io.element.android.features.home.impl.filters.aRoomListFiltersState
+import io.element.android.features.home.impl.nyutag.NyutagChatFolder
+import io.element.android.features.home.impl.nyutag.NyutagFolderTabs
+import io.element.android.features.home.impl.roomlist.RoomListEvent
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersEvent
 import io.element.android.features.home.impl.spacefilters.SpaceFiltersState
 import io.element.android.features.home.impl.spacefilters.aSelectedSpaceFiltersState
@@ -117,6 +120,9 @@ fun HomeTopBar(
     filtersState: RoomListFiltersState,
     spaceFiltersState: SpaceFiltersState,
     modifier: Modifier = Modifier,
+    folders: List<NyutagChatFolder> = emptyList(),
+    selectedFolderId: String? = null,
+    roomListEventSink: (RoomListEvent) -> Unit = {},
 ) {
     val contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
     Column(modifier) {
@@ -177,12 +183,24 @@ fun HomeTopBar(
         )
         if (displayFilters) {
             TopAppBarScrollBehaviorLayout(scrollBehavior = scrollBehavior) {
-                RoomListFiltersView(
-                    state = filtersState,
-                    modifier = Modifier
-                        .padding(bottom = 16.dp)
-                        .padding(contentPadding)
-                )
+                Column {
+                    if (folders.isNotEmpty()) {
+                        NyutagFolderTabs(
+                            folders = folders,
+                            selectedFolderId = selectedFolderId,
+                            eventSink = roomListEventSink,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .padding(contentPadding),
+                        )
+                    }
+                    RoomListFiltersView(
+                        state = filtersState,
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .padding(contentPadding)
+                    )
+                }
             }
         }
     }

@@ -390,6 +390,14 @@ private fun MessagePreviewAndIndicatorRow(
                     count = count,
                     contentDescription = contentDescription,
                 )
+            } else if (room.isPinned) {
+                // Нютаг: скрепка закрепа, как в Telegram — пока нет непрочитанного.
+                Icon(
+                    modifier = Modifier.size(16.dp),
+                    contentDescription = stringResource(R.string.a11y_nyutag_pinned_chat),
+                    imageVector = CompoundIcons.PinSolid(),
+                    tint = ElementTheme.colors.iconQuaternary,
+                )
             }
         }
     }

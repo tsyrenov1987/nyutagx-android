@@ -17,4 +17,16 @@
     <string name="nyutag_drawer_settings">Настройки</string>
     <string name="nyutag_drawer_invite">Пригласить друзей</string>
     <string name="nyutag_drawer_open">Открыть меню</string>
+    <!-- Нютаг: закреплённые чаты и папки. -->
+    <string name="nyutag_pin_limit">Закрепить можно не больше 5 чатов</string>
+    <string name="nyutag_folder_add">Добавить в папку</string>
+    <string name="nyutag_folder_all">Все</string>
+    <string name="nyutag_folder_new">Новая папка</string>
+    <string name="nyutag_folder_name">Название папки</string>
+    <string name="nyutag_folder_rename">Переименовать папку</string>
+    <string name="nyutag_folder_delete">Удалить папку</string>
+    <string name="nyutag_folder_delete_hint">Чаты останутся в списке, удалится только папка.</string>
+    <string name="nyutag_folder_empty_title">Здесь пока пусто</string>
+    <string name="nyutag_folder_empty">В папке пока нет чатов. Зажмите чат и выберите «Добавить в папку».</string>
+    <string name="a11y_nyutag_pinned_chat">Закреплённый чат</string>
 </resources>

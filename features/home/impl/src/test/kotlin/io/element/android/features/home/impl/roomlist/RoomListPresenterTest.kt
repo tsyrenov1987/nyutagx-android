@@ -18,6 +18,10 @@ import io.element.android.features.home.impl.datasource.aRoomListRoomSummaryFact
 import io.element.android.features.home.impl.filters.RoomListFiltersState
 import io.element.android.features.home.impl.filters.aRoomListFiltersState
 import io.element.android.features.home.impl.model.createRoomListRoomSummary
+import io.element.android.features.home.impl.nyutag.InMemoryNyutagChatLayoutStore
+import io.element.android.features.home.impl.nyutag.NyutagChatLayout
+import io.element.android.features.home.impl.nyutag.NyutagChatLayoutStore
+import io.element.android.features.home.impl.nyutag.NyutagPinnedRoomsDataSource
 import io.element.android.features.home.impl.search.RoomListSearchEvent
 import io.element.android.features.home.impl.search.RoomListSearchState
 import io.element.android.features.home.impl.search.aGlobalSearchState
@@ -48,6 +52,8 @@ import io.element.android.libraries.matrix.api.encryption.RecoveryState
 import io.element.android.libraries.matrix.api.room.CurrentUserMembership
 import io.element.android.libraries.matrix.api.room.RoomNotificationMode
 import io.element.android.libraries.matrix.api.roomlist.RoomList
+import io.element.android.libraries.matrix.api.roomlist.RoomListFilter
+import io.element.android.libraries.matrix.api.roomlist.RoomListService
 import io.element.android.libraries.matrix.api.sync.SyncState
 import io.element.android.libraries.matrix.api.timeline.ReceiptType
 import io.element.android.libraries.matrix.test.A_ROOM_ID
@@ -384,6 +390,89 @@ class RoomListPresenterTest {
     }
 
     @Test
+    fun `present - pinned rooms are on top in pin order and not duplicated`() = runTest {
+        val mainList = FakeDynamicRoomList(
+            summaries = MutableStateFlow(
+                listOf(aRoomSummary(roomId = A_ROOM_ID), aRoomSummary(roomId = A_ROOM_ID_2), aRoomSummary(roomId = A_ROOM_ID_3))
+            ),
+            loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(3)),
+        )
+        val pinnedList = FakeDynamicRoomList(summaries = MutableStateFlow(listOf(aRoomSummary(roomId = A_ROOM_ID_3))))
+        val store = InMemoryNyutagChatLayoutStore(NyutagChatLayout(pins = listOf(A_ROOM_ID_3.value)))
+        val presenter = createRoomListPresenter(
+            client = FakeMatrixClient(roomListService = FakeRoomListService(createRoomListLambda = { mainList })),
+            chatLayoutStore = store,
+            pinnedRoomListService = FakeRoomListService(createRoomListLambda = { pinnedList }),
+        )
+        presenter.test {
+            val state = consumeItemsUntilPredicate {
+                (it.contentState as? RoomListContentState.Rooms)?.summaries?.size == 3 &&
+                    it.contentAsRooms().summaries.first().roomId == A_ROOM_ID_3
+            }.last()
+            val summaries = state.contentAsRooms().summaries
+            assertThat(summaries.map { it.roomId }).containsExactly(A_ROOM_ID_3, A_ROOM_ID, A_ROOM_ID_2).inOrder()
+            assertThat(summaries.map { it.isPinned }).containsExactly(true, false, false).inOrder()
+            assertThat(store.refreshCount).isEqualTo(1)
+            // The pinned list only asks the SDK for pinned rooms.
+            val expectedFilter = RoomListFilter.All(listOf(RoomListFilter.Identifiers(listOf(A_ROOM_ID_3))))
+            assertThat(pinnedList.currentFilter.first { it == expectedFilter }).isEqualTo(expectedFilter)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - pin and unpin from the context menu`() = runTest {
+        val client = FakeMatrixClient().apply { givenGetRoomResult(A_ROOM_ID, FakeBaseRoom()) }
+        val store = InMemoryNyutagChatLayoutStore()
+        val presenter = createRoomListPresenter(client = client, chatLayoutStore = store)
+        presenter.test {
+            val initialState = awaitItem()
+            initialState.eventSink(RoomListEvent.ShowContextMenu(createRoomListRoomSummary()))
+            val shown = consumeItemsUntilPredicate { it.contextMenu is RoomListState.ContextMenu.Shown }.last()
+            assertThat((shown.contextMenu as RoomListState.ContextMenu.Shown).isPinned).isFalse()
+            shown.eventSink(RoomListEvent.SetRoomIsPinned(A_ROOM_ID, true))
+            val pinned = consumeItemsUntilPredicate { it.chatLayout.isPinned(A_ROOM_ID.value) }.last()
+            assertThat(pinned.contextMenu).isEqualTo(RoomListState.ContextMenu.Hidden)
+            pinned.eventSink(RoomListEvent.ShowContextMenu(createRoomListRoomSummary()))
+            val shownAgain = consumeItemsUntilPredicate { it.contextMenu is RoomListState.ContextMenu.Shown }.last()
+            assertThat((shownAgain.contextMenu as RoomListState.ContextMenu.Shown).isPinned).isTrue()
+            shownAgain.eventSink(RoomListEvent.SetRoomIsPinned(A_ROOM_ID, false))
+            consumeItemsUntilPredicate { it.chatLayout.pins.isEmpty() }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `present - folders filter the list and go back to All when deleted`() = runTest {
+        val mainList = FakeDynamicRoomList(loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(1)))
+        val store = InMemoryNyutagChatLayoutStore()
+        val presenter = createRoomListPresenter(
+            client = FakeMatrixClient(roomListService = FakeRoomListService(createRoomListLambda = { mainList })),
+            chatLayoutStore = store,
+        )
+        presenter.test {
+            val initialState = awaitItem()
+            initialState.eventSink(RoomListEvent.CreateFolder("Семья", A_ROOM_ID))
+            val withFolder = consumeItemsUntilPredicate { it.chatLayout.folders.isNotEmpty() }.last()
+            val folder = withFolder.chatLayout.folders.single()
+            assertThat(folder.name).isEqualTo("Семья")
+            assertThat(folder.rooms).containsExactly(A_ROOM_ID.value)
+            withFolder.eventSink(RoomListEvent.SetRoomInFolder(folder.id, A_ROOM_ID_2, true))
+            withFolder.eventSink(RoomListEvent.SelectFolder(folder.id))
+            val selected = consumeItemsUntilPredicate { it.selectedFolderId == folder.id && it.chatLayout.folders.single().rooms.size == 2 }.last()
+            assertThat(selected.displayFilters).isTrue()
+            val expectedFilter = RoomListFilter.All(listOf(RoomListFilter.Identifiers(listOf(A_ROOM_ID, A_ROOM_ID_2))))
+            assertThat(mainList.currentFilter.first { it == expectedFilter }).isEqualTo(expectedFilter)
+            selected.eventSink(RoomListEvent.RenameFolder(folder.id, "Родня"))
+            consumeItemsUntilPredicate { it.chatLayout.folders.single().name == "Родня" }
+            selected.eventSink(RoomListEvent.DeleteFolder(folder.id))
+            val deleted = consumeItemsUntilPredicate { it.chatLayout.folders.isEmpty() && it.selectedFolderId == null }.last()
+            assertThat(deleted.selectedFolderId).isNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - when room service returns no room, then contentState is Empty`() = runTest {
         val roomList = FakeDynamicRoomList(
             loadingState = MutableStateFlow(RoomList.LoadingState.Loaded(0))
@@ -664,6 +753,8 @@ class RoomListPresenterTest {
         announcementService: AnnouncementService = FakeAnnouncementService(),
         featureFlagService: FeatureFlagService = FakeFeatureFlagService(),
         markRoomAsRead: MarkRoomAsRead? = null,
+        chatLayoutStore: NyutagChatLayoutStore = InMemoryNyutagChatLayoutStore(),
+        pinnedRoomListService: RoomListService = FakeRoomListService(),
     ) = RoomListPresenter(
         client = client,
         leaveRoomPresenter = { leaveRoomState },
@@ -696,5 +787,15 @@ class RoomListPresenterTest {
         announcementService = announcementService,
         coldStartWatcher = FakeAnalyticsColdStartWatcher(),
         featureFlagService = featureFlagService,
+        chatLayoutStore = chatLayoutStore,
+        pinnedRoomsDataSource = NyutagPinnedRoomsDataSource(
+            roomListService = pinnedRoomListService,
+            roomListRoomSummaryFactory = aRoomListRoomSummaryFactory(
+                dateFormatter = dateFormatter,
+                roomLatestEventFormatter = roomLatestEventFormatter,
+            ),
+            coroutineDispatchers = testCoroutineDispatchers(),
+            sessionCoroutineScope = backgroundScope,
+        ),
     )
 }
