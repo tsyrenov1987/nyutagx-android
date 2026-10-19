@@ -162,6 +162,7 @@ fun HomeView(
             drawerContent = {
                 NyutagHomeDrawer(
                     currentUser = currentUser,
+                    ownPhone = homeState.nyutagOwnPhone,
                     onAction = { action ->
                         coroutineScope.launch { drawerState.close() }
                         when (action) {

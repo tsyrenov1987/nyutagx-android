@@ -27,6 +27,7 @@ class FakeNyutagInvites(
     var lookupResult: Result<Map<String, String>> = Result.success(emptyMap()),
     var hasPhoneResult: Result<Boolean> = Result.success(true),
     var setPhoneResult: Result<Unit> = Result.success(Unit),
+    var ownPhoneResult: String? = null,
 ) : NyutagInvites {
     val checkedUsernames = mutableListOf<String>()
     var registeredUsername: String? = null
@@ -69,4 +70,5 @@ class FakeNyutagInvites(
     override suspend fun isInContacts(sessionId: SessionId, userId: String, phones: List<String>) = inContactsResult
     override suspend fun hasPhone(sessionId: SessionId) = hasPhoneResult
     override suspend fun setPhone(sessionId: SessionId, phone: String) = setPhoneResult
+    override fun ownPhone(sessionId: SessionId) = ownPhoneResult
 }

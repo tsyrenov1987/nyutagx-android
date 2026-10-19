@@ -33,5 +33,7 @@ data class MessageComposerState(
     val slashCommandAction: AsyncAction<Unit>,
     /** Нютаг: очередь отложенных сообщений чата (в ветке обсуждения не показывается). */
     val nyutagScheduled: ImmutableList<NyutagScheduledMessage> = persistentListOf(),
+    /** Время отправки в формате приложения (у бурятского свои названия месяцев). */
+    val nyutagFormatSendAt: (Long) -> String = { it.toString() },
     val eventSink: (MessageComposerEvent) -> Unit,
 )

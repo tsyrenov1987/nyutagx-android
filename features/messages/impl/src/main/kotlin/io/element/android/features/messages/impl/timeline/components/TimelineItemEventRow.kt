@@ -81,6 +81,7 @@ import io.element.android.features.messages.impl.timeline.model.TimelineItemGrou
 import io.element.android.features.messages.impl.timeline.model.TimelineItemReactions
 import io.element.android.features.messages.impl.timeline.model.TimelineItemThreadInfo
 import io.element.android.features.messages.impl.timeline.model.bubble.BubbleState
+import io.element.android.features.messages.impl.timeline.model.event.NyutagViewOnceState
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemAttachmentsContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemGalleryContent
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemImageContent
@@ -932,6 +933,8 @@ private fun MessageEventBubbleContent(
         TimestampPosition.Aligned
     } else {
         when (val content = event.content) {
+            // Нютаг: исчезающее фото — строка-заглушка, а не картинка; поверх неё время закрывало текст.
+            is TimelineItemImageContent if content.nyutagViewOnce != NyutagViewOnceState.None -> TimestampPosition.Aligned
             is TimelineItemImageContent -> if (content.showCaption) TimestampPosition.Aligned else TimestampPosition.Overlay
             is TimelineItemVideoContent -> if (content.showCaption) TimestampPosition.Aligned else TimestampPosition.Overlay
             is TimelineItemGalleryContent -> if (content.showCaption) TimestampPosition.Aligned else TimestampPosition.Below

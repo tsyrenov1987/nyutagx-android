@@ -80,6 +80,18 @@ class HomePresenterTest {
     }
 
     @Test
+    fun `present - own phone known on this device goes to the drawer`() = runTest {
+        val presenter = createHomePresenter(
+            sessionStore = InMemorySessionStore(updateUserProfileResult = { _, _, _ -> }),
+            nyutagInvites = FakeNyutagInvites(ownPhoneResult = "+79001234567"),
+        )
+        presenter.test {
+            assertThat(awaitItem().nyutagOwnPhone).isEqualTo("+79001234567")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun `present - can report bug`() = runTest {
         val presenter = createHomePresenter(
             rageshakeFeatureAvailability = { flowOf(true) },

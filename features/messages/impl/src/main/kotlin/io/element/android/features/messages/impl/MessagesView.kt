@@ -670,6 +670,7 @@ private fun MessagesViewComposerBottomSheetContents(
                 } else {
                     NyutagScheduledBanner(
                         messages = state.composerState.nyutagScheduled,
+                        formatSendAt = state.composerState.nyutagFormatSendAt,
                         onSendNow = { state.composerState.eventSink(MessageComposerEvent.NyutagScheduledSendNow(it)) },
                         onDelete = { state.composerState.eventSink(MessageComposerEvent.NyutagScheduledDelete(it)) },
                     )

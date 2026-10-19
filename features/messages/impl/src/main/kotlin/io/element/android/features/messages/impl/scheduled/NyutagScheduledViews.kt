@@ -7,7 +7,6 @@
 package io.element.android.features.messages.impl.scheduled
 
 import android.text.format.DateFormat
-import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -130,6 +129,7 @@ internal fun NyutagSchedulePicker(
 @Composable
 internal fun NyutagScheduledBanner(
     messages: ImmutableList<NyutagScheduledMessage>,
+    formatSendAt: (Long) -> String,
     onSendNow: (String) -> Unit,
     onDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -169,6 +169,7 @@ internal fun NyutagScheduledBanner(
                 if (index > 0) HorizontalDivider()
                 NyutagScheduledItem(
                     message = message,
+                    formatSendAt = formatSendAt,
                     onSendNow = { onSendNow(message.id) },
                     onDelete = {
                         if (messages.size == 1) showList = false
@@ -189,17 +190,11 @@ internal fun NyutagScheduledBanner(
 @Composable
 private fun NyutagScheduledItem(
     message: NyutagScheduledMessage,
+    formatSendAt: (Long) -> String,
     onSendNow: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val time = remember(message.sendAtMs) {
-        DateUtils.formatDateTime(
-            context,
-            message.sendAtMs,
-            DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_ABBREV_MONTH,
-        )
-    }
+    val time = remember(message.sendAtMs) { formatSendAt(message.sendAtMs) }
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Text(
             text = message.body,

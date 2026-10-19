@@ -6,6 +6,7 @@
 
 package io.element.android.features.home.impl.components
 
+import android.telephony.PhoneNumberUtils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.matrix.ui.components.aMatrixUser
 import io.element.android.libraries.matrix.ui.model.getAvatarData
+import java.util.Locale
 
 /** Пункты бокового меню. */
 enum class NyutagDrawerAction {
@@ -53,6 +55,7 @@ enum class NyutagDrawerAction {
 @Composable
 fun NyutagHomeDrawer(
     currentUser: MatrixUser,
+    ownPhone: String?,
     onAction: (NyutagDrawerAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,8 +88,10 @@ fun NyutagHomeDrawer(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                // Номер — как в Telegram; сервер его не отдаёт, поэтому без номера на этом телефоне показываем ID.
                 Text(
-                    text = currentUser.userId.value,
+                    text = ownPhone?.let { PhoneNumberUtils.formatNumber(it, Locale.getDefault().country.ifEmpty { "RU" }) ?: it }
+                        ?: currentUser.userId.value,
                     style = ElementTheme.typography.fontBodyMdRegular,
                     color = ElementTheme.colors.textSecondary,
                     maxLines = 1,
@@ -123,5 +128,5 @@ private fun DrawerItem(icon: ImageVector, label: Int, onClick: () -> Unit) {
 @PreviewsDayNight
 @Composable
 internal fun NyutagHomeDrawerPreview() = ElementPreview {
-    NyutagHomeDrawer(currentUser = aMatrixUser(displayName = "Баир"), onAction = {})
+    NyutagHomeDrawer(currentUser = aMatrixUser(displayName = "Баир"), ownPhone = "+79001234567", onAction = {})
 }

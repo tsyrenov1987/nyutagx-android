@@ -25,6 +25,7 @@ import io.element.android.features.messages.impl.timeline.TimelineController
 import io.element.android.features.messages.impl.utils.FakeMentionSpanFormatter
 import io.element.android.features.messages.impl.utils.FakeTextPillificationHelper
 import io.element.android.features.messages.impl.utils.TextPillificationHelper
+import io.element.android.libraries.dateformatter.test.FakeDateFormatter
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.featureflag.test.FakeFeatureFlagService
 import io.element.android.libraries.matrix.api.core.ThreadId
@@ -328,6 +329,7 @@ class MessageComposerPresenterSlashCommandTest {
         contentScannerService = { _, _ -> },
         contentValidationCache = InMemoryEventContentValidationCache(),
         nyutagScheduledMessages = nyutagScheduledMessages,
+        dateFormatter = FakeDateFormatter(),
     ).apply {
         isTesting = true
         showTextFormatting = isRichTextEditorEnabled

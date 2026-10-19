@@ -14,15 +14,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -36,19 +41,29 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.libraries.designsystem.theme.components.Icon
 import io.element.android.libraries.designsystem.theme.components.Text
 import io.element.android.libraries.matrix.ui.media.MediaRequestData
+import io.element.android.libraries.ui.common.layout.ContentAvoidingLayoutData
 import io.element.android.libraries.ui.strings.CommonStrings
 
 @Composable
 fun NyutagViewOnceView(
     content: TimelineItemImageContent,
+    eventId: String?,
     onLongClick: (() -> Unit)?,
     onOpened: () -> Unit,
     modifier: Modifier = Modifier,
+    onContentLayoutChange: (ContentAvoidingLayoutData) -> Unit = {},
 ) {
     val isReceived = content.nyutagViewOnce == NyutagViewOnceState.Received
+    val context = LocalContext.current
+    val openedStore = remember { NyutagViewOnceOpenedStore(context) }
+    val wasOpenedBefore = remember(eventId) { eventId != null && openedStore.contains(eventId) }
     // Переживает пересоздание экрана, чтобы фото нельзя было открыть второй раз, пока удаление не дошло.
-    var isOpened by rememberSaveable { mutableStateOf(false) }
+    var isOpened by rememberSaveable { mutableStateOf(wasOpenedBefore) }
     var isViewing by rememberSaveable { mutableStateOf(false) }
+    // Фото открыли, а приложение убили до закрытия просмотра — удаление тогда не ушло, отправляем его сейчас.
+    LaunchedEffect(eventId) {
+        if (isReceived && wasOpenedBefore && !isViewing) onOpened()
+    }
     val label = when {
         !isReceived -> stringResource(CommonStrings.nyutag_view_once_sent)
         isOpened -> stringResource(CommonStrings.nyutag_view_once_opened)
@@ -56,9 +71,17 @@ fun NyutagViewOnceView(
     }
     Row(
         modifier = modifier
+            // Ширина заглушки — чтобы время встало рядом или ниже, а не поверх текста.
+            .onSizeChanged { onContentLayoutChange(ContentAvoidingLayoutData(contentWidth = it.width, contentHeight = it.height)) }
             .combinedClickable(
                 enabled = isReceived && !isOpened || onLongClick != null,
-                onClick = { if (isReceived && !isOpened) isViewing = true },
+                onClick = {
+                    if (isReceived && !isOpened) {
+                        // Отметка до показа: переживает убийство приложения во время просмотра.
+                        eventId?.let(openedStore::add)
+                        isViewing = true
+                    }
+                },
                 onLongClick = onLongClick,
             )
             .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -116,4 +139,13 @@ private fun NyutagViewOnceViewer(
             )
         }
     }
+}
+
+/** Открытые исчезающие фото, на диске: второй раз не откроются, даже если удаление не успело уйти. */
+private class NyutagViewOnceOpenedStore(context: Context) {
+    private val prefs = context.getSharedPreferences("nyutag_view_once_opened", Context.MODE_PRIVATE)
+
+    fun contains(eventId: String) = prefs.getBoolean(eventId, false)
+
+    fun add(eventId: String) = prefs.edit().putBoolean(eventId, true).commit()
 }

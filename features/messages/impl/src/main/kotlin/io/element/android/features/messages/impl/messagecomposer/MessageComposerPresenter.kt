@@ -47,6 +47,7 @@ import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.mimetype.MimeTypes
+import io.element.android.libraries.dateformatter.api.DateFormatter
 import io.element.android.libraries.core.mimetype.MimeTypes.Any as AnyMimeTypes
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarMessage
@@ -151,6 +152,7 @@ class MessageComposerPresenter(
     private val contentScannerService: ContentScannerService,
     private val contentValidationCache: EventContentValidationCache,
     private val nyutagScheduledMessages: NyutagScheduledMessages,
+    private val dateFormatter: DateFormatter,
 ) : Presenter<MessageComposerState> {
     @AssistedFactory
     interface Factory {
@@ -181,6 +183,7 @@ class MessageComposerPresenter(
         val localCoroutineScope = rememberCoroutineScope()
 
         val roomInfo by room.roomInfoFlow.collectAsState()
+        val formatSendAt: (Long) -> String = remember { { dateFormatter.format(it) } }
         val nyutagScheduled by remember {
             if (isInThread) flowOf(emptyList()) else nyutagScheduledMessages.observe(room.sessionId, room.roomId)
         }.collectAsState(initial = emptyList())
@@ -453,6 +456,7 @@ class MessageComposerPresenter(
             resolveAtRoomMentionDisplay = resolveAtRoomMentionDisplay,
             slashCommandAction = slashCommandAction.value,
             nyutagScheduled = nyutagScheduled.toImmutableList(),
+            nyutagFormatSendAt = formatSendAt,
             eventSink = ::handleEvent,
         )
     }

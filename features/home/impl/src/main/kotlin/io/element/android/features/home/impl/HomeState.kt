@@ -39,6 +39,8 @@ data class HomeState(
     val nyutagAnnouncement: NyutagAnnouncement? = null,
     /** Окно «Поддержать Нютаг» (кнопка `donate` в обращении). */
     val isNyutagDonateOpen: Boolean = false,
+    /** Свой номер для шапки бокового меню, если он известен на этом телефоне. */
+    val nyutagOwnPhone: String? = null,
 ) {
     val isBackHandlerEnabled = currentHomeNavigationBarItem != HomeNavigationBarItem.Chats || roomListState.spaceFiltersState is SpaceFiltersState.Selected
     val displayRoomListFilters = currentHomeNavigationBarItem == HomeNavigationBarItem.Chats && roomListState.displayFilters

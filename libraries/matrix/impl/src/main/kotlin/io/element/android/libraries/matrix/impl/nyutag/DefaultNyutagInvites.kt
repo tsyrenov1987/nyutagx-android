@@ -34,6 +34,10 @@ class DefaultNyutagInvites(
     private val sessionStore: SessionStore,
 ) : NyutagInvites {
     private val announcePrefs by lazy { context.getSharedPreferences("nyutag_announce", Context.MODE_PRIVATE) }
+    private val ownPhonePrefs by lazy { context.getSharedPreferences("nyutag_own_phone", Context.MODE_PRIVATE) }
+
+    /** Номера, на которые ушёл код подтверждения: sid → номер, пока не создан аккаунт. */
+    private val verifiedPhones = mutableMapOf<String, String>()
 
     override suspend fun nextAnnouncement(language: String): Result<NyutagAnnouncement?> = call {
         val response = NyutagHttp.request(context, "GET", "/_nyutag/v1/announce")
@@ -134,6 +138,7 @@ class DefaultNyutagInvites(
         val json = response.json()
         if (response.status != 200 || !json.has("sid")) throw response.toException()
         NyutagVerification(sid = json.getString("sid"), resendAfterSeconds = json.optInt("resend_after_s", 60))
+            .also { if (medium == NyutagContactMedium.Phone) verifiedPhones[it.sid] = address.trim() }
     }
 
     override suspend fun checkVerification(sid: String, token: String): Result<Unit> = call {
@@ -185,7 +190,10 @@ class DefaultNyutagInvites(
         val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/register", jsonBody = body)
         val json = response.json()
         if (response.status != 200 || !json.has("user_id")) throw response.toException()
-        json.getString("user_id").also { Timber.i("Nyutag: registered $it by invite") }
+        json.getString("user_id").also { userId ->
+            Timber.i("Nyutag: registered $userId by invite")
+            (phone ?: sid?.let { verifiedPhones[it] })?.let { saveOwnPhone(userId, it) }
+        }
     }
 
     override suspend fun createInvite(sessionId: SessionId): Result<NyutagInvite> = call {
@@ -227,6 +235,13 @@ class DefaultNyutagInvites(
         val body = JSONObject().put("phone", phone).toString()
         val response = NyutagHttp.request(context, "POST", "/_nyutag/v1/me/phone", jsonBody = body, bearer = token(sessionId))
         if (response.status != 200) throw response.toException()
+        saveOwnPhone(sessionId.value, response.json().optString("phone").ifEmpty { phone.trim() })
+    }
+
+    override fun ownPhone(sessionId: SessionId): String? = ownPhonePrefs.getString(sessionId.value, null)
+
+    private fun saveOwnPhone(userId: String, phone: String) {
+        ownPhonePrefs.edit().putString(userId, phone).apply()
     }
 
     private suspend fun token(sessionId: SessionId): String = sessionStore.getSession(sessionId.value)?.accessToken

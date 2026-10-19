@@ -159,7 +159,9 @@ fun TimelineItemEventContentView(
                 is TimelineItemImageContent -> if (content.nyutagViewOnce != NyutagViewOnceState.None) {
                     NyutagViewOnceView(
                         content = content,
+                        eventId = eventId?.value,
                         onLongClick = onLongClick,
+                        onContentLayoutChange = calculatedOnContentLayoutChange,
                         onOpened = { eventId?.let { eventSink(TimelineEvent.NyutagViewOnceOpened(it)) } },
                     )
                 } else {

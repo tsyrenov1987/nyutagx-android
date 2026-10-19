@@ -134,6 +134,7 @@ class HomePresenter(
             eventSink = ::handleEvent,
             nyutagAnnouncement = nyutagAnnouncement,
             isNyutagDonateOpen = isNyutagDonateOpen,
+            nyutagOwnPhone = remember { nyutagInvites.ownPhone(client.sessionId) },
         )
     }
 }

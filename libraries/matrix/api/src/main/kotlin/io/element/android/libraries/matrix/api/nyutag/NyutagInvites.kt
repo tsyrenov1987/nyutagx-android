@@ -67,6 +67,9 @@ interface NyutagInvites {
 
     /** Указывает или меняет свой номер телефона. */
     suspend fun setPhone(sessionId: SessionId, phone: String): Result<Unit>
+
+    /** Свой номер, если его вводили на этом телефоне: сервер хранит только хэш и номер не отдаёт. null — неизвестен. */
+    fun ownPhone(sessionId: SessionId): String?
 }
 
 /** Ссылка-приглашение: страница на nyutag.chat с кодом; если Нютаг установлен, ссылка открывает регистрацию с этим кодом. */

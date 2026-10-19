@@ -51,13 +51,15 @@
         https://github.com/element-hq/element-x-android/issues/4074) and for opening
         the application from a mobile.element.io link.
         -->
+        <!-- Нютаг: stateHidden — после возврата из звонка или другого приложения клавиатура сама не выезжает,
+             даже если поле ввода осталось в фокусе. -->
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.ElementX.Splash"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
