@@ -64,6 +64,8 @@
     <string name="nyutag_autodelete_week">1 week</string>
     <string name="nyutag_autodelete_month">1 month</string>
     <string name="nyutag_autodelete_error">Couldn’t change the timer. Try again.</string>
+    <string name="nyutag_autodelete_changed">%1$s changed the auto-delete timer</string>
+    <string name="nyutag_autodelete_changed_by_you">You changed the auto-delete timer</string>
     <string name="nyutag_view_once_toggle">View once</string>
     <string name="nyutag_view_once_received">View-once photo. Tap to open</string>
     <string name="nyutag_view_once_sent">View-once photo</string>

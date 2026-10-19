@@ -64,6 +64,8 @@
     <string name="nyutag_autodelete_week">7 хоног</string>
     <string name="nyutag_autodelete_month">1 һара</string>
     <string name="nyutag_autodelete_error">Таймер хубилгажа шадабагүй. Дахин оролдогты.</string>
+    <string name="nyutag_autodelete_changed">%1$s автоматаар усадхалгын таймер хубилгаба</string>
+    <string name="nyutag_autodelete_changed_by_you">Та автоматаар усадхалгын таймер хубилгабат</string>
     <string name="nyutag_view_once_toggle">Нэгэ удаа харах</string>
     <string name="nyutag_view_once_received">Нэгэ удаа харах зураг. Нээхын тула дарагты</string>
     <string name="nyutag_view_once_sent">Нэгэ удаа харах зураг</string>

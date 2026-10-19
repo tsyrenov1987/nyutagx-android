@@ -10,6 +10,7 @@ package io.element.android.libraries.eventformatter.impl
 
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.eventformatter.impl.mode.RenderingMode
+import io.element.android.libraries.matrix.api.nyutag.NyutagAutoDeleteRule
 import io.element.android.libraries.matrix.api.timeline.item.event.OtherState
 import io.element.android.libraries.matrix.api.timeline.item.event.StateContent
 import io.element.android.libraries.ui.strings.CommonStrings
@@ -87,8 +88,11 @@ class StateContentFormatter(
                     Timber.v("Filtering timeline item for room state change: $content")
                     null
                 }
-                RenderingMode.Timeline -> {
-                    "Custom event ${content.eventType}"
+                RenderingMode.Timeline -> when {
+                    // Нютаг: таймер автоудаления — по-человечески, а не сырым типом события.
+                    content.eventType != NyutagAutoDeleteRule.EVENT_TYPE -> "Custom event ${content.eventType}"
+                    senderIsYou -> sp.getString(CommonStrings.nyutag_autodelete_changed_by_you)
+                    else -> sp.getString(CommonStrings.nyutag_autodelete_changed, senderDisambiguatedDisplayName)
                 }
             }
             OtherState.PolicyRuleRoom -> when (renderingMode) {
