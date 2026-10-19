@@ -49,6 +49,12 @@ class PictureInPicturePresenter(
                         switchToPip(pipController)
                     }
                 }
+                PictureInPictureEvent.EnterPictureInPictureNow -> {
+                    if (isPipSupported) {
+                        pipView?.enterPipMode()
+                            ?.also { Timber.tag(loggerTag.value).d("Switch to PiP mode now result: $it") }
+                    }
+                }
                 is PictureInPictureEvent.OnPictureInPictureModeChanged -> {
                     Timber.tag(loggerTag.value).d("onPictureInPictureModeChanged: ${event.isInPip}")
                     isInPictureInPicture = event.isInPip

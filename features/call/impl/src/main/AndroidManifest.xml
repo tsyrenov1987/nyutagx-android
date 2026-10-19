@@ -38,12 +38,15 @@
             android:supportsPictureInPicture="true"
             android:taskAffinity="io.element.android.features.call" />
 
+        <!-- Нютаг: задачу звонка создаёт этот экран, а право на окно «картинка в картинке» задача берёт у первого экрана —
+             без атрибута принятый звонок не сворачивался в окно. -->
         <activity
             android:name=".ui.IncomingCallActivity"
             android:configChanges="screenSize|screenLayout|orientation|keyboardHidden|keyboard|navigation|uiMode"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
             android:taskAffinity="io.element.android.features.call" />
 
         <service

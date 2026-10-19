@@ -14,6 +14,12 @@ sealed interface PictureInPictureEvent {
     data object OnCallStarted : PictureInPictureEvent
     data class SetPipController(val pipController: PipController) : PictureInPictureEvent
     data object EnterPictureInPicture : PictureInPictureEvent
+
+    /**
+     * Нютаг: уход из звонка кнопкой «Домой» на Android 11 и старше. Окно включается сразу, без вопроса к Element Call:
+     * после асинхронного ответа экран уже на паузе, система отказывает, а автовхода (setAutoEnterEnabled) там нет.
+     */
+    data object EnterPictureInPictureNow : PictureInPictureEvent
     data class OnPictureInPictureModeChanged(val isInPip: Boolean) : PictureInPictureEvent
     data class SetPipOrientation(val orientation: Int?) : PictureInPictureEvent
 }

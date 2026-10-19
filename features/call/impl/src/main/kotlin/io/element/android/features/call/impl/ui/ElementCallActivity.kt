@@ -265,7 +265,13 @@ class ElementCallActivity :
                 if (requestPermissionCallback != null) {
                     Timber.tag(loggerTag.value).w("Ignoring onUserLeaveHint event because user is asked to grant permissions")
                 } else {
-                    pipEventSink(PictureInPictureEvent.EnterPictureInPicture)
+                    pipEventSink(
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                            PictureInPictureEvent.EnterPictureInPictureNow
+                        } else {
+                            PictureInPictureEvent.EnterPictureInPicture
+                        }
+                    )
                 }
             }
             addOnUserLeaveHintListener(listener)

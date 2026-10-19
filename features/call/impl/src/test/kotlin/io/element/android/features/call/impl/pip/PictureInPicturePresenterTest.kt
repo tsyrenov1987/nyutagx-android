@@ -63,6 +63,26 @@ class PictureInPicturePresenterTest {
     }
 
     @Test
+    fun `entering pip now skips the web check`() = runTest {
+        val enterPipModeResult = lambdaRecorder<Boolean> { true }
+        val canEnterPipResult = lambdaRecorder<Boolean> { false }
+        val presenter = createPictureInPicturePresenter(
+            supportPip = true,
+            pipView = FakePipView(
+                setPipParamsResult = { },
+                enterPipModeResult = enterPipModeResult,
+            ),
+        )
+        presenter.test {
+            val initialState = awaitItem()
+            initialState.eventSink(PictureInPictureEvent.SetPipController(FakePipController(canEnterPipResult = canEnterPipResult)))
+            initialState.eventSink(PictureInPictureEvent.EnterPictureInPictureNow)
+            enterPipModeResult.assertions().isCalledOnce()
+            canEnterPipResult.assertions().isNeverCalled()
+        }
+    }
+
+    @Test
     fun `with webPipApi, when entering pip is supported, but web deny it, the call is finished`() = runTest {
         val handUpResult = lambdaRecorder<Unit> { }
         val presenter = createPictureInPicturePresenter(
