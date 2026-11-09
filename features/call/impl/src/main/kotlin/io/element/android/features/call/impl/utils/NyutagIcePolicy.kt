@@ -27,7 +27,7 @@ import java.security.SecureRandom
 
 object NyutagIcePolicy {
     /** coturn на nyutag-rtc: отвечает на STUN Binding по UDP. Нет ответа дважды = UDP до SFU мёртв. */
-    private const val STUN_HOST = "2.31.27.66"
+    private const val STUN_HOST = "204.10.194.208"
     private const val STUN_PORT = 3478
     private const val ATTEMPTS = 2
     private const val TIMEOUT_MS = 1500

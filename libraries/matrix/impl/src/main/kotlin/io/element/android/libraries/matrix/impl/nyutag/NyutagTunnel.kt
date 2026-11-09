@@ -102,9 +102,9 @@ IpEIFGu+D+0Mt/kAVjPkv7TN6GASeQ==
 
     /**
      * Куда пускает локальный прокси WebView звонка ([DefaultNyutagWebProxy]): ядро (JWT LiveKit и сигналинг),
-     * узлы `*.nyutag.chat:443` (TURN/TLS) и ICE-TCP SFU по IP. Остальное — 403, чтобы прокси не стал общим выходом.
+     * узлы `*.nyutag.chat:443` и `turn.nyutag.chat:5349` (TURN/TLS) и ICE-TCP SFU по IP. Остальное — 403, чтобы прокси не стал общим выходом.
      */
-    private val RTC_ICE_TCP = setOf("2.31.27.66:7881")
+    private val RTC_ICE_TCP = setOf("204.10.194.208:7881", "turn.nyutag.chat:5349")
 
     internal fun webProxyAllows(host: String, port: Int): Boolean = when {
         host == "core.nyutag.chat" && port == 6167 -> true
